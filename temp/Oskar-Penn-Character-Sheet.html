@@ -1,0 +1,551 @@
+<title>Oskar Penn · Character Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cutive+Mono&family=Courier+Prime:wght@400;700&display=swap">
+<style>
+/* Layout: one character per page in a pocket-synth shell: grey case, round orange keys, typewriter faces. */
+:root{
+  --paper:#e3e3df; --card:#f3f3f0; --ink:#121212; --muted:#5f5f5a; --oxblood:#e64700;
+  --rule:#c8c8c3; --wash:#ffe0d0; --good:#1f7a3c; --warn:#c23f00;
+  --display:"Cutive Mono","Courier New",monospace; --body:"Courier Prime","Courier New",monospace;
+  --num:"Courier Prime","Courier New",monospace; --radius:12px; color-scheme:light;
+}
+
+*{box-sizing:border-box}
+body{background-color:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;
+  padding-inline:16px;padding-block:0 48px;font-variant-numeric:tabular-nums}
+.wrap{max-width:1040px;margin:0 auto}
+
+header.top{position:relative;display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:12px 16px;
+  padding-block:22px 14px;border-bottom:3px double var(--oxblood)}
+.formno{font:12px/1.2 var(--num);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(30px,7vw,46px);letter-spacing:.04em;
+  text-transform:uppercase;color:var(--ink);margin:0;line-height:1}
+.sub{color:var(--muted);margin:6px 0 0;font-size:14px}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.skins{display:inline-flex;border:1.5px solid var(--ink);border-radius:var(--radius);overflow:hidden}
+.skins button{font:600 12px/1 var(--num);letter-spacing:.1em;text-transform:uppercase;padding:9px 11px;border:0;
+  background:transparent;color:var(--ink);cursor:pointer}
+.skins button+button{border-left:1.5px solid var(--ink)}
+.skins button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.reset{font:600 12px/1 var(--num);letter-spacing:.1em;text-transform:uppercase;border:1.5px solid var(--rule);
+  background:transparent;color:var(--muted);padding:9px 11px;border-radius:var(--radius);cursor:pointer}
+button:focus-visible,.pip:focus-visible,.xp:focus-visible,input:focus-visible{outline:2px solid var(--oxblood);outline-offset:2px}
+
+.sheet{display:grid;gap:18px;padding-top:18px}
+.bar{font-family:var(--display);font-weight:400;font-size:16px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--oxblood);border-bottom:1.5px solid var(--oxblood);padding-bottom:4px;margin:0 0 10px;
+  display:flex;justify-content:flex-start;align-items:baseline;gap:8px;flex-wrap:wrap}
+.bar small{margin-left:auto;font:12px/1.3 var(--body);letter-spacing:0;text-transform:none;color:var(--muted)}
+section{min-width:0}
+.box{background:var(--card);border:1px solid var(--rule);border-radius:var(--radius);padding:14px}
+
+.ident{display:grid;gap:4px}
+.ident h2{font-family:var(--display);font-weight:400;font-size:28px;margin:0;letter-spacing:.03em;line-height:1.1}
+.ident .role{color:var(--oxblood);font-weight:600}
+.ident p{margin:6px 0 0;max-width:65ch}
+dl.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;margin:10px 0 0}
+dl.kv dt{font:12px/1.6 var(--num);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+dl.kv dd{margin:0}
+
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media (max-width:820px){.row3{grid-template-columns:1fr 1fr}}
+@media (max-width:640px){.row2,.row3{grid-template-columns:1fr}}
+
+table{border-collapse:collapse;width:100%}
+.chars td,.chars th{padding:4px 6px;border-bottom:1px solid var(--rule);text-align:left}
+.chars th{font-family:var(--display);font-size:18px;font-weight:400;width:3.4em}
+.chars .v{font:600 22px/1 var(--num);width:2.2em}
+.chars .r{color:var(--muted);font-size:14px}
+.chars .p{text-align:right;font:600 15px/1 var(--num)}
+
+.derived{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.derived div{border:1px solid var(--rule);border-radius:var(--radius);padding:6px 4px;text-align:center}
+.derived b{display:block;font:600 20px/1.2 var(--num)}
+.derived span{font:10px/1.2 var(--num);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+.track .head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.track .now{font:600 34px/1 var(--num);color:var(--oxblood)}
+.track .now small{font-size:16px;color:var(--muted)}
+.track .btns{display:flex;gap:6px}
+.track .btns button{font:600 20px/1 var(--num);width:44px;height:40px;border:1.5px solid var(--ink);
+  background:transparent;color:var(--ink);border-radius:var(--radius);cursor:pointer}
+.pips{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px}
+.pip{min-width:34px;height:32px;display:grid;place-items:center;border:1px solid var(--rule);border-radius:var(--radius);
+  cursor:pointer;font:14px/1 var(--num);background:transparent;color:var(--muted)}
+.pip.on{background:var(--wash);border-color:var(--oxblood);color:var(--ink);font-weight:600}
+.pip.mw{box-shadow:inset 0 -3px 0 var(--warn)}
+.note{font-size:13px;color:var(--muted);margin:8px 0 0}
+.state{font-weight:700}
+.state.ok{color:var(--good)} .state.bad{color:var(--warn)}
+
+.passions ul{list-style:none;margin:0;padding:0}
+.passions li{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--rule);padding:5px 0}
+.passions li b{font-family:var(--num)}
+.passions .loud{font-weight:700;color:var(--oxblood)}
+.passions .tag{font:600 10px/1 var(--num);letter-spacing:.1em;text-transform:uppercase;border:1px solid currentColor;
+  border-radius:var(--radius);padding:2px 4px;margin-left:6px;vertical-align:2px}
+
+.skillhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.skillhead label{font-size:13px;color:var(--muted);display:flex;gap:6px;align-items:center;cursor:pointer}
+.skills{max-width:560px}
+.cat{break-inside:avoid;margin-bottom:14px}
+.cat h4{font:600 12px/1.6 var(--num);letter-spacing:.14em;text-transform:uppercase;color:var(--oxblood);margin:0 0 4px;border-bottom:1px solid var(--rule)}
+.sk{display:grid;grid-template-columns:1fr auto 26px;align-items:center;gap:8px;padding:2px 0}
+.sk .n{min-width:0}
+.sk .pct{font:600 15px/1 var(--num);text-align:right;min-width:2.6em}
+.sk.base .n,.sk.base .pct{color:var(--muted);font-weight:400}
+.xp{width:22px;height:22px;border:1.5px solid var(--muted);border-radius:calc(var(--radius) / 2);background:transparent;cursor:pointer;padding:0;
+  display:grid;place-items:center;color:var(--oxblood);font:700 15px/1 var(--num)}
+.xp.on{border-color:var(--oxblood)}
+.xp.on::after{content:"✓"}
+
+.scroll{overflow-x:auto}
+.weap{min-width:620px}
+.weap th{font:600 11px/1.2 var(--num);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left;padding:6px 8px;border-bottom:1.5px solid var(--oxblood);white-space:nowrap}
+.weap td{padding:6px 8px;border-bottom:1px solid var(--rule);vertical-align:top}
+.weap td.pct{font:600 15px/1.3 var(--num)}
+.weap .sp{font-size:13px;color:var(--muted)}
+
+.spells{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.spell{border:1px solid var(--rule);border-radius:var(--radius);padding:10px 12px}
+.spell h5{margin:0;display:flex;justify-content:space-between;font-family:var(--display);font-size:17px;font-weight:400;letter-spacing:.04em}
+.spell h5 span{color:var(--oxblood);font-family:var(--num);font-weight:600}
+.spell .meta{font:11px/1.4 var(--num);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.spell p{margin:4px 0 0;font-size:14px}
+ul.plain{margin:0;padding-left:1.1em}
+ul.plain li{margin:3px 0}
+footer{margin-top:28px;color:var(--muted);font-size:12px;border-top:1px solid var(--rule);padding-top:10px}
+
+/* Synth: rounded shell, round keys, lowercase labels */
+body h1{font-weight:400;text-transform:lowercase;letter-spacing:0;font-size:clamp(34px,8vw,52px)}
+body header.top{border-bottom:2px solid var(--ink)}
+body .formno::before{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--oxblood);margin-right:8px;vertical-align:0}
+body .box{border:0;box-shadow:0 1px 0 var(--rule),0 0 0 1px var(--rule) inset}
+body .bar{font:600 12px/1.4 var(--num);letter-spacing:.06em;text-transform:lowercase;color:var(--ink);border-bottom:2px solid var(--ink)}
+body .ident h2{font-weight:400;font-size:32px;letter-spacing:0}
+body .chars th{font-weight:700}
+body .pip{border-radius:50%;min-width:34px;width:34px;height:34px;border:1.5px solid var(--ink);color:var(--ink)}
+body .pip.on{background:var(--oxblood);border-color:var(--oxblood);color:#fff}
+body .track .btns button{border-radius:50%;width:42px;height:42px}
+body .track .now{color:var(--ink)}
+body .skins{border-radius:999px}
+body .skins button[aria-pressed="true"]{background:var(--oxblood);color:#fff}
+body .xp{border-radius:50%}
+body .xp.on{background:var(--oxblood);border-color:var(--oxblood)}
+body .xp.on::after{content:""}
+body .spell h5,body .chars th{font-weight:400}
+@media (prefers-reduced-motion:no-preference){.pip,.xp,.skins button{transition:background .12s,color .12s}}
+
+/* Redactions: blank bars, no hidden text */
+.rd{display:inline-block;width:calc(var(--w) * 1ch);height:1.05em;background:var(--ink);vertical-align:-.18em;
+  border-radius:1px;margin:0 .08em;transform:rotate(var(--t,0deg))}
+.dossier{display:flex;flex-wrap:wrap;gap:4px 18px;font:12px/1.5 var(--num);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+.redline{font:12px/1.5 var(--num);color:var(--muted);margin:8px 0 0}
+
+/* Section tabs */
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);display:flex;gap:4px;
+  padding-block:10px;margin-inline:-16px;padding-inline:16px;overflow-x:auto;border-bottom:2px solid var(--ink)}
+nav.tabs button{font:600 12px/1 var(--num);letter-spacing:0;text-transform:lowercase;padding:10px 8px;border:1.5px solid var(--ink);
+  border-radius:999px;background:transparent;color:var(--ink);cursor:pointer;white-space:nowrap;flex:0 0 auto}
+nav.tabs button[aria-selected="true"]{background:var(--oxblood);border-color:var(--oxblood);color:#fff}
+.panel{display:grid;gap:18px}
+.stack{display:grid;gap:18px;align-content:start;min-width:0}
+.sheet{padding-top:0}
+
+/* Success tiers under each skill */
+.sk{grid-template-areas:"n p x" "t t x"}
+.sk .n{grid-area:n}.sk .pct{grid-area:p}.sk .xp{grid-area:x}
+.tiers{grid-area:t;display:flex;flex-wrap:wrap;gap:2px 12px;font:11px/1.3 var(--num);color:var(--muted);margin:1px 0 4px}
+.tiers b{color:var(--ink);font-weight:700}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font:12px/1.4 var(--num);color:var(--muted);margin:0 0 12px;padding:8px 10px;border:1px dashed var(--rule);border-radius:8px}
+.legend b{color:var(--ink)}
+
+.passions li.pli{flex-wrap:wrap}.passions li.pli .tiers{flex-basis:100%}
+.spell .tiers{margin:2px 0 4px}
+/* Skill detail modal */
+.open{all:unset;cursor:pointer;display:contents}
+.sk .n,.sk .pct{cursor:pointer}
+.sk:hover .n{text-decoration:underline;text-decoration-color:var(--oxblood);text-underline-offset:3px}
+.tapline{font:11px/1.4 var(--num);color:var(--muted);margin:-4px 0 10px}
+.modal{position:fixed;inset:0;z-index:50;background:rgba(18,18,18,.45);display:grid;align-items:end;justify-items:center;
+  padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+.modal[hidden],[hidden]{display:none!important}
+@media (min-width:640px){.modal{align-items:center}}
+.mcard{background:var(--card);color:var(--ink);width:min(520px,100%);max-height:85vh;overflow:auto;border-radius:18px;
+  padding:18px;box-shadow:0 10px 40px rgba(0,0,0,.25);border:1.5px solid var(--ink)}
+.mhead{display:flex;justify-content:space-between;align-items:start;gap:12px}
+.mkind{font:600 11px/1.2 var(--num);letter-spacing:.08em;text-transform:lowercase;color:var(--oxblood)}
+.mhead h3{font:400 26px/1.15 var(--display);margin:4px 0 0}
+.mclose{all:unset;cursor:pointer;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--ink);display:grid;place-items:center;font:22px/1 var(--num);flex:0 0 auto}
+.mclose:focus-visible{outline:2px solid var(--oxblood);outline-offset:2px}
+.grades{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:14px 0 6px}
+.grades .g{border:1.5px solid var(--rule);border-radius:12px;padding:8px 2px;text-align:center}
+.grades .g b{display:block;font:700 22px/1.1 var(--num)}
+.grades .g span{font:10px/1.2 var(--num);color:var(--muted);text-transform:lowercase}
+.grades .reg{background:var(--oxblood);border-color:var(--oxblood);color:#fff}
+.grades .reg span{color:#fff}
+.grades .fum b{font-size:16px;line-height:1.4}
+.mhint{font:12px/1.4 var(--num);color:var(--muted);margin:0 0 10px}
+.mbody{margin:8px 0 0;font-size:15px}
+.mextra{margin-top:14px;padding-top:10px;border-top:1px solid var(--rule);display:flex;justify-content:space-between;align-items:center;gap:10px;font:13px/1.4 var(--num)}
+body.locked{overflow:hidden}
+.spell,.passions li{cursor:pointer}
+@media (max-width:380px){.grades .g b{font-size:18px}}
+
+/* Story tab */
+.story{max-width:620px}
+.story p{margin:0 0 12px;font-size:16px;line-height:1.6}
+.story h4{font:600 12px/1.4 var(--num);letter-spacing:.06em;text-transform:lowercase;color:var(--oxblood);margin:16px 0 6px}
+.story ul{margin:0;padding-left:1.1em}
+.story li{margin:4px 0}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="formno" id="formno">cs-1 · character unit</div>
+      <h1>Character Sheet</h1>
+      <p class="sub">Basic Roleplaying · Heroic · Ultima Thule</p>
+      <div class="dossier" id="dossier"></div>
+    </div>
+    <div class="ctl">
+      <button class="reset" id="reset" type="button">Reset trackers</button>
+    </div>
+  </header>
+  
+  <main id="sheet" class="sheet"></main>
+  <footer>Hit points, power points and experience checks are saved on this device only. Fate points (optional rule, p.115): spend 5 PP to reroll any percentile roll, or 3 PP to ignore 1 point of damage. At 0 PP the character faints.<br><span id="foot"></span></footer>
+</div>
+
+<script>
+const SK = {"Oskar":{"Climb":80,"Dodge":80,"Fine Manipulation":85,"Hide":75,"Jump":65,"Listen":70,"Sleight of Hand":70,"Spot":75,"Stealth":85,"Fast Talk":60,"Knowledge (Black Market)":55,"Melee Weapon (Dagger)":60,"Missile Weapon (Thrown)":75,"Appraise":56}};
+
+const CH = [
+ {id:"oskar", key:"Oskar", name:"Oskar Penn", pron:"he/him", role:"Thief", personality:"Nimble (custom)", age:30, wealth:"Average, deep in debt",
+  blurb:"Locksmith, pickpocket and rooftop runner who found this job on the black market. Owes money to a fence who collects in fingers, and he needs all ten.",
+  c:{STR:10,CON:11,SIZ:9,INT:13,POW:10,DEX:18,CHA:13},
+  passions:[["Greed",80,true],["Fear (the Fence)",60],["Loyalty (the crew)",60]],
+  weapons:[
+   ["Throwing knives (5)","Missile Weapon (Thrown)","1D4","20 m","1","1H","10","No","Impaling. Recover after the fight."],
+   ["Knife","Melee Weapon (Dagger)","1D3+1","Short","1","1H","15","Yes","Impaling."],
+   ["Brawl","Brawl","1D3","Touch","1","1H","—","No","Crushing."],
+   ["Grapple","Grapple","Special","Touch","1","2H","—","No","Entangling."]],
+  armour:"Heavy coat, AV 1.",
+  features:"Two distinctive features: long, restless fingers; a coat with far too many pockets.",
+  gear:["Lockpicks","Line and grapnel","Five throwing knives and a knife","Heavy coat","Ledger of other people's debts"]}
+
+];
+
+// Skill list from the BRP character sheet, with base chances. Functions take characteristics.
+const CATS = [
+ ["Communication",[["Bargain",5],["Command",5],["Disguise",1],["Etiquette",5],["Fast Talk",5],["Language (Own)",c=>c.INT*5],["Perform",5],["Persuade",15],["Status",15],["Teach",10]]],
+ ["Manipulation",[["Art",5],["Craft",5],["Demolition",1],["Fine Manipulation",5],["Heavy Machine",1],["Repair",15],["Sleight of Hand",5]]],
+ ["Mental",[["Appraise",15],["First Aid",30],["Gaming",c=>c.INT+c.POW],["Knowledge",5],["Medicine",5],["Psychotherapy",1],["Science",1],["Strategy",1],["Technical",5]]],
+ ["Perception",[["Insight",5],["Listen",25],["Navigate",10],["Research",25],["Sense",10],["Spot",25],["Track",10]]],
+ ["Physical",[["Climb",40],["Drive",20],["Hide",10],["Jump",25],["Pilot",1],["Ride",5],["Stealth",10],["Swim",25],["Throw",25]]],
+ ["Combat",[["Brawl",25],["Dodge",c=>c.DEX*2],["Grapple",25],["Martial Arts",1]]]
+];
+const SPECIAL = {"Language":"Communication","Perform":"Communication","Craft":"Manipulation","Repair":"Manipulation",
+  "Knowledge":"Mental","Technical":"Mental","Melee Weapon":"Combat","Missile Weapon":"Combat"};
+const SPELLS = new Set(["Blast","Speak to Mind","Protection","Countermagic","Perception","Illusion"]);
+const DM = t => t<=12?"−1D6":t<=16?"−1D4":t<=24?"None":t<=32?"+1D4":t<=40?"+1D6":"+2D6";
+
+// Per-viewer state (trackers, xp checks). Wrapped: storage can be unavailable.
+const ONLY="oskar";
+const KEY="charsheet-oskar-v1";
+let S={};
+try{S=JSON.parse(localStorage.getItem(KEY)||"{}")||{}}catch(e){S={}}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const st=id=>(S[id]=S[id]||{xp:{}});
+
+function buildSkills(ch){
+  const c=ch.c, own=SK[ch.key], out={};
+  CATS.forEach(([cat,list])=>{out[cat]=[]; list.forEach(([n,b])=>{
+    const base=typeof b==="function"?b(c):b;
+    out[cat].push({n, v: own[n]??base, base, trained: n in own || n==="Language (Own)"});
+  })});
+  Object.entries(own).forEach(([n,v])=>{
+    if(SPELLS.has(n)) return;
+    const root=n.split(" (")[0];
+    if(n.includes("(") && SPECIAL[root]){
+      const cat=SPECIAL[root]; const arr=out[cat];
+      const i=arr.findIndex(s=>s.n===root);
+      const row={n,v,trained:true,spec:true};
+      if(i>=0){ arr.splice(i+1,0,row); arr[i].generic=true; } else arr.push(row);
+    }
+  });
+  return out;
+}
+
+const R=n=>{const e=document.createElement("span");e.className="rd";e.setAttribute("aria-label","redacted");e.setAttribute("role","img");
+  e.style.setProperty("--w",n);e.style.setProperty("--t",((n*37)%5-2)*0.4+"deg");return e};
+const rich=str=>{const f=document.createDocumentFragment();str.split(/\[\[(\d+)\]\]/).forEach((p,i)=>f.append(i%2?R(+p):document.createTextNode(p)));return f};
+const STORY={"paras": ["Oskar Penn came through intake at nine years old, alone and without papers. The record lists his prior world as [[9]]. He grew up in the lanes of Lower [[6]], where a locksmith named Old Teague took him in and taught him that every lock is a promise someone made and nobody checks.", "He has been keeping and breaking those promises ever since. He opens doors for anyone who pays, and climbs to the ones nobody thought to lock. Two years ago he borrowed heavily from the Fence to buy a residency stamp that turned out to be forged. He has been paying the interest in favours ever since.", "Oskar takes his own rule seriously: once he's on a crew, he doesn't leave anyone behind. He has broken it once."], "want": "To clear the debt, then disappear somewhere with a better class of lock.", "questions": ["What happened the one time Oskar left someone behind?", "What does he keep in the pocket nobody else knows about?"]};
+const DOSSIER={"file": "TH-2291-[[3]]", "cls": "Open · Under review", "rows": [["Prior world", "[[7]]"], ["Known aliases", "[[6]], [[9]]"], ["Creditors", "[[2]] listed (see Annex [[1]])"], ["Last address", "[[14]], Lower [[5]]"]], "charnote": "Measured at intake, [[9]]. Subject declined fingerprinting.", "passnote": "Character reference from [[11]]: “[[19]]”", "gear": ["Item 6: [[10]] (returned to owner)", "Item 7: [[8]] (disputed)"], "weapnote": "Carry permit: not on file · Referred to [[9]]"};
+const rn=x=>Math.floor(x+0.5);
+const TIERS=v=>{const fs=100-Math.max(1,rn((100-Math.min(v,100))/20))+1;
+  return {diff:Math.ceil(v/2),spec:Math.max(1,rn(v/5)),crit:Math.max(1,rn(v/20)),fum:fs>=100?"00":fs+"–00"}};
+const tierLine=v=>{const t=TIERS(v);return el("span",{class:"tiers"},
+  el("span",{},"½ ",el("b",{},String(t.diff))),el("span",{},"spec ",el("b",{},String(t.spec))),
+  el("span",{},"crit ",el("b",{},String(t.crit))),el("span",{},"fumble ",el("b",{},t.fum)))};
+const DESC={
+"Appraise":"Judge the value, age and authenticity of an object, and spot fakes.",
+"Art":"Create a painting, sculpture, story or piece of music. Superior results make lasting work; a fumble can damage your reputation.",
+"Bargain":"Haggle over prices and negotiate a compromise. Important deals are opposed rolls. For arguments someone must win outright, use Fast Talk or Persuade.",
+"Brawl":"Fight unarmed: punches, kicks, headbutts. Brawl can parry, but the parrying limb takes minimum damage.",
+"Climb":"Go up or down walls, rubble, rooftops and drainpipes. Failure leaves you stuck or falling; a fumble means a hard fall.",
+"Command":"Lead and coordinate people under pressure so the group works better. A fumble provokes open defiance.",
+"Craft":"Make or mend goods in a trade.",
+"Demolition":"Set explosives for a precise effect: drop a wall, or blow a lock without destroying what's behind it.",
+"Disguise":"Change posture, clothes and voice to pass as someone else. Anyone who looks closely can make an opposed Spot or Insight roll.",
+"Dodge":"Get out of the way. A success turns a hit into a miss. A special drops the attack two levels; a critical drops it three.",
+"Drive":"Control a ground vehicle or cart. Common vehicles start at 20%, unfamiliar ones at 1%.",
+"Etiquette":"Behave correctly inside a group with its own rules: a faculty dinner, a guild hall, a gang.",
+"Fast Talk":"Quick, temporary persuasion. Bluff past a guard or rush someone into a bad decision. It wears off once the target has time to think.",
+"Fine Manipulation":"Careful work with the hands: picking locks, disarming traps, knots, taking mechanisms apart. Superior results are faster or leave no trace.",
+"First Aid":"Stop bleeding, bandage wounds, set bones, revive the unconscious. It does little against poison or disease; that needs Medicine.",
+"Gaming":"Play games of skill and chance, and gamble.",
+"Grapple":"Wrestle, hold, pin or disarm. Usually non-lethal, though a hold can hurt.",
+"Heavy Machine":"Operate large machinery: cranes, engines, industrial plant.",
+"Hide":"Stay unseen while keeping still, using cover and shadow. To move unseen, use Stealth.",
+"Insight":"Read someone's mood, motives and honesty from how they talk and act.",
+"Jump":"Leap across gaps or over obstacles. A fumble means a fall.",
+"Knowledge":"Recall facts in a field, identify clues and make reasoned guesses. A fumble gives you confident falsehoods.",
+"Language":"Speak and understand a language. Everyday talk in your own language needs no roll.",
+"Listen":"Hear and make sense of sounds: voices through a door, footsteps, the click of a crossbow being wound.",
+"Martial Arts":"A trained fighting style that adds damage when combined with an attack skill.",
+"Medicine":"Diagnose and treat serious wounds, illness and poison, including surgery.",
+"Melee Weapon":"Attack and parry with one class of hand weapon. The GM may let you use a related class at Difficult.",
+"Missile Weapon":"Shoot or throw one class of missile weapon. The GM may let you use a related class at Difficult.",
+"Navigate":"Find your way using maps, stars, landmarks or memory. A fumble gets you badly lost.",
+"Perform":"Act, sing, dance, play an instrument, or carry out a ceremony in front of others.",
+"Persuade":"Change someone's mind through argument over time. Slower than Fast Talk, but it lasts.",
+"Pilot":"Fly or steer an aircraft, boat or other non-ground vehicle.",
+"Psychotherapy":"Treat mental trauma and help someone recover their footing.",
+"Repair":"Fix, adjust or adapt broken equipment in one field. A fumble makes it worse and may hurt you.",
+"Research":"Find information in archives, libraries and records. An attempt usually takes hours.",
+"Ride":"Control and care for a riding animal.",
+"Science":"Apply a formal science such as chemistry, physics or mathematics.",
+"Sense":"Taste, touch, smell, balance and temperature: find something in the dark, identify an odour, feel a hairline crack.",
+"Sleight of Hand":"Palm, plant or lift small objects without being noticed: pickpocketing, card tricks, swapping documents.",
+"Spot":"Notice details: hidden compartments, ambushes, a disguised face. The GM may roll it for you without warning.",
+"Status":"Use your reputation and standing to win favours, credit or silence.",
+"Stealth":"Move without drawing attention. To stay unseen while still, use Hide.",
+"Strategy":"Plan and direct a battle or campaign, and anticipate an opposing commander.",
+"Swim":"Move through water when it matters. A fumble means you start to drown.",
+"Teach":"Train someone else in a skill or technique.",
+"Technical":"Operate, maintain and adapt advanced devices.",
+"Throw":"Throw objects accurately, including grenades and bottles.",
+"Track":"Follow tracks and trails over ground, through rubble or across a city."};
+const SPEC={
+"Knowledge (Generator District)":"Who runs which generator, which streets go dark first, and who owes whom.",
+"Knowledge (Black Market)":"Fences, going prices, who's buying, and how to find a seller without being found.",
+"Knowledge (University Politics)":"Committees, grants, rivalries, and which signatures actually matter.",
+"Knowledge (Occult)":"Magical theory, ritual practice, and summoned beings and their bindings.",
+"Knowledge (History)":"Thule's past: previous arrival waves and the worlds the disc has eaten.",
+"Technical (Thaumic Apparatus)":"Enchanted equipment, wards and the University's thaumic instruments.",
+"Perform (Rituals)":"Carrying out ceremonial magic correctly in front of witnesses.",
+"Repair (Mechanical)":"Engines, gears, crossbows, trams.",
+"Repair (Electrical)":"Generators, wiring and power lines.",
+"Melee Weapon (Mace)":"Covers clubs and maces. The heavy wrench counts as a light mace.",
+"Melee Weapon (Dagger)":"Covers knives and daggers.",
+"Melee Weapon (Staff)":"Covers quarterstaffs and short staffs.",
+"Missile Weapon (Crossbow)":"A heavy crossbow fires once, then takes two rounds to reload.",
+"Missile Weapon (Thrown)":"Throwing knives, darts and similar. One throw per round.",
+"Language (Own)":"Your native language.",
+"Language (Other)":"A second language of your choice."};
+const COMBATNOTE=n=>/^(Melee Weapon|Missile Weapon|Brawl|Grapple)/.test(n)?"In combat a special success impales, slashes, crushes or knocks back depending on the weapon; a critical also ignores armour.":null;
+const descFor=n=>{const root=n.split(" (")[0];return [SPEC[n],DESC[root]].filter(Boolean)};
+
+// Modal
+const makeM=()=>{
+  const wrap=el("div",{class:"modal",id:"modal",hidden:"",role:"dialog","aria-modal":"true","aria-labelledby":"mtitle"});
+  const card=el("div",{class:"mcard"}); wrap.append(card); document.body.append(wrap);
+  let last=null;
+  const close=()=>{wrap.hidden=true;document.body.classList.remove("locked");last&&last.focus()};
+  wrap.addEventListener("click",e=>{if(e.target===wrap)close()});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!wrap.hidden)close()});
+  const open=({title,kind,v,body=[],extra=null})=>{
+    last=document.activeElement; card.innerHTML="";
+    const t=TIERS(v);
+    card.append(
+      el("div",{class:"mhead"},el("div",{},el("div",{class:"mkind"},kind),el("h3",{id:"mtitle"},title)),
+        el("button",{type:"button",class:"mclose","aria-label":"Close",onclick:close},"×")),
+      el("div",{class:"grades"},
+        el("div",{class:"g reg"},el("b",{},v+""),el("span",{},"success")),
+        el("div",{class:"g"},el("b",{},t.diff+""),el("span",{},"difficult")),
+        el("div",{class:"g"},el("b",{},t.spec+""),el("span",{},"special")),
+        el("div",{class:"g"},el("b",{},t.crit+""),el("span",{},"critical")),
+        el("div",{class:"g fum"},el("b",{},t.fum),el("span",{},"fumble"))),
+      
+      ...body.map(p=>el("p",{class:"mbody"},p)), extra||"");
+    wrap.hidden=false; document.body.classList.add("locked"); card.querySelector(".mclose").focus();
+  };
+  return {open,close};
+};
+let M=null;const openModal=o=>{(M=M||makeM()).open(o)};
+const el=(t,a={},...k)=>{const e=document.createElement(t);for(const[x,y]of Object.entries(a)){if(x==="class")e.className=y;else if(x==="html")e.innerHTML=y;else if(x.startsWith("on"))e.addEventListener(x.slice(2),y);else e.setAttribute(x,y)}k.flat().forEach(c=>c!=null&&e.append(c));return e};
+
+function tracker(ch,kind,max,extra){
+  const s=st(ch.id); if(s[kind]==null) s[kind]=max;
+  const wrap=el("div",{class:"box track"});
+  const label=kind==="hp"?"Hit points":"Power points";
+  const now=el("div",{class:"now"}), state=el("p",{class:"note"});
+  const pips=el("div",{class:"pips",role:"group","aria-label":label});
+  const set=v=>{s[kind]=Math.max(kind==="hp"?-max:0,Math.min(max,v));save();draw()};
+  const draw=()=>{
+    const v=s[kind]; now.innerHTML=`${v}<small> / ${max}</small>`;
+    [...pips.children].forEach(p=>p.classList.toggle("on",+p.dataset.v<=v));
+    if(kind==="hp"){
+      const lost=max-v;
+      state.innerHTML = v<=0?`<span class="state bad">Dying.</span> At 0 HP the character dies at the end of the next round.`
+        : v<=2?`<span class="state bad">Unconscious</span> at 2 HP or less.`
+        : `<span class="state ok">Standing.</span> Major wound: ${extra} or more damage from a single hit. Unconscious at 2 HP, dead at 0.`;
+    } else {
+      state.innerHTML = v<=0?`<span class="state bad">Fainted.</span> Regains 1 PP per hour asleep, 1 per 2 hours awake.`
+        : `<span class="state ok">${v} PP available.</span> Reroll costs 5, ignoring 1 damage costs 3. Recovers 1 per hour asleep, 1 per 2 hours awake.`;
+    }
+  };
+  for(let i=1;i<=max;i++){pips.append(el("button",{class:"pip"+(kind==="hp"&&i===extra?" mw":""),type:"button","data-v":i,
+    "aria-label":`Set ${label} to ${i}`,onclick:()=>set(i)},String(i)))}
+  wrap.append(el("h3",{class:"bar"},label,el("small",{},kind==="hp"?"tap a number to set":"spend for spells and fate")),
+    el("div",{class:"head"},now,el("div",{class:"btns"},
+      el("button",{type:"button","aria-label":"Lose one",onclick:()=>set(s[kind]-1)},"−"),
+      el("button",{type:"button","aria-label":"Gain one",onclick:()=>set(s[kind]+1)},"+"))),
+    pips,state);
+  draw(); return wrap;
+}
+
+function render(id){
+  const ch=CH.find(x=>x.id===id)||CH[0]; const c=ch.c; const s=st(ch.id);
+  document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.id===ch.id));
+  const hp=Math.ceil((c.CON+c.SIZ)/2), mw=Math.ceil(hp/2);
+  const main=document.getElementById("sheet"); main.innerHTML="";
+
+  const ident=el("section",{class:"box ident"},
+    el("h2",{},ch.name),
+    el("div",{class:"role"},`${ch.role} · ${ch.personality} personality`),
+    el("p",{},ch.blurb),
+    el("dl",{class:"kv"},el("dt",{},"Pronouns"),el("dd",{},ch.pron),el("dt",{},"Age"),el("dd",{},String(ch.age)),
+      el("dt",{},"Wealth"),el("dd",{},ch.wealth),el("dt",{},"Move"),el("dd",{},"10"),
+      el("dt",{},"Features"),el("dd",{},ch.features),
+      ...DOSSIER.rows.flatMap(([k,v])=>[el("dt",{},k),el("dd",{},rich(v))])));
+
+  const rolls={STR:"Effort",CON:"Stamina",SIZ:"Damage mod",INT:"Idea",POW:"Luck",DEX:"Agility",CHA:"Charm"};
+  const tb=el("tbody"); Object.entries(c).forEach(([k,v])=>tb.append(el("tr",{},el("th",{},k),el("td",{class:"v"},String(v)),
+    el("td",{class:"r"},rolls[k]),el("td",{class:"p"},k==="SIZ"?DM(c.STR+c.SIZ):v*5+"%"))));
+  const chars=el("section",{class:"box"},el("h3",{class:"bar"},"Characteristics",el("small",{},"roll = ×5")),
+    el("table",{class:"chars"},tb),
+    el("div",{class:"derived"},
+      el("div",{},el("b",{},String(hp)),el("span",{},"hit points")),
+      el("div",{},el("b",{},String(mw)),el("span",{},"major wound")),
+      el("div",{},el("b",{},DM(c.STR+c.SIZ)),el("span",{},"damage mod")),
+      el("div",{},el("b",{},String(Math.ceil(c.INT/2))),el("span",{},"exp. bonus"))),
+    el("p",{class:"redline"},rich(DOSSIER.charnote)));
+
+  const pl=el("ul"); ch.passions.forEach(([n,v,loud])=>pl.append(el("li",{class:"pli",role:"button",tabindex:"0",onclick:()=>openModal({title:n,kind:loud?"passion · loud":"passion",v,
+      body:["Inspiration: once per scene, roll this passion to boost one skill. Success adds +20%, special +30%, critical +50%. Failure gives −10% to everything for the rest of the scene; a fumble means despair.",
+        loud?"Loud: at 80% or more the GM can call for a mandatory roll when a scene provokes it. Acting against it may lower it, or you can oppose it with another passion.":"At 50% or less a passion is ambivalent and can be ignored."]}),
+      onkeydown:e=>{if(e.key==="Enter")e.currentTarget.click()}},el("span",{class:loud?"loud":""},n,loud?el("span",{class:"tag"},"Loud"):null),el("b",{},v+"%"))));
+  const passions=el("section",{class:"box passions"},el("h3",{class:"bar"},"Passions",el("small",{},"inspire: +20 / +30 / +50")),pl,
+    el("p",{class:"note"},"Loud passion: at 80%+ the GM can call for a mandatory roll when a scene provokes it. A failed inspiration roll means −10% for the rest of the scene; a fumble means despair."),
+    el("p",{class:"redline"},rich(DOSSIER.passnote)));
+
+  const TABS=[["base","Base"],["combat","Combat"],["skills","Skills"]].concat(ch.spells?[["magic","Magic"]]:[],[["kit","Kit"],["story","Story"]]);
+  let tab=S.view&&TABS.some(t=>t[0]===S.view)?S.view:"base";
+  const tabbar=el("nav",{class:"tabs",role:"tablist","aria-label":"Sheet sections"},
+    TABS.map(([k,l])=>el("button",{type:"button",role:"tab","aria-selected":String(k===tab),"aria-controls":"panel",
+      onclick:()=>{S.view=k;save();render(ch.id);window.scrollTo({top:0})}},l)));
+
+  const skillRow=r=>{
+    const on=!!s.xp[r.n];
+    const xp=el("button",{type:"button",class:"xp"+(on?" on":""),"aria-pressed":on,"aria-label":`Experience check for ${r.n}`,
+      onclick:e=>{s.xp[r.n]=!s.xp[r.n];save();e.currentTarget.classList.toggle("on");e.currentTarget.setAttribute("aria-pressed",!!s.xp[r.n])}});
+    const name = r.generic? `${r.n} (other)` : r.n;
+    const show=()=>{const x=el("button",{type:"button",class:"xp"+(s.xp[r.n]?" on":""),"aria-pressed":!!s.xp[r.n],"aria-label":`Experience check for ${r.n}`,
+        onclick:e=>{s.xp[r.n]=!s.xp[r.n];save();e.currentTarget.classList.toggle("on");e.currentTarget.setAttribute("aria-pressed",!!s.xp[r.n]);render(ch.id)}});
+      openModal({title:name,kind:"skill",v:r.v,body:[...descFor(r.n),COMBATNOTE(r.n)].filter(Boolean),
+        extra:el("div",{class:"mextra"},el("span",{},"Experience check: tick after a success in play."),x)})};
+    return el("div",{class:"sk"+(r.trained&&!r.generic?"":" base")},
+      el("span",{class:"n",role:"button",tabindex:"0","aria-label":`${name} ${r.v}%, show details`,onclick:show,onkeydown:e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();show()}}},name),
+      el("span",{class:"pct",onclick:show},r.v+"%"),xp);
+  };
+
+  // Skills
+  const showAll=!!S.showAll;
+  const toggle=el("input",{type:"checkbox",id:"showall"}); toggle.checked=showAll;
+  toggle.addEventListener("change",()=>{S.showAll=toggle.checked;save();render(ch.id)});
+  const cols=el("div",{class:"skills"});
+  const data=buildSkills(ch);
+  Object.entries(data).forEach(([cat,rows])=>{
+    const list=showAll?rows:rows.filter(r=>r.trained&&!r.generic);
+    if(!list.length) return;
+    const box=el("div",{class:"cat"},el("h4",{},cat));
+    list.forEach(r=>box.append(skillRow(r)));
+    cols.append(box);
+  });
+  const skills=el("section",{class:"box"},
+    el("div",{class:"skillhead"},el("h3",{class:"bar",style:"margin:0;flex:1"},"Skills",el("small",{},"tick the box when a roll earns an experience check")),
+      el("label",{for:"showall"},toggle,"Show untrained skills")),
+    el("p",{class:"tapline"},"Tap a skill for its success grades and what it does."),cols,
+    el("p",{class:"redline"},rich("Proficiencies assessed under Schedule [[2]] of the [[13]] Act. Disputes to [[9]].")),
+    ch.id==="vesna"?el("p",{class:"note"},"Scrap plate: subtract 10% from Climb, Jump, Swim, Stealth, Ride, Throw and other Physical skills while worn."):null);
+
+  // Spells
+  let spells=null;
+  if(ch.spells){
+    const g=el("div",{class:"spells"});
+    ch.spells.forEach(([n,v,cost,rd,txt])=>g.append(el("div",{class:"spell",role:"button",tabindex:"0",onclick:()=>openModal({title:n,kind:"spell · "+cost,v,body:[txt,rd.replace(" · ",", ")+". A failed cast still costs 1 PP; a fumble loses all the PP you meant to spend."]}),
+      onkeydown:e=>{if(e.key==="Enter")e.currentTarget.click()}},el("h5",{},n,el("span",{},v+"%")),
+      el("div",{class:"meta"},`${cost} · ${rd}`),el("p",{},txt))));
+    spells=el("section",{class:"box"},el("h3",{class:"bar"},"Magic",el("small",{},"max level 8 · memorises 8 spells")),g,
+      el("p",{class:"redline"},rich("Practising licence [[7]] · Two spells removed from this record at the request of [[12]].")),
+      el("p",{class:"note"},"One spell per round. Each level delays the cast by 1 DEX rank (DEX 11). Failure costs 1 PP; a fumble loses all the PP intended for the spell. Resistance rolls: 50% + (active − passive) × 5."));
+  }
+
+  // Weapons
+  const wb=el("tbody");
+  ch.weapons.forEach(([n,skill,dmg,rng,att,hands,whp,parry,sp])=>{
+    const pct = skill==="Blast"?75 : (SK[ch.key][skill] ?? (skill==="Brawl"||skill==="Grapple"?25:0));
+    wb.append(el("tr",{},el("td",{},n,el("div",{class:"sp"},sp)),el("td",{class:"pct"},pct+"%"),el("td",{},dmg),el("td",{},rng),el("td",{},att),el("td",{},hands),el("td",{},whp),el("td",{},parry)));
+  });
+  const weapons=el("section",{class:"box"},el("h3",{class:"bar"},"Weapons & armour"),
+    el("div",{class:"scroll"},el("table",{class:"weap"},el("thead",{},el("tr",{},...["Weapon","%","Damage","Range","Attacks","Hands","HP","Parry"].map(h=>el("th",{},h)))),wb)),
+    el("p",{style:"margin:10px 0 0"},el("b",{},"Armour: "),ch.armour),
+    el("p",{class:"redline"},rich(DOSSIER.weapnote)));
+
+  const gear=el("section",{class:"box"},el("h3",{class:"bar"},"Gear"),
+    el("ul",{class:"plain"},ch.gear.map(g=>el("li",{},g)),DOSSIER.gear.map(g=>el("li",{},rich(g)))),
+    el("p",{class:"redline"},rich("Inventory certified [[8]] by [[11]], Stores [[3]].")));
+
+  // Combat skills: trained combat rows plus Brawl and Grapple
+  const csk=el("div",{class:"cat"});
+  data.Combat.filter(r=>!r.generic&&(r.trained||r.n==="Brawl"||r.n==="Grapple")).forEach(r=>csk.append(skillRow({...r,force:true})));
+  const combatSkills=el("section",{class:"box"},el("h3",{class:"bar"},"Combat skills",el("small",{},"tick on a success")),el("p",{class:"tapline"},"Tap a skill for its success grades and what it does."),csk);
+
+  const panel=el("div",{id:"panel",role:"tabpanel",class:"panel"});
+  const col=(...k)=>el("div",{class:"stack"},...k);
+  if(tab==="base") panel.append(el("div",{class:"row3"},ident,chars,col(passions)));
+  if(tab==="combat") panel.append(el("div",{class:"row2"},col(tracker(ch,"hp",hp,mw),combatSkills),col(tracker(ch,"pp",c.POW))),weapons);
+  if(tab==="skills") panel.append(skills);
+  if(tab==="magic") panel.append(el("div",{class:"row2"},col(tracker(ch,"pp",c.POW)),col()),spells);
+  if(tab==="kit") panel.append(el("div",{class:"row2"},gear,col()));
+  if(tab==="story") panel.append(el("section",{class:"box story"},el("h3",{class:"bar"},"Backstory",el("small",{},"for the player only")),
+    ...STORY.paras.map(p=>el("p",{},rich(p))),
+    el("h4",{},"what they want"),el("p",{},STORY.want),
+    el("h4",{},"questions to answer before play"),el("ul",{},STORY.questions.map(q=>el("li",{},q)))));
+  main.append(tabbar,panel);
+  S.tab=ch.id; save();
+}
+
+document.getElementById("reset").addEventListener("click",e=>{
+  const b=e.currentTarget;
+  if(b.dataset.armed){CH.forEach(c=>{S[c.id]={xp:{}}});save();render(ONLY);b.textContent="Reset trackers";delete b.dataset.armed;}
+  else{b.dataset.armed="1";b.textContent="Tap again to reset";setTimeout(()=>{delete b.dataset.armed;b.textContent="Reset trackers"},3000);}
+});
+document.getElementById("foot").append(rich("This record has been reviewed under Section [[2]] of the [[11]] Act. Redactions applied by [[9]] on behalf of the Office of [[14]]."));
+{const d=document.getElementById("dossier");d.append(el("span",{},"File ",rich(DOSSIER.file)),el("span",{},"Class. ",rich(DOSSIER.cls)),el("span",{},"Retain ",rich("[[2]]")," yrs"));}
+render(ONLY);
+</script>
