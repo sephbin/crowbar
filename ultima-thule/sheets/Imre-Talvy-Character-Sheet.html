@@ -241,6 +241,13 @@ body.locked{overflow:hidden}
   .pip,body .pip{min-width:40px;width:40px;height:40px}
   nav.tabs button{padding:12px 12px;font-size:13px}
 }
+
+/* Race picker */
+.racelist{display:grid;gap:8px;margin-top:12px}
+.raceopt{all:unset;cursor:pointer;display:grid;gap:2px;padding:12px 14px;border:1.5px solid var(--ink);border-radius:12px}
+.raceopt b{font:400 20px/1.15 var(--display)}
+.raceopt span{font:12px/1.4 var(--num);color:var(--muted)}
+.raceopt:hover,.raceopt:focus-visible{border-color:var(--oxblood);box-shadow:0 0 0 1px var(--oxblood) inset}
 </style>
 </head>
 <body>
@@ -262,6 +269,7 @@ body.locked{overflow:hidden}
   <footer>Hit points, power points and experience checks are saved on this device only. Fate points (optional rule, p.115): spend 5 PP to reroll any percentile roll, or 3 PP to ignore 1 point of damage. At 0 PP the character faints.<br><span id="foot"></span></footer>
 </div>
 
+<script src="race.js"></script>
 <script>
 const SK = {"Imre":{"Appraise":35,"Bargain":25,"Disguise":21,"Insight":55,"Knowledge (Occult)":55,"Knowledge (University Politics)":60,"Listen":45,"Research":65,"Sense":30,"Spot":45,"Stealth":30,"Technical (Thaumic Apparatus)":25,"Melee Weapon (Staff)":60,"Persuade":60,"Knowledge (History)":35,"Language (Other)":20,"Perform (Rituals)":30,"Dodge":42,"Teach":50,"Status":35}};
 
@@ -476,10 +484,10 @@ function render(id){
 
   const ident=el("section",{class:"box ident"},
     el("h2",{},ch.name),
-    el("div",{class:"role"},`${ch.role} · ${ch.personality} personality`),
+    el("div",{class:"role"},`${ch.race?ch.race+" · ":""}${ch.role} · ${ch.personality} personality`),
     el("p",{},ch.blurb),
     el("dl",{class:"kv"},el("dt",{},"Pronouns"),el("dd",{},ch.pron),el("dt",{},"Age"),el("dd",{},String(ch.age)),
-      el("dt",{},"Wealth"),el("dd",{},ch.wealth),el("dt",{},"Move"),el("dd",{},"10"),
+      el("dt",{},"Wealth"),el("dd",{},ch.wealth),el("dt",{},"Move"),el("dd",{},String(ch.move||10)),...(ch.raceNote?[el("dt",{},"Lineage"),el("dd",{},ch.raceNote)]:[]),
       el("dt",{},"Features"),el("dd",{},ch.features),
       ...DOSSIER.rows.flatMap(([k,v])=>[el("dt",{},k),el("dd",{},rich(v))])));
 
@@ -550,9 +558,9 @@ function render(id){
     ch.spells.forEach(([n,v,cost,rd,txt])=>g.append(el("div",{class:"spell",role:"button",tabindex:"0",onclick:()=>openModal({title:n,kind:"spell · "+cost,v,body:[txt,rd.replace(" · ",", ")+". A failed cast still costs 1 PP; a fumble loses all the PP you meant to spend."]}),
       onkeydown:e=>{if(e.key==="Enter")e.currentTarget.click()}},el("h5",{},n,el("span",{},v+"%")),
       el("div",{class:"meta"},`${cost} · ${rd}`),el("p",{},txt))));
-    spells=el("section",{class:"box"},el("h3",{class:"bar"},"Magic",el("small",{},"max level 8 · memorises 8 spells")),g,
+    spells=el("section",{class:"box"},el("h3",{class:"bar"},"Magic",el("small",{},`max level ${Math.ceil(c.INT/2)} · memorises ${Math.ceil(c.INT/2)} spells`)),g,
       el("p",{class:"redline"},rich("Practising licence [[7]] · Two spells removed from this record at the request of [[12]].")),
-      el("p",{class:"note"},"One spell per round. Each level delays the cast by 1 DEX rank (DEX 11). Failure costs 1 PP; a fumble loses all the PP intended for the spell. Resistance rolls: 50% + (active − passive) × 5."));
+      el("p",{class:"note"},`One spell per round. Each level delays the cast by 1 DEX rank (DEX ${c.DEX}). Failure costs 1 PP; a fumble loses all the PP intended for the spell. Resistance rolls: 50% + (active − passive) × 5.`));
   }
 
   // Weapons
@@ -597,7 +605,7 @@ document.getElementById("reset").addEventListener("click",e=>{
 });
 document.getElementById("foot").append(rich("This record has been reviewed under Section [[2]] of the [[11]] Act. Redactions applied by [[9]] on behalf of the Office of [[14]]."));
 {const d=document.getElementById("dossier");d.append(el("span",{},"File ",rich(DOSSIER.file)),el("span",{},"Class. ",rich(DOSSIER.cls)),el("span",{},"Retain ",rich("[[2]]")," yrs"));}
-render(ONLY);
+RacePicker.init(CH[0],SK[CH[0].key],()=>render(ONLY));
 </script>
 </body>
 </html>
