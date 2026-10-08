@@ -1,0 +1,1004 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tram Job GM Screen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cutive+Mono&family=Courier+Prime:wght@400;700&display=swap">
+<style>
+/* Same pocket-synth shell as the player sheets, with a dark mode for low table light. */
+:root{
+  --paper:#e3e3df; --card:#f3f3f0; --ink:#121212; --muted:#5f5f5a; --accent:#e64700;
+  --rule:#c8c8c3; --wash:#ffe0d0; --good:#1f7a3c; --warn:#c23f00;
+  --display:"Cutive Mono","Courier New",monospace; --body:"Courier Prime","Courier New",monospace;
+  --radius:12px; color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#161615; --card:#21211f; --ink:#ecebe6; --muted:#a3a29b; --accent:#ff6a26;
+  --rule:#3a3a36; --wash:#4a2412; --good:#5cc27e; --warn:#ff7a45; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#161615; --card:#21211f; --ink:#ecebe6; --muted:#a3a29b; --accent:#ff6a26;
+  --rule:#3a3a36; --wash:#4a2412; --good:#5cc27e; --warn:#ff7a45; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.45 var(--body);padding:0 16px 56px;font-variant-numeric:tabular-nums}
+.wrap{max-width:1040px;margin:0 auto}
+header.top{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:10px 16px;padding:22px 0 12px;border-bottom:2px solid var(--ink)}
+.formno{font:12px/1.2 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.formno::before{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--accent);margin-right:8px}
+h1{font:400 clamp(32px,8vw,50px)/1 var(--display);text-transform:lowercase;margin:0}
+.ctl{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:700 12px/1 var(--body);letter-spacing:.08em;text-transform:lowercase;padding:10px 12px;border:1.5px solid var(--ink);
+  border-radius:999px;background:transparent;color:var(--ink);cursor:pointer}
+.btn.quiet{border-color:var(--rule);color:var(--muted)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+nav.tabs{position:sticky;top:0;z-index:5;background:var(--paper);display:flex;gap:6px;overflow-x:auto;padding:10px 0;border-bottom:1px solid var(--rule);scrollbar-width:none}
+nav.tabs button{flex:0 0 auto;font:700 13px/1 var(--body);text-transform:lowercase;padding:10px 14px;border-radius:999px;border:1.5px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer}
+nav.tabs button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.panel{display:none;padding-top:16px}
+.panel.on{display:grid;gap:16px}
+
+.bar{font:700 12px/1.4 var(--body);letter-spacing:.06em;text-transform:lowercase;border-bottom:2px solid var(--ink);padding-bottom:4px;margin:0 0 10px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.bar small{margin-left:auto;font-weight:400;color:var(--muted);letter-spacing:0}
+.box{background:var(--card);border-radius:var(--radius);box-shadow:0 0 0 1px var(--rule) inset;padding:14px;min-width:0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+p{margin:6px 0}
+.muted{color:var(--muted)} .small{font-size:13px}
+.pg{font-size:12px;color:var(--muted);white-space:nowrap}
+.tag{display:inline-block;font:700 10px/1 var(--body);letter-spacing:.1em;text-transform:uppercase;border:1px solid currentColor;border-radius:999px;padding:3px 6px;vertical-align:2px}
+.tag.gm{color:var(--accent)}
+ul.plain{margin:0;padding-left:1.1em} ul.plain li{margin:4px 0}
+
+/* Combat tracker */
+.round{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.round .n{font:700 34px/1 var(--body)}
+.who{display:grid;gap:8px;border-top:1px solid var(--rule);padding:10px 0}
+.who:first-of-type{border-top:0}
+.who .hd{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
+.who .nm{font:400 20px/1.1 var(--display)}
+.who .st{font:700 12px/1 var(--body);letter-spacing:.06em;text-transform:uppercase}
+.st.ok{color:var(--good)} .st.bad{color:var(--warn)}
+.meters{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.meter{border:1px solid var(--rule);border-radius:var(--radius);padding:6px 8px;display:flex;align-items:center;justify-content:space-between;gap:6px}
+.meter .lab{font:11px/1 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.meter .val{font:700 22px/1 var(--body)}
+.meter .val small{font-size:13px;color:var(--muted);font-weight:400}
+.meter .pm{display:flex;gap:4px}
+.meter .pm button{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--ink);background:transparent;color:var(--ink);font:700 18px/1 var(--body);cursor:pointer}
+.dmg{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.dmg input{width:64px;font:700 16px/1 var(--body);padding:8px;border-radius:var(--radius);border:1.5px solid var(--ink);background:transparent;color:var(--ink)}
+.flash{font-size:13px;color:var(--warn);font-weight:700;min-height:1em}
+.plan{display:grid;gap:4px;font-size:14px}
+.plan label{display:flex;gap:8px;align-items:flex-start;cursor:pointer}
+.plan input{margin-top:3px;accent-color:var(--accent);width:18px;height:18px;flex:0 0 auto}
+.plan .pp{margin-left:auto;color:var(--muted);white-space:nowrap}
+details>summary{cursor:pointer;font-size:13px;color:var(--muted)}
+
+/* Binding track */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0}
+.step{border:1.5px solid var(--ink);border-radius:var(--radius);padding:10px 6px;text-align:center;font:700 14px/1.2 var(--body);background:transparent;color:var(--ink);cursor:pointer}
+.step.on{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* Stat blocks */
+.chars{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;margin:8px 0}
+.chars div{border:1px solid var(--rule);border-radius:8px;padding:4px 0}
+.chars b{display:block;font-size:17px} .chars span{font-size:10px;color:var(--muted);letter-spacing:.08em}
+.derived{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px;margin:4px 0 8px}
+.derived b{font-weight:700}
+table{border-collapse:collapse;width:100%}
+.sk td{padding:4px 2px;border-bottom:1px solid var(--rule);font-size:14px;vertical-align:top}
+.sk td:last-child{text-align:right;font-weight:700;white-space:nowrap}
+.sk tr{cursor:pointer}
+.sk tr.hit td{background:var(--wash)}
+.tiers{font-size:12px;color:var(--muted);font-weight:400}
+.cols{columns:2 220px;column-gap:16px}
+.cols table{break-inside:avoid}
+.spell{border:1px solid var(--rule);border-radius:var(--radius);padding:8px 10px;margin:6px 0;break-inside:avoid}
+.spell h4{margin:0;display:flex;justify-content:space-between;gap:6px;font:400 17px/1.2 var(--display)}
+.spell .meta{font:11px/1.4 var(--body);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.spell p{font-size:14px;margin:4px 0 0}
+
+/* Resistance calculator */
+.calc{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.calc input{width:70px;font:700 18px/1 var(--body);padding:8px;border-radius:var(--radius);border:1.5px solid var(--ink);background:transparent;color:var(--ink)}
+.calc output{font:700 28px/1 var(--body);color:var(--accent);min-width:3ch}
+
+.party td,.party th{padding:6px 4px;border-bottom:1px solid var(--rule);text-align:left;font-size:14px}
+.party th{font:700 11px/1.2 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.scroll{overflow-x:auto}
+
+dialog{border:0;border-radius:var(--radius);background:var(--card);color:var(--ink);padding:16px;max-width:min(420px,calc(100vw - 32px));box-shadow:0 10px 40px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog h3{margin:0 0 8px;font:400 22px/1.1 var(--display)}
+.gr{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:15px}
+.gr b{text-align:right}
+footer{margin-top:28px;color:var(--muted);font-size:12px;border-top:1px solid var(--rule);padding-top:10px}
+@media (max-width:420px){.meters{grid-template-columns:1fr}.chars{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div>
+    <div class="formno">ultima thule · brp heroic · gm only</div>
+    <h1>tram job · gm screen</h1>
+  </div>
+  <div class="ctl">
+    <button class="btn quiet" id="theme" type="button">theme</button>
+    <button class="btn quiet" id="reset" type="button">reset fight</button>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button role="tab" data-tab="fight" aria-selected="true">fight</button>
+  <button role="tab" data-tab="blocks">stat blocks</button>
+  <button role="tab" data-tab="binding">binding</button>
+  <button role="tab" data-tab="threat">threat</button>
+  <button role="tab" data-tab="rules">rules</button>
+  <button role="tab" data-tab="party">party</button>
+</nav>
+
+<!-- FIGHT -->
+<section class="panel on" id="fight">
+  <div class="box">
+    <h3 class="bar">round <small>powers phase by INT rank, p.124</small></h3>
+    <div class="round">
+      <button class="btn" id="rdn" type="button" aria-label="previous round">−</button>
+      <span class="n" id="rn">1</span>
+      <button class="btn" id="rup" type="button" aria-label="next round">+</button>
+      <span class="small muted">INT ranks: leader 15 and Imre 15 (tie: higher skill goes first), zealots 13, Oskar 13, Vesna 12, recruit 12</span>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="box"><h3 class="bar">front car <small>4 zealots</small></h3><div id="trk-front"></div></div>
+    <div class="box"><h3 class="bar">ritual &amp; middle car <small>leader, recruit</small></h3><div id="trk-rest"></div>
+      <h3 class="bar" style="margin-top:12px">binding <small>tap a step when it lands</small></h3>
+      <div class="steps" id="steps"></div>
+      <p class="small muted" id="bindnote"></p>
+    </div>
+  </div>
+</section>
+
+<!-- STAT BLOCKS -->
+<section class="panel" id="blocks"><div id="blockwrap" class="grid2"></div>
+  <p class="small muted">Tap a skill for its success grades. Special 1/5, critical 1/20, fumble 1/20 of the failure chance, rounded normally; 00 always fumbles (pp.110 to 112).</p>
+</section>
+
+<!-- BINDING -->
+<section class="panel" id="binding">
+  <div class="box">
+    <h3 class="bar">the binding <span class="tag gm">gm ritual</span> <small>not a book spell</small></h3>
+    <p>Borrowed mechanics: Control's distraction rule (p.60) and the familiar binding (p.56). The daemon becomes the tram's drive and does not fight.</p>
+    <ul class="plain">
+      <li><b>Three rounds.</b> Each round is her action (p.124): Perform (Rituals) 75 and 2 PP. Success advances one step. Failure leaves the step where it is and costs 1 PP, as a failed spell does (p.55).</li>
+      <li><b>Damage or a Dodge</b> (after armour and Protection): Idea roll, INT×5 = 75. Failure loses the current step.</li>
+      <li><b>Scuffed circle</b> (Agility roll within reach) or <b>focus lifted</b> (Oskar's Sleight of Hand against her Spot 45): the binding collapses.</li>
+      <li><b>Fumble</b> (00 at 75%): the daemon arrives unbound. It takes the drive anyway, angry.</li>
+      <li><b>No Control while binding.</b> Control needs concentration and no other spells (p.60).</li>
+      <li><b>The clue:</b> her reagent focus and the chalk carry the University requisition stamp and the department account code under the Director of Public Engagement.</li>
+    </ul>
+  </div>
+  <div class="box">
+    <h3 class="bar">her opening sequence <small>PP 16</small></h3>
+    <ul class="plain">
+      <li>Countermagic 2 first, then Protection 2. Countermagic cast onto an existing Protection must beat it on the resistance table (pp.61, 63).</li>
+      <li>Wall 2 across the aisle at the car join: 2 square metres, 30 HP, 15 minutes, 12 m range (pp.64 to 65).</li>
+      <li>Binding: 6 PP across three rounds.</li>
+      <li>Reserve 3 PP for Control 1 on whoever reaches her. That leaves 1 PP; at 0 she falls unconscious (p.55).</li>
+    </ul>
+  </div>
+  <div class="box">
+    <h3 class="bar">imre vs his student <small>p.110 resistance</small></h3>
+    <ul class="plain">
+      <li><b>Blast against her Countermagic 2:</b> Blast 1 gets through 45%, Blast 2 50%, Blast 3 55%. A miss rebounds on Imre (p.61). Her Protection does nothing against Blast (p.60); she has no armour.</li>
+      <li><b>Speak to Mind</b> also has to beat Countermagic 2. Talking aloud does not.</li>
+      <li><b>She Dispels his spells</b> as a held action: Luck roll, and her Dispel levels must equal or exceed his spell's (p.61). Dispel 35% is her weakest spell.</li>
+      <li><b>Loyalty:</b> she holds Loyalty (Imre Talvy) 60; he holds Loyalty to her at 60. Either can be called for an inspiration roll (p.215).</li>
+    </ul>
+  </div>
+</section>
+
+<!-- THREAT -->
+<section class="panel" id="threat">
+  <div class="box">
+    <h3 class="bar">verdict <small>threat; TPK risk only if they focus Imre</small></h3>
+    <p>Four zealots firing Fire 1 at Imre in the same round: Imre's first Dodge out of the circle is 42%, the second 12%, then none (p.125). That averages about 6 damage per round against his 11 HP and 0 AV. Two rounds of focus puts him at 2 HP or less, which is unconscious (p.20).</p>
+    <p>Against Vesna the same Fire does 1D6 minus AV 3, and Oskar dodges at 80%. Clubs with Sharpen hit at 65% for 1D6+1.</p>
+    <p>Party output is about 6 to 8 damage per round: Vesna's crossbow fires once every three rounds, then her wrench takes over; Imre has PP for two Blast 2 casts. The zealots run out first: Fire costs 3 PP and their plan leaves each one 2 PP after three casts.</p>
+  </div>
+  <div class="box">
+    <h3 class="bar">dials <small>p.246</small></h3>
+    <ul class="plain">
+      <li><b>Softer:</b> two zealots close to melee instead of casting (the default plan). The fire circle in a crowded car also endangers their own and the passengers.</li>
+      <li><b>Harder:</b> open with Fire 2 (6 PP, 2D6). That takes Imre down in one focused round. Use it if the party is dominating.</li>
+      <li><b>Non-lethal end:</b> a zealot who spends to 0 PP falls unconscious (p.55). Fanatics casting to the last point is how most of them drop, which suits "nobody is meant to die".</li>
+      <li><b>Hazard:</b> Fire on a wooden seat or a coat keeps burning, 1D4 per round to anyone in it (p.62, Fire and Heat p.148).</li>
+    </ul>
+  </div>
+  <div class="box">
+    <h3 class="bar">key numbers</h3>
+    <div class="scroll"><table class="party">
+      <thead><tr><th>Attack</th><th>Hit</th><th>Damage</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Zealot Fire 1</td><td>50%</td><td>1D6</td><td>Dodge out; armour and Protection absorb; Countermagic useless (p.62)</td></tr>
+        <tr><td>Zealot club + Sharpen 1</td><td>65%</td><td>1D6+1</td><td>No DM (STR+SIZ 24)</td></tr>
+        <tr><td>Leader Control 1</td><td>65%, then POW vs POW</td><td>10 rounds</td><td>Vesna 75%, Oskar 80%, Imre 55% to take hold</td></tr>
+        <tr><td>Vesna heavy crossbow</td><td>85%</td><td>2D6+2</td><td>Once every 3 rounds; Dodge is Difficult and only vs the first missile (p.125)</td></tr>
+        <tr><td>Imre Blast 2</td><td>75%</td><td>2D6</td><td>6 PP; armour absorbs, Protection does not, dodgeable (p.60)</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- RULES -->
+<section class="panel" id="rules">
+  <div class="box">
+    <h3 class="bar">resistance roll <small>p.110</small></h3>
+    <div class="calc">
+      <label>active <input id="ra" type="number" inputmode="numeric" value="16"></label>
+      <label>passive <input id="rp" type="number" inputmode="numeric" value="11"></label>
+      <output id="rr">75%</output>
+    </div>
+    <p class="small muted">50% + 5 × (active − passive). Spell vs Countermagic, Dispel vs spell: compare levels. Control: POW vs POW.</p>
+  </div>
+  <div class="grid2">
+    <div class="box">
+      <h3 class="bar">casting</h3>
+      <ul class="plain small">
+        <li>One spell per round; it is the caster's action. Can still move, dodge and parry <span class="pg">p.124</span></li>
+        <li>Each level costs 1 DEX rank <span class="pg">p.55</span>; max level ½ INT rounded up <span class="pg">p.55</span></li>
+        <li>Failure: 1 PP spent, no effect <span class="pg">p.55</span></li>
+        <li>Fumble: all intended PP lost, spell locked for a round; damage spell: Luck roll or it hits an unintended target <span class="pg">p.59</span></li>
+        <li>Special: special damage. Critical: max damage, ignores armour <span class="pg">p.60</span></li>
+        <li>0 PP: unconscious <span class="pg">p.55</span></li>
+        <li>Two of the same spell on one target: only the higher level works <span class="pg">p.55</span></li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3 class="bar">combat</h3>
+      <ul class="plain small">
+        <li>Each Dodge or parry after the first: −30% cumulative <span class="pg">p.125</span></li>
+        <li>Missiles: Dodge only the first, and it is Difficult <span class="pg">p.125</span></li>
+        <li>Fight defensively: free Dodge without the −30% <span class="pg">p.130</span></li>
+        <li>2 HP or less: unconscious. 0 HP: dies at end of next round <span class="pg">p.20</span></li>
+        <li>Single hit of ½ HP or more: major wound <span class="pg">p.134</span></li>
+        <li>PC fate points: 5 PP reroll, 3 PP ignore 1 damage <span class="pg">p.115</span></li>
+        <li>Passion inspiration once per scene: crit +50, special +30, success +20, fail −10 <span class="pg">p.215</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="box">
+    <h3 class="bar">spells in this scene <small>pp.60 to 65</small></h3>
+    <div class="cols" id="spellref"></div>
+  </div>
+</section>
+
+<!-- PARTY -->
+<section class="panel" id="party">
+  <div class="box">
+    <h3 class="bar">party defences <small>for targeting and resistance</small></h3>
+    <div class="scroll"><table class="party">
+      <thead><tr><th></th><th>HP</th><th>MW</th><th>AV</th><th>Dodge</th><th>POW/PP</th><th>INT</th><th>Main attack</th></tr></thead>
+      <tbody>
+        <tr><td><b>Vesna</b></td><td>15</td><td>8</td><td>3</td><td>75</td><td>11</td><td>12</td><td>Crossbow 85, 2D6+2 / wrench 65, 1D6+2+1D4</td></tr>
+        <tr><td><b>Oskar</b></td><td>10</td><td>5</td><td>1</td><td>80</td><td>10</td><td>13</td><td>Throwing knife 75, 1D4</td></tr>
+        <tr><td><b>Imre</b></td><td>11</td><td>6</td><td>0</td><td>42</td><td>15</td><td>15</td><td>Blast 75, 1D6/level, 3 PP/level</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <div class="box">
+    <h3 class="bar">tram routes <small>once the daemon is the drive</small></h3>
+    <ul class="plain">
+      <li><b>Vesna</b> repairs the drive: Repair (Mechanical) 75.</li>
+      <li><b>Oskar</b> reaches the manual brake: Climb 80, Jump 65, Agility 90.</li>
+      <li><b>Imre</b> talks to the daemon: Speak to Mind 70, then Persuade 60.</li>
+    </ul>
+  </div>
+  <div class="box">
+    <h3 class="bar">player sheets</h3>
+    <ul class="plain">
+      <li><a href="../sheets/Vesna-Krall-Character-Sheet.html">Vesna Krall</a></li>
+      <li><a href="../sheets/Oskar-Penn-Character-Sheet.html">Oskar Penn</a></li>
+      <li><a href="../sheets/Imre-Talvy-Character-Sheet.html">Dr Imre Talvy</a></li>
+    </ul>
+  </div>
+</section>
+
+<footer>NPC data comes from data/npcs/zealots.json (run tools/sync_gm.py after editing it). Builds checked by tools/brp_check.py. Page numbers are the printed book's.</footer>
+</div>
+
+<dialog id="dlg"><h3 id="dlg-h"></h3><div class="gr" id="dlg-b"></div><p class="small muted" id="dlg-n"></p>
+  <form method="dialog"><button class="btn" style="margin-top:8px">close</button></form></dialog>
+
+<script id="npc-data" type="application/json">
+{
+ "type": "npc_group",
+ "scene": "Tram takeover: four zealots in the front car, one hesitant recruit guarding passengers in the middle car, the ritual leader performing a three-round binding that installs a daemon as the tram's drive.",
+ "power_level_of_party": "Heroic",
+ "build_notes": [
+  "All six are trained magicians (Wizard profession, p.31), so the 1/4 INT non-magician limit (p.59) does not apply.",
+  "Rank-and-file and the recruit are built at Normal (24-point buy, 250 professional points, 75% cap, four spells at INT x1; pp.11, 17, 58). The bestiary assumes Normal NPCs (p.246).",
+  "The leader is built at Heroic (36-point buy, 325 professional points, 90% cap, six spells), following p.246: 'adding one more extremely competent leader'.",
+  "Spells: the full entry on p.62 is titled Fire (the p.59 summary calls it Flame). Control costs 3 PP per level in its p.60 entry (the p.59 summary says 1)."
+ ],
+ "npcs": [
+  {
+   "name": "Zealot",
+   "count": 4,
+   "magician": true,
+   "characteristics": {
+    "STR": 12,
+    "CON": 12,
+    "SIZ": 12,
+    "INT": 13,
+    "POW": 13,
+    "DEX": 10,
+    "CHA": 10
+   },
+   "stated": {
+    "hp": 12,
+    "mw": 6,
+    "pp": 13,
+    "dm": "none"
+   },
+   "build": {
+    "profession": "Wizard",
+    "personality_type": "Cunning",
+    "power_level": "Normal",
+    "age": 24,
+    "rolled_age": 20,
+    "age_bonus_points": 0,
+    "personality_skills": [
+     "Appraise",
+     "Bargain",
+     "Disguise",
+     "Insight",
+     "Knowledge (Occult)",
+     "Knowledge (History)",
+     "Listen",
+     "Research",
+     "Sense",
+     "Spot",
+     "Stealth",
+     "Technical (Thaumic Apparatus)",
+     "Club"
+    ],
+    "profession_skills": [
+     "Craft (Ritual Circles)",
+     "Insight",
+     "Knowledge (Occult)",
+     "Knowledge (History)",
+     "Knowledge (Theology)",
+     "Language (Other)",
+     "Listen",
+     "Perform (Rituals)",
+     "Persuade",
+     "Research",
+     "Fire",
+     "Protection",
+     "Sharpen",
+     "Dull"
+    ],
+    "professional_points": {
+     "Fire": 37,
+     "Protection": 27,
+     "Sharpen": 22,
+     "Dull": 12,
+     "Knowledge (Occult)": 25,
+     "Perform (Rituals)": 30,
+     "Persuade": 20,
+     "Knowledge (Theology)": 30,
+     "Listen": 15,
+     "Insight": 20,
+     "Research": 12
+    },
+    "personal_points": {
+     "Club": 15,
+     "Dodge": 25,
+     "Brawl": 20,
+     "Spot": 10,
+     "Throw": 20,
+     "Stealth": 10,
+     "Climb": 15,
+     "First Aid": 15
+    },
+    "base_overrides": {
+     "Fire": 13,
+     "Protection": 13,
+     "Sharpen": 13,
+     "Dull": 13
+    },
+    "passions": [
+     [
+      "Devotion (the Restoration of Magic)",
+      80
+     ],
+     [
+      "Hate (Machines)",
+      60
+     ],
+     [
+      "Loyalty (the Cell)",
+      60
+     ]
+    ]
+   },
+   "skills": {
+    "Club": 60,
+    "Dodge": 45,
+    "Brawl": 45,
+    "Throw": 45,
+    "Fire": 50,
+    "Protection": 40,
+    "Sharpen": 35,
+    "Dull": 25,
+    "Listen": 60,
+    "Research": 57,
+    "Spot": 55,
+    "Climb": 55,
+    "Knowledge (Occult)": 50,
+    "Insight": 45,
+    "First Aid": 45,
+    "Stealth": 40,
+    "Appraise": 35,
+    "Perform (Rituals)": 35,
+    "Persuade": 35,
+    "Knowledge (Theology)": 35,
+    "Sense": 30,
+    "Bargain": 25,
+    "Knowledge (History)": 25,
+    "Technical (Thaumic Apparatus)": 25,
+    "Disguise": 21
+   },
+   "spells": {
+    "Fire": 50,
+    "Protection": 40,
+    "Sharpen": 35,
+    "Dull": 25
+   },
+   "weapons": [
+    {
+     "name": "Light club",
+     "skill": "Club",
+     "table": "Club, Light",
+     "damage_as_written": "1D6"
+    }
+   ],
+   "armour": null,
+   "pp_plan": [
+    {
+     "what": "Protection 1 on self before boarding (15 min)",
+     "spell": "Protection",
+     "level": 1,
+     "pp": 1
+    },
+    {
+     "what": "Sharpen 1 on own club (15 min): Club 65%, 1D6+1",
+     "spell": "Sharpen",
+     "level": 1,
+     "pp": 1
+    },
+    {
+     "what": "Fire 1, round 1",
+     "spell": "Fire",
+     "level": 1,
+     "pp": 3
+    },
+    {
+     "what": "Fire 1, round 2",
+     "spell": "Fire",
+     "level": 1,
+     "pp": 3
+    },
+    {
+     "what": "Fire 1, round 3",
+     "spell": "Fire",
+     "level": 1,
+     "pp": 3
+    }
+   ],
+   "behaviour": "Fanatics; Devotion 80 is loud (p.216). They fight until their power points run out: a zealot who casts down to 0 PP falls unconscious (p.55), which ends most of them without anyone dying. Two open with Fire while two close with Sharpened clubs. Each failed cast still costs 1 PP (p.55)."
+  },
+  {
+   "name": "Ritual leader",
+   "count": 1,
+   "magician": true,
+   "identity": "Imre's former doctoral student (Imre carries Loyalty to her at 60). She left before tenure track after a review panel.",
+   "characteristics": {
+    "STR": 9,
+    "CON": 11,
+    "SIZ": 10,
+    "INT": 15,
+    "POW": 16,
+    "DEX": 10,
+    "CHA": 13
+   },
+   "stated": {
+    "hp": 11,
+    "mw": 6,
+    "pp": 16,
+    "dm": "none"
+   },
+   "build": {
+    "profession": "Wizard",
+    "personality_type": "Cunning",
+    "power_level": "Heroic",
+    "age": 29,
+    "rolled_age": 19,
+    "age_bonus_points": 30,
+    "personality_skills": [
+     "Appraise",
+     "Bargain",
+     "Disguise",
+     "Insight",
+     "Knowledge (Occult)",
+     "Knowledge (History)",
+     "Listen",
+     "Research",
+     "Sense",
+     "Spot",
+     "Stealth",
+     "Technical (Thaumic Apparatus)",
+     "Dagger"
+    ],
+    "profession_skills": [
+     "Craft (Ritual Circles)",
+     "Insight",
+     "Knowledge (Occult)",
+     "Knowledge (History)",
+     "Knowledge (Theology)",
+     "Language (Other)",
+     "Listen",
+     "Perform (Rituals)",
+     "Persuade",
+     "Research",
+     "Control",
+     "Countermagic",
+     "Protection",
+     "Fire",
+     "Wall",
+     "Dispel"
+    ],
+    "professional_points": {
+     "Control": 50,
+     "Countermagic": 45,
+     "Protection": 40,
+     "Fire": 40,
+     "Wall": 25,
+     "Dispel": 20,
+     "Perform (Rituals)": 70,
+     "Knowledge (Occult)": 45,
+     "Persuade": 20
+    },
+    "personal_points": {
+     "Command": 40,
+     "Dodge": 20,
+     "Language (Other)": 30,
+     "Insight": 25,
+     "Research": 20,
+     "Teach": 15
+    },
+    "base_overrides": {
+     "Control": 15,
+     "Countermagic": 15,
+     "Protection": 15,
+     "Fire": 15,
+     "Wall": 15,
+     "Dispel": 15
+    },
+    "passions": [
+     [
+      "Devotion (the Restoration of Magic)",
+      80
+     ],
+     [
+      "Hate (the University)",
+      60
+     ],
+     [
+      "Loyalty (Imre Talvy)",
+      60
+     ]
+    ]
+   },
+   "skills": {
+    "Perform (Rituals)": 75,
+    "Knowledge (Occult)": 70,
+    "Research": 65,
+    "Control": 65,
+    "Countermagic": 60,
+    "Protection": 55,
+    "Fire": 55,
+    "Wall": 40,
+    "Dispel": 35,
+    "Insight": 50,
+    "Dagger": 45,
+    "Command": 45,
+    "Listen": 45,
+    "Spot": 45,
+    "Dodge": 40,
+    "Appraise": 35,
+    "Persuade": 35,
+    "Sense": 30,
+    "Stealth": 30,
+    "Language (Other)": 30,
+    "Bargain": 25,
+    "Knowledge (History)": 25,
+    "Technical (Thaumic Apparatus)": 25,
+    "Teach": 25,
+    "Disguise": 21
+   },
+   "spells": {
+    "Control": 65,
+    "Countermagic": 60,
+    "Protection": 55,
+    "Fire": 55,
+    "Wall": 40,
+    "Dispel": 35
+   },
+   "weapons": [
+    {
+     "name": "Ritual knife",
+     "skill": "Dagger",
+     "table": "Knife",
+     "damage_as_written": "1D3+1"
+    }
+   ],
+   "armour": null,
+   "pp_plan": [
+    {
+     "what": "Countermagic 2 on self, cast first (5 min)",
+     "spell": "Countermagic",
+     "level": 2,
+     "pp": 2
+    },
+    {
+     "what": "Protection 2 on self, cast second (15 min)",
+     "spell": "Protection",
+     "level": 2,
+     "pp": 2
+    },
+    {
+     "what": "Wall 2 across the aisle at the car join (2 square metres, 30 HP)",
+     "spell": "Wall",
+     "level": 2,
+     "pp": 2
+    },
+    {
+     "what": "Binding, 3 rounds x 2 PP (GM ritual)",
+     "pp": 6
+    },
+    {
+     "what": "Reserve: Control 1 on whoever reaches her",
+     "spell": "Control",
+     "level": 1,
+     "pp": 3
+    }
+   ],
+   "behaviour": "Casts Countermagic before Protection: Countermagic cast onto an existing Protection must beat it on the resistance table (pp.61, 63). Raises a Wall across the aisle, then binds. She cannot Control while binding, because Control needs concentration and no other spells (p.60). Surrenders if the binding fails or Imre talks her down (Loyalty 60 to him).",
+   "binding": {
+    "status": "GM ritual. Not a book spell. Mechanics below borrow from Control's distraction rule (p.60) and the familiar binding (p.56).",
+    "rounds": 3,
+    "each_round": "Her action for the round (p.124): roll Perform (Rituals) 75 and spend 2 PP. Success advances the binding one step. Failure: the step does not advance, and she spends 1 PP (as a failed spell, p.55).",
+    "interrupts": [
+     "She takes damage after armour and Protection, or she Dodges: Idea roll (INT x5 = 75). Failure loses the current step.",
+     "Someone scuffs the chalk circle (an Agility roll in reach) or lifts her reagent focus (Sleight of Hand against her Spot 45): the binding collapses.",
+     "Fumbled Perform (Rituals): the daemon arrives unbound. It takes the drive anyway, angry."
+    ],
+    "completion": "After step 3 the daemon is the tram's drive. It is not a combatant. The three tram routes then apply (Vesna repairs, Oskar brakes, Imre talks)."
+   }
+  },
+  {
+   "name": "Hesitant recruit",
+   "count": 1,
+   "magician": true,
+   "identity": "Finished his apprenticeship this year. His four spells are still at INT x1 (p.59: a new magician starts four spells at INT x1).",
+   "characteristics": {
+    "STR": 10,
+    "CON": 11,
+    "SIZ": 11,
+    "INT": 12,
+    "POW": 13,
+    "DEX": 11,
+    "CHA": 14
+   },
+   "stated": {
+    "hp": 11,
+    "mw": 6,
+    "pp": 13,
+    "dm": "none"
+   },
+   "build": {
+    "profession": "Wizard",
+    "personality_type": "Cunning",
+    "power_level": "Normal",
+    "age": 19,
+    "rolled_age": 19,
+    "age_bonus_points": 0,
+    "personality_skills": [
+     "Appraise",
+     "Bargain",
+     "Disguise",
+     "Insight",
+     "Knowledge (Occult)",
+     "Knowledge (History)",
+     "Listen",
+     "Research",
+     "Sense",
+     "Spot",
+     "Stealth",
+     "Technical (Thaumic Apparatus)",
+     "Club"
+    ],
+    "profession_skills": [
+     "Craft (Ritual Circles)",
+     "Insight",
+     "Knowledge (Occult)",
+     "Knowledge (History)",
+     "Knowledge (Theology)",
+     "Language (Other)",
+     "Listen",
+     "Perform (Rituals)",
+     "Persuade",
+     "Research",
+     "Light",
+     "Seal",
+     "Fire",
+     "Protection"
+    ],
+    "professional_points": {
+     "Knowledge (Occult)": 40,
+     "Research": 30,
+     "Perform (Rituals)": 40,
+     "Persuade": 40,
+     "Craft (Ritual Circles)": 40,
+     "Language (Other)": 30,
+     "Listen": 15,
+     "Insight": 15
+    },
+    "personal_points": {
+     "First Aid": 30,
+     "Dodge": 20,
+     "Fast Talk": 20,
+     "Climb": 20,
+     "Jump": 20,
+     "Spot": 10
+    },
+    "base_overrides": {
+     "Light": 12,
+     "Seal": 12,
+     "Fire": 12,
+     "Protection": 12
+    },
+    "passions": [
+     [
+      "Love (his family)",
+      80
+     ],
+     [
+      "Devotion (the Restoration of Magic)",
+      60
+     ],
+     [
+      "Fear (the leader)",
+      60
+     ]
+    ]
+   },
+   "skills": {
+    "Research": 75,
+    "Knowledge (Occult)": 65,
+    "Listen": 60,
+    "First Aid": 60,
+    "Climb": 60,
+    "Persuade": 55,
+    "Spot": 55,
+    "Perform (Rituals)": 45,
+    "Craft (Ritual Circles)": 45,
+    "Club": 45,
+    "Jump": 45,
+    "Dodge": 42,
+    "Insight": 40,
+    "Appraise": 35,
+    "Sense": 30,
+    "Stealth": 30,
+    "Language (Other)": 30,
+    "Bargain": 25,
+    "Knowledge (History)": 25,
+    "Technical (Thaumic Apparatus)": 25,
+    "Fast Talk": 25,
+    "Disguise": 21,
+    "Light": 12,
+    "Seal": 12,
+    "Fire": 12,
+    "Protection": 12
+   },
+   "spells": {
+    "Light": 12,
+    "Seal": 12,
+    "Fire": 12,
+    "Protection": 12
+   },
+   "weapons": [
+    {
+     "name": "Light club",
+     "skill": "Club",
+     "table": "Club, Light",
+     "damage_as_written": "1D6"
+    }
+   ],
+   "armour": null,
+   "pp_plan": [
+    {
+     "what": "Seal 1 on the door to the front car (+20 HP to door and frame)",
+     "spell": "Seal",
+     "level": 1,
+     "pp": 1
+    }
+   ],
+   "behaviour": "Guards the passengers in the middle car. Turns with a Persuade roll, Imre's Insight, or a threat to the passengers: his Love (family) 80 is loud, and a GM-called roll on it opposes his Devotion 60 (p.216). If he casts Fire his fumble range is 97-00; a fumble means a Luck roll or the fire lands on a passenger (p.59). Knows where the cell meets."
+  }
+ ]
+}
+</script>
+<script>
+const DATA = JSON.parse(document.getElementById('npc-data').textContent);
+const KEY = 'tramjob-gm-v1';
+const $ = s => document.querySelector(s);
+const el = (t, a = {}, ...kids) => { const e = document.createElement(t);
+  for (const [k, v] of Object.entries(a)) k === 'class' ? e.className = v : k.startsWith('on') ? e.addEventListener(k.slice(2), v) : e.setAttribute(k, v);
+  for (const k of kids) e.append(k); return e; };
+const hp = c => Math.ceil((c.CON + c.SIZ) / 2);
+const rn = x => Math.floor(x + .5);
+const tiers = v => { const f = 100 - Math.min(v, 100);
+  return { crit: Math.max(1, rn(v / 20)), spec: Math.max(1, rn(v / 5)), fum: 101 - Math.max(1, rn(f / 20)) }; };
+
+const SPELLS = {
+  Fire: ['3 PP/level · 100 m · instant', 'p.62', '1D6 per level to everything in a 1 m circle. Targets may dodge out. Armour, Protection and Resistance absorb; Countermagic has no effect. On something flammable it keeps burning, 1D4 per round.'],
+  Protection: ['1 PP/level · 100 m · 15 min', 'p.63', '+1 AV per level, even with no armour. No effect against Blast (p.60).'],
+  Sharpen: ['1 PP/level · 100 m · 15 min', 'p.64', '+5% and +1 damage per level to a weapon, up to its max damage. Levels can be split across weapons.'],
+  Dull: ['1 PP/level · 100 m · 15 min', 'p.61', '−5% and −1 damage per level to a weapon (min 1 damage). 01 always hits.'],
+  Control: ['3 PP/level · 100 m · 10 rounds', 'p.60', 'POW vs POW per target. Concentration: no other spells, slow movement only. If she fights, targets collapse asleep (CON×1 each round to wake). Objectionable order: Difficult Idea to balk; wholly objectionable: Idea; suicidal: Easy Idea.'],
+  Countermagic: ['1 PP/level · 100 m · 5 min', 'p.61', 'Incoming spell level must beat it on the resistance table or rebounds on the caster. Works on Blast and Lightning, not Fire or Frost.'],
+  Wall: ['1 PP/level · 12 m · 15 min', 'pp.64 to 65', '1 square metre per level of earth, metal, wood, etc. 30 HP; extra levels add +30 HP.'],
+  Dispel: ['1 PP/level · 100 m · instant', 'p.61', 'Level vs spell level on the resistance table. As a held action with a Luck roll it can stop a spell being cast if its levels equal or exceed the spell\'s.'],
+  Light: ['1 PP/level · 100 m · 15 min', 'p.63', 'Torch-bright light in a 3 m radius per level, cast on an object.'],
+  Seal: ['1 PP/level · touch · 15 min', 'pp.63 to 64', 'Joins two fitted objects (a door in its frame). +20 HP to the pair; extra levels add 15 min or +20 HP.'],
+};
+
+// ---------- state ----------
+function fresh() {
+  const s = { round: 1, bind: 0, who: {} };
+  for (const n of DATA.npcs) for (let i = 0; i < n.count; i++) {
+    const id = n.count > 1 ? `${n.name} ${i + 1}` : n.name;
+    s.who[id] = { hp: hp(n.characteristics), pp: n.characteristics.POW, plan: [] };
+  }
+  return s;
+}
+let S;
+try { S = JSON.parse(localStorage.getItem(KEY)) || fresh(); } catch { S = fresh(); }
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} };
+
+// ---------- fight tracker ----------
+function tracker(n, id) {
+  const c = n.characteristics, max = hp(c), mw = Math.ceil(max / 2), ppMax = c.POW;
+  const w = S.who[id] || (S.who[id] = { hp: max, pp: ppMax, plan: [] });
+  const box = el('div', { class: 'who' });
+  const draw = () => {
+    box.innerHTML = '';
+    const out = w.hp <= 0 ? 'dying' : w.hp <= 2 ? 'unconscious (HP)' : w.pp <= 0 ? 'unconscious (PP)' : 'up';
+    box.append(el('div', { class: 'hd' }, el('span', { class: 'nm' }, id),
+      el('span', { class: 'st ' + (out === 'up' ? 'ok' : 'bad') }, out)));
+    const meter = (lab, key, mx) => el('div', { class: 'meter' },
+      el('div', {}, el('div', { class: 'lab' }, lab), el('div', { class: 'val' }, String(w[key]), el('small', {}, ' / ' + mx))),
+      el('div', { class: 'pm' },
+        el('button', { type: 'button', 'aria-label': lab + ' down', onclick: () => { w[key]--; save(); draw(); } }, '−'),
+        el('button', { type: 'button', 'aria-label': lab + ' up', onclick: () => { w[key] = Math.min(mx, w[key] + 1); save(); draw(); } }, '+')));
+    box.append(el('div', { class: 'meters' }, meter('HP', 'hp', max), meter('PP', 'pp', ppMax)));
+    const inp = el('input', { type: 'number', inputmode: 'numeric', min: '0', 'aria-label': 'damage to ' + id, placeholder: 'dmg' });
+    const flash = el('span', { class: 'flash' });
+    box.append(el('div', { class: 'dmg' }, inp,
+      el('button', { class: 'btn', type: 'button', onclick: () => {
+        const d = parseInt(inp.value, 10); if (!(d > 0)) return;
+        w.hp -= d; save(); draw();
+        if (d >= mw) box.querySelector('.flash').textContent = `Major wound: ${d} ≥ ${mw} (p.134)`;
+      } }, 'apply damage'), flash,
+      el('span', { class: 'small muted' }, `MW ${mw} · AV ${n.armour ? n.armour : 0} + Protection`)));
+    if (n.pp_plan) {
+      const plan = el('div', { class: 'plan' });
+      n.pp_plan.forEach((p, i) => {
+        const cb = el('input', { type: 'checkbox' }); cb.checked = !!w.plan[i];
+        cb.addEventListener('change', () => { w.plan[i] = cb.checked; w.pp += cb.checked ? -p.pp : p.pp; save(); draw(); });
+        plan.append(el('label', {}, cb, el('span', {}, p.what), el('span', { class: 'pp' }, p.pp + ' PP')));
+      });
+      box.append(el('details', {}, el('summary', {}, 'PP plan (ticking spends the PP)'), plan));
+    }
+  };
+  draw(); return box;
+}
+function drawFight() {
+  const front = $('#trk-front'), rest = $('#trk-rest'); front.innerHTML = ''; rest.innerHTML = '';
+  for (const n of DATA.npcs) for (let i = 0; i < n.count; i++) {
+    const id = n.count > 1 ? `${n.name} ${i + 1}` : n.name;
+    (n.name === 'Zealot' ? front : rest).append(tracker(n, id));
+  }
+  $('#rn').textContent = S.round;
+  const steps = $('#steps'); steps.innerHTML = '';
+  for (let i = 1; i <= 3; i++) steps.append(el('button', { type: 'button', class: 'step' + (S.bind >= i ? ' on' : ''),
+    onclick: () => { S.bind = S.bind === i ? i - 1 : i; save(); drawFight(); } }, `step ${i}`));
+  $('#bindnote').textContent = S.bind >= 3 ? 'Bound. The daemon is the drive: switch to the tram routes.'
+    : `Each step: Perform (Rituals) 75, 2 PP. Damage or a Dodge: Idea 75 or lose the step.`;
+}
+$('#rup').onclick = () => { S.round++; save(); $('#rn').textContent = S.round; };
+$('#rdn').onclick = () => { S.round = Math.max(1, S.round - 1); save(); $('#rn').textContent = S.round; };
+$('#reset').onclick = () => { if (confirm('Reset all HP, PP, rounds and the binding?')) { S = fresh(); save(); drawFight(); } };
+
+// ---------- stat blocks ----------
+function block(n) {
+  const c = n.characteristics, H = hp(c);
+  const b = el('div', { class: 'box' });
+  b.append(el('h3', { class: 'bar' }, n.name + (n.count > 1 ? ' ×' + n.count : ''),
+    el('small', {}, `${n.build.profession}, ${n.build.power_level} build`)));
+  if (n.identity) b.append(el('p', { class: 'small' }, n.identity));
+  const ch = el('div', { class: 'chars' });
+  for (const k of ['STR', 'CON', 'SIZ', 'INT', 'POW', 'DEX', 'CHA']) ch.append(el('div', {}, el('b', {}, String(c[k])), el('span', {}, k)));
+  b.append(ch);
+  const d = el('div', { class: 'derived' });
+  [['HP', H], ['MW', Math.ceil(H / 2)], ['PP', c.POW], ['DM', n.stated.dm], ['Idea', c.INT * 5], ['Luck', c.POW * 5], ['Agility', c.DEX * 5]]
+    .forEach(([k, v]) => d.append(el('span', {}, k + ' ', el('b', {}, String(v)))));
+  b.append(d);
+  const tbl = (title, rows) => { const t = el('table', { class: 'sk' });
+    t.append(el('tr', {}, el('td', { colspan: '2', class: 'tiers' }, title)));
+    for (const [k, v, note] of rows) { const tr = el('tr', { onclick: () => grades(n.name, k, v, note) },
+      el('td', {}, k, note ? el('div', { class: 'tiers' }, note) : ''), el('td', {}, v + '%')); t.append(tr); }
+    return t; };
+  const wrows = (n.weapons || []).map(w => [w.name, n.skills[w.skill] + (n.pp_plan || []).filter(p => p.spell === 'Sharpen').length * 5,
+    w.damage_as_written + ((n.pp_plan || []).some(p => p.spell === 'Sharpen') ? '+1 with Sharpen; ' : '; ') + 'no DM']);
+  const sp = Object.entries(n.spells).map(([k, v]) => [k, v, SPELLS[k] ? SPELLS[k][0] : '']);
+  const used = new Set([...Object.keys(n.spells), ...(n.weapons || []).map(w => w.skill)]);
+  const other = Object.entries(n.skills).filter(([k]) => !used.has(k)).map(([k, v]) => [k, v]);
+  const cols = el('div', { class: 'cols' }, tbl('attacks', wrows.concat([['Dodge', n.skills.Dodge]])), tbl('spells', sp), tbl('skills', other));
+  b.append(cols);
+  const pas = n.build.passions.map(([p, v]) => `${p} ${v}${v >= 80 ? ' (loud)' : ''}`).join(' · ');
+  b.append(el('p', { class: 'small' }, el('b', {}, 'Passions: '), pas));
+  b.append(el('p', { class: 'small' }, el('b', {}, 'Behaviour: '), n.behaviour));
+  return b;
+}
+function grades(who, k, v, note) {
+  const t = tiers(v);
+  $('#dlg-h').textContent = `${k} ${v}%`;
+  const g = $('#dlg-b'); g.innerHTML = '';
+  [['Critical', `01–${String(t.crit).padStart(2, '0')}`], ['Special', `01–${String(t.spec).padStart(2, '0')}`],
+   ['Success', `01–${String(Math.min(v, 100)).padStart(2, '0')}`], ['Difficult (½)', `01–${String(Math.ceil(v / 2)).padStart(2, '0')}`],
+   ['Fumble', t.fum >= 100 ? '00' : `${t.fum}–00`]].forEach(([a, bb]) => g.append(el('span', {}, a), el('b', {}, bb)));
+  $('#dlg-n').textContent = who + (note ? ' · ' + note : '');
+  $('#dlg').showModal();
+}
+
+// ---------- rules ----------
+const ref = $('#spellref');
+for (const [k, [meta, pg, txt]] of Object.entries(SPELLS))
+  ref.append(el('div', { class: 'spell' }, el('h4', {}, k, el('span', { class: 'pg' }, pg)), el('div', { class: 'meta' }, meta), el('p', {}, txt)));
+const calc = () => { const a = +$('#ra').value, p = +$('#rp').value; $('#rr').textContent = (50 + 5 * (a - p)) + '%'; };
+$('#ra').oninput = $('#rp').oninput = calc; calc();
+
+// ---------- tabs, theme ----------
+document.querySelectorAll('nav.tabs button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('nav.tabs button').forEach(x => x.setAttribute('aria-selected', x === b));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('on', p.id === b.dataset.tab));
+  try { localStorage.setItem(KEY + '-tab', b.dataset.tab); } catch {}
+}));
+try { const t = localStorage.getItem(KEY + '-tab'); if (t) document.querySelector(`nav.tabs button[data-tab="${t}"]`)?.click(); } catch {}
+$('#theme').onclick = () => { const r = document.documentElement;
+  const dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  r.dataset.theme = dark ? 'light' : 'dark'; try { localStorage.setItem(KEY + '-theme', r.dataset.theme); } catch {} };
+try { const t = localStorage.getItem(KEY + '-theme'); if (t) document.documentElement.dataset.theme = t; } catch {}
+
+drawFight();
+const bw = $('#blockwrap'); DATA.npcs.forEach(n => bw.append(block(n)));
+</script>
+</body>
+</html>

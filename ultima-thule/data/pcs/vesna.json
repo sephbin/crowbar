@@ -1,0 +1,109 @@
+{
+  "type": "pc",
+  "full": "Vesna Krall",
+  "profession": "Soldier",
+  "personality_type": "Brutal",
+  "age": 32,
+  "rolled_age": 21,
+  "power_level": "Heroic",
+  "passions": [
+    [
+      "Loyalty (Generator District)",
+      80
+    ],
+    [
+      "Love (Drosk)",
+      60
+    ],
+    [
+      "Distrust (Wizards)",
+      60
+    ]
+  ],
+  "weapons": [
+    {
+      "name": "Heavy crossbow",
+      "skill": "Missile Weapon (Crossbow)",
+      "table": "Crossbow, Heavy"
+    },
+    {
+      "name": "Heavy wrench",
+      "skill": "Melee Weapon (Mace)",
+      "table": "Mace, Light"
+    },
+    {
+      "name": "Fist",
+      "skill": "Brawl",
+      "table": "Fist"
+    }
+  ],
+  "armour": {
+    "name": "Scrap plate",
+    "as": "Leather, Cuirbouilli"
+  },
+  "notes": [
+    "GM ruling: none needed; Soldier lists Missile Weapon (any)."
+  ],
+  "characteristics": {
+    "STR": 16,
+    "CON": 16,
+    "SIZ": 13,
+    "INT": 12,
+    "POW": 11,
+    "DEX": 14,
+    "CHA": 10
+  },
+  "age_bonus_points": 30,
+  "personality_skills": [
+    "Brawl",
+    "Climb",
+    "Dodge",
+    "Grapple",
+    "Insight",
+    "Jump",
+    "Ride",
+    "Sense",
+    "Stealth",
+    "Swim",
+    "Throw",
+    "Missile Weapon (Crossbow)",
+    "Melee Weapon (Mace)"
+  ],
+  "profession_skills": [
+    "Brawl",
+    "Climb",
+    "Dodge",
+    "First Aid",
+    "Missile Weapon (Crossbow)",
+    "Grapple",
+    "Melee Weapon (Mace)",
+    "Repair (Mechanical)",
+    "Spot",
+    "Listen"
+  ],
+  "professional_points": {
+    "Missile Weapon (Crossbow)": 40,
+    "Dodge": 27,
+    "Brawl": 30,
+    "Melee Weapon (Mace)": 20,
+    "Repair (Mechanical)": 60,
+    "Spot": 50,
+    "Listen": 50,
+    "First Aid": 40,
+    "Grapple": 30,
+    "Climb": 8
+  },
+  "personal_points": {
+    "Knowledge (Generator District)": 45,
+    "Repair (Electrical)": 40,
+    "Insight": 20,
+    "Sense": 15
+  },
+  "base_overrides": {
+    "Missile Weapon (Crossbow)": 25,
+    "Melee Weapon (Mace)": 25,
+    "Repair (Mechanical)": 15,
+    "Knowledge (Generator District)": 5,
+    "Repair (Electrical)": 15
+  }
+}

@@ -1,0 +1,108 @@
+{
+  "type": "pc",
+  "full": "Oskar Penn",
+  "profession": "Thief",
+  "personality_type": "Nimble (custom)",
+  "age": 30,
+  "rolled_age": 20,
+  "power_level": "Heroic",
+  "passions": [
+    [
+      "Greed",
+      80
+    ],
+    [
+      "Fear (the Fence)",
+      60
+    ],
+    [
+      "Loyalty (the crew)",
+      60
+    ]
+  ],
+  "weapons": [
+    {
+      "name": "Throwing knife",
+      "skill": "Missile Weapon (Thrown)",
+      "table": "Knife, Throwing"
+    },
+    {
+      "name": "Knife",
+      "skill": "Melee Weapon (Dagger)",
+      "table": "Knife"
+    },
+    {
+      "name": "Fist",
+      "skill": "Brawl",
+      "table": "Fist"
+    }
+  ],
+  "armour": {
+    "name": "Heavy coat",
+    "as": "Clothing, Heavy"
+  },
+  "notes": [
+    "Custom personality (p.11) needs GM approval."
+  ],
+  "characteristics": {
+    "STR": 10,
+    "CON": 11,
+    "SIZ": 9,
+    "INT": 13,
+    "POW": 10,
+    "DEX": 18,
+    "CHA": 13
+  },
+  "age_bonus_points": 30,
+  "personality_skills": [
+    "Climb",
+    "Dodge",
+    "Fine Manipulation",
+    "Hide",
+    "Jump",
+    "Listen",
+    "Sleight of Hand",
+    "Spot",
+    "Stealth",
+    "Fast Talk",
+    "Knowledge (Black Market)",
+    "Melee Weapon (Dagger)",
+    "Missile Weapon (Thrown)"
+  ],
+  "profession_skills": [
+    "Appraise",
+    "Dodge",
+    "Fast Talk",
+    "Hide",
+    "Stealth",
+    "Climb",
+    "Fine Manipulation",
+    "Jump",
+    "Listen",
+    "Spot"
+  ],
+  "professional_points": {
+    "Fine Manipulation": 60,
+    "Stealth": 55,
+    "Hide": 45,
+    "Climb": 20,
+    "Dodge": 24,
+    "Spot": 30,
+    "Listen": 25,
+    "Jump": 20,
+    "Fast Talk": 35,
+    "Appraise": 41
+  },
+  "personal_points": {
+    "Sleight of Hand": 45,
+    "Missile Weapon (Thrown)": 40,
+    "Knowledge (Black Market)": 30,
+    "Melee Weapon (Dagger)": 15
+  },
+  "base_overrides": {
+    "Fine Manipulation": 5,
+    "Knowledge (Black Market)": 5,
+    "Missile Weapon (Thrown)": 15,
+    "Melee Weapon (Dagger)": 25
+  }
+}

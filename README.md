@@ -4,6 +4,16 @@ ttrpg management and tools
 
 A local WYSIWYG markdown editor with Claude AI integration, built for managing TTRPG content (NPCs, locations, sessions, etc.).
 
+## Ultima Thule: the Tram Job (BRP)
+
+Table pages, hosted on GitHub Pages at https://sephbin.github.io/crowbar/
+
+- [Campaign index](ultima-thule/index.html)
+- [GM screen](ultima-thule/gm/tram-job.html): zealot trackers, stat blocks, the binding, rules quick reference
+- Player sheets: [Vesna Krall](ultima-thule/sheets/Vesna-Krall-Character-Sheet.html) · [Oskar Penn](ultima-thule/sheets/Oskar-Penn-Character-Sheet.html) · [Dr Imre Talvy](ultima-thule/sheets/Imre-Talvy-Character-Sheet.html)
+
+Prep files (rules checker, NPC data, pregens) live in [`ultima-thule/`](ultima-thule/).
+
 ## Features
 
 - **Live preview** — markdown renders inline as you type (Obsidian-style)

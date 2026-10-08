@@ -1,0 +1,133 @@
+{
+  "type": "npc_group",
+  "scene": "Tram takeover: four zealots in the front car, one hesitant recruit guarding passengers in the middle car, the ritual leader performing a three-round binding that installs a daemon as the tram's drive.",
+  "power_level_of_party": "Heroic",
+  "build_notes": [
+    "All six are trained magicians (Wizard profession, p.31), so the 1/4 INT non-magician limit (p.59) does not apply.",
+    "Rank-and-file and the recruit are built at Normal (24-point buy, 250 professional points, 75% cap, four spells at INT x1; pp.11, 17, 58). The bestiary assumes Normal NPCs (p.246).",
+    "The leader is built at Heroic (36-point buy, 325 professional points, 90% cap, six spells), following p.246: 'adding one more extremely competent leader'.",
+    "Spells: the full entry on p.62 is titled Fire (the p.59 summary calls it Flame). Control costs 3 PP per level in its p.60 entry (the p.59 summary says 1)."
+  ],
+  "npcs": [
+    {
+      "name": "Zealot",
+      "count": 4,
+      "magician": true,
+      "characteristics": {"STR": 12, "CON": 12, "SIZ": 12, "INT": 13, "POW": 13, "DEX": 10, "CHA": 10},
+      "stated": {"hp": 12, "mw": 6, "pp": 13, "dm": "none"},
+      "build": {
+        "profession": "Wizard",
+        "personality_type": "Cunning",
+        "power_level": "Normal",
+        "age": 24, "rolled_age": 20, "age_bonus_points": 0,
+        "personality_skills": ["Appraise", "Bargain", "Disguise", "Insight", "Knowledge (Occult)", "Knowledge (History)", "Listen", "Research", "Sense", "Spot", "Stealth", "Technical (Thaumic Apparatus)", "Club"],
+        "profession_skills": ["Craft (Ritual Circles)", "Insight", "Knowledge (Occult)", "Knowledge (History)", "Knowledge (Theology)", "Language (Other)", "Listen", "Perform (Rituals)", "Persuade", "Research", "Fire", "Protection", "Sharpen", "Dull"],
+        "professional_points": {"Fire": 37, "Protection": 27, "Sharpen": 22, "Dull": 12, "Knowledge (Occult)": 25, "Perform (Rituals)": 30, "Persuade": 20, "Knowledge (Theology)": 30, "Listen": 15, "Insight": 20, "Research": 12},
+        "personal_points": {"Club": 15, "Dodge": 25, "Brawl": 20, "Spot": 10, "Throw": 20, "Stealth": 10, "Climb": 15, "First Aid": 15},
+        "base_overrides": {"Fire": 13, "Protection": 13, "Sharpen": 13, "Dull": 13},
+        "passions": [["Devotion (the Restoration of Magic)", 80], ["Hate (Machines)", 60], ["Loyalty (the Cell)", 60]]
+      },
+      "skills": {
+        "Club": 60, "Dodge": 45, "Brawl": 45, "Throw": 45,
+        "Fire": 50, "Protection": 40, "Sharpen": 35, "Dull": 25,
+        "Listen": 60, "Research": 57, "Spot": 55, "Climb": 55, "Knowledge (Occult)": 50, "Insight": 45, "First Aid": 45,
+        "Stealth": 40, "Appraise": 35, "Perform (Rituals)": 35, "Persuade": 35, "Knowledge (Theology)": 35,
+        "Sense": 30, "Bargain": 25, "Knowledge (History)": 25, "Technical (Thaumic Apparatus)": 25, "Disguise": 21
+      },
+      "spells": {"Fire": 50, "Protection": 40, "Sharpen": 35, "Dull": 25},
+      "weapons": [{"name": "Light club", "skill": "Club", "table": "Club, Light", "damage_as_written": "1D6"}],
+      "armour": null,
+      "pp_plan": [
+        {"what": "Protection 1 on self before boarding (15 min)", "spell": "Protection", "level": 1, "pp": 1},
+        {"what": "Sharpen 1 on own club (15 min): Club 65%, 1D6+1", "spell": "Sharpen", "level": 1, "pp": 1},
+        {"what": "Fire 1, round 1", "spell": "Fire", "level": 1, "pp": 3},
+        {"what": "Fire 1, round 2", "spell": "Fire", "level": 1, "pp": 3},
+        {"what": "Fire 1, round 3", "spell": "Fire", "level": 1, "pp": 3}
+      ],
+      "behaviour": "Fanatics; Devotion 80 is loud (p.216). They fight until their power points run out: a zealot who casts down to 0 PP falls unconscious (p.55), which ends most of them without anyone dying. Two open with Fire while two close with Sharpened clubs. Each failed cast still costs 1 PP (p.55)."
+    },
+    {
+      "name": "Ritual leader",
+      "count": 1,
+      "magician": true,
+      "identity": "Imre's former doctoral student (Imre carries Loyalty to her at 60). She left before tenure track after a review panel.",
+      "characteristics": {"STR": 9, "CON": 11, "SIZ": 10, "INT": 15, "POW": 16, "DEX": 10, "CHA": 13},
+      "stated": {"hp": 11, "mw": 6, "pp": 16, "dm": "none"},
+      "build": {
+        "profession": "Wizard",
+        "personality_type": "Cunning",
+        "power_level": "Heroic",
+        "age": 29, "rolled_age": 19, "age_bonus_points": 30,
+        "personality_skills": ["Appraise", "Bargain", "Disguise", "Insight", "Knowledge (Occult)", "Knowledge (History)", "Listen", "Research", "Sense", "Spot", "Stealth", "Technical (Thaumic Apparatus)", "Dagger"],
+        "profession_skills": ["Craft (Ritual Circles)", "Insight", "Knowledge (Occult)", "Knowledge (History)", "Knowledge (Theology)", "Language (Other)", "Listen", "Perform (Rituals)", "Persuade", "Research", "Control", "Countermagic", "Protection", "Fire", "Wall", "Dispel"],
+        "professional_points": {"Control": 50, "Countermagic": 45, "Protection": 40, "Fire": 40, "Wall": 25, "Dispel": 20, "Perform (Rituals)": 70, "Knowledge (Occult)": 45, "Persuade": 20},
+        "personal_points": {"Command": 40, "Dodge": 20, "Language (Other)": 30, "Insight": 25, "Research": 20, "Teach": 15},
+        "base_overrides": {"Control": 15, "Countermagic": 15, "Protection": 15, "Fire": 15, "Wall": 15, "Dispel": 15},
+        "passions": [["Devotion (the Restoration of Magic)", 80], ["Hate (the University)", 60], ["Loyalty (Imre Talvy)", 60]]
+      },
+      "skills": {
+        "Perform (Rituals)": 75, "Knowledge (Occult)": 70, "Research": 65,
+        "Control": 65, "Countermagic": 60, "Protection": 55, "Fire": 55, "Wall": 40, "Dispel": 35,
+        "Insight": 50, "Dagger": 45, "Command": 45, "Listen": 45, "Spot": 45, "Dodge": 40,
+        "Appraise": 35, "Persuade": 35, "Sense": 30, "Stealth": 30, "Language (Other)": 30,
+        "Bargain": 25, "Knowledge (History)": 25, "Technical (Thaumic Apparatus)": 25, "Teach": 25, "Disguise": 21
+      },
+      "spells": {"Control": 65, "Countermagic": 60, "Protection": 55, "Fire": 55, "Wall": 40, "Dispel": 35},
+      "weapons": [{"name": "Ritual knife", "skill": "Dagger", "table": "Knife", "damage_as_written": "1D3+1"}],
+      "armour": null,
+      "pp_plan": [
+        {"what": "Countermagic 2 on self, cast first (5 min)", "spell": "Countermagic", "level": 2, "pp": 2},
+        {"what": "Protection 2 on self, cast second (15 min)", "spell": "Protection", "level": 2, "pp": 2},
+        {"what": "Wall 2 across the aisle at the car join (2 square metres, 30 HP)", "spell": "Wall", "level": 2, "pp": 2},
+        {"what": "Binding, 3 rounds x 2 PP (GM ritual)", "pp": 6},
+        {"what": "Reserve: Control 1 on whoever reaches her", "spell": "Control", "level": 1, "pp": 3}
+      ],
+      "behaviour": "Casts Countermagic before Protection: Countermagic cast onto an existing Protection must beat it on the resistance table (pp.61, 63). Raises a Wall across the aisle, then binds. She cannot Control while binding, because Control needs concentration and no other spells (p.60). Surrenders if the binding fails or Imre talks her down (Loyalty 60 to him).",
+      "binding": {
+        "status": "GM ritual. Not a book spell. Mechanics below borrow from Control's distraction rule (p.60) and the familiar binding (p.56).",
+        "rounds": 3,
+        "each_round": "Her action for the round (p.124): roll Perform (Rituals) 75 and spend 2 PP. Success advances the binding one step. Failure: the step does not advance, and she spends 1 PP (as a failed spell, p.55).",
+        "interrupts": [
+          "She takes damage after armour and Protection, or she Dodges: Idea roll (INT x5 = 75). Failure loses the current step.",
+          "Someone scuffs the chalk circle (an Agility roll in reach) or lifts her reagent focus (Sleight of Hand against her Spot 45): the binding collapses.",
+          "Fumbled Perform (Rituals): the daemon arrives unbound. It takes the drive anyway, angry."
+        ],
+        "completion": "After step 3 the daemon is the tram's drive. It is not a combatant. The three tram routes then apply (Vesna repairs, Oskar brakes, Imre talks)."
+      }
+    },
+    {
+      "name": "Hesitant recruit",
+      "count": 1,
+      "magician": true,
+      "identity": "Finished his apprenticeship this year. His four spells are still at INT x1 (p.59: a new magician starts four spells at INT x1).",
+      "characteristics": {"STR": 10, "CON": 11, "SIZ": 11, "INT": 12, "POW": 13, "DEX": 11, "CHA": 14},
+      "stated": {"hp": 11, "mw": 6, "pp": 13, "dm": "none"},
+      "build": {
+        "profession": "Wizard",
+        "personality_type": "Cunning",
+        "power_level": "Normal",
+        "age": 19, "rolled_age": 19, "age_bonus_points": 0,
+        "personality_skills": ["Appraise", "Bargain", "Disguise", "Insight", "Knowledge (Occult)", "Knowledge (History)", "Listen", "Research", "Sense", "Spot", "Stealth", "Technical (Thaumic Apparatus)", "Club"],
+        "profession_skills": ["Craft (Ritual Circles)", "Insight", "Knowledge (Occult)", "Knowledge (History)", "Knowledge (Theology)", "Language (Other)", "Listen", "Perform (Rituals)", "Persuade", "Research", "Light", "Seal", "Fire", "Protection"],
+        "professional_points": {"Knowledge (Occult)": 40, "Research": 30, "Perform (Rituals)": 40, "Persuade": 40, "Craft (Ritual Circles)": 40, "Language (Other)": 30, "Listen": 15, "Insight": 15},
+        "personal_points": {"First Aid": 30, "Dodge": 20, "Fast Talk": 20, "Climb": 20, "Jump": 20, "Spot": 10},
+        "base_overrides": {"Light": 12, "Seal": 12, "Fire": 12, "Protection": 12},
+        "passions": [["Love (his family)", 80], ["Devotion (the Restoration of Magic)", 60], ["Fear (the leader)", 60]]
+      },
+      "skills": {
+        "Research": 75, "Knowledge (Occult)": 65, "Listen": 60, "First Aid": 60, "Climb": 60,
+        "Persuade": 55, "Spot": 55, "Perform (Rituals)": 45, "Craft (Ritual Circles)": 45, "Club": 45, "Jump": 45,
+        "Dodge": 42, "Insight": 40, "Appraise": 35, "Sense": 30, "Stealth": 30, "Language (Other)": 30,
+        "Bargain": 25, "Knowledge (History)": 25, "Technical (Thaumic Apparatus)": 25, "Fast Talk": 25, "Disguise": 21,
+        "Light": 12, "Seal": 12, "Fire": 12, "Protection": 12
+      },
+      "spells": {"Light": 12, "Seal": 12, "Fire": 12, "Protection": 12},
+      "weapons": [{"name": "Light club", "skill": "Club", "table": "Club, Light", "damage_as_written": "1D6"}],
+      "armour": null,
+      "pp_plan": [
+        {"what": "Seal 1 on the door to the front car (+20 HP to door and frame)", "spell": "Seal", "level": 1, "pp": 1}
+      ],
+      "behaviour": "Guards the passengers in the middle car. Turns with a Persuade roll, Imre's Insight, or a threat to the passengers: his Love (family) 80 is loud, and a GM-called roll on it opposes his Devotion 60 (p.216). If he casts Fire his fumble range is 97-00; a fumble means a Luck roll or the fire lands on a passenger (p.59). Knows where the cell meets."
+    }
+  ]
+}

@@ -1,0 +1,127 @@
+{
+  "type": "pc",
+  "full": "Dr Imre Talvy",
+  "profession": "Wizard",
+  "personality_type": "Cunning",
+  "age": 40,
+  "rolled_age": 20,
+  "power_level": "Heroic",
+  "passions": [
+    [
+      "Ambition (Tenure)",
+      80
+    ],
+    [
+      "Hate (the Director)",
+      60
+    ],
+    [
+      "Loyalty (his former student)",
+      60
+    ]
+  ],
+  "spells": [
+    "Blast",
+    "Speak to Mind",
+    "Protection",
+    "Countermagic",
+    "Perception",
+    "Illusion"
+  ],
+  "weapons": [
+    {
+      "name": "Quarterstaff",
+      "skill": "Staff",
+      "table": "Quarterstaff"
+    },
+    {
+      "name": "Fist",
+      "skill": "Brawl",
+      "table": "Fist"
+    }
+  ],
+  "armour": null,
+  "notes": [
+    "Staff is Melee Weapon (Staff) on the sheet."
+  ],
+  "characteristics": {
+    "STR": 8,
+    "CON": 10,
+    "SIZ": 12,
+    "INT": 15,
+    "POW": 15,
+    "DEX": 11,
+    "CHA": 13
+  },
+  "age_bonus_points": 60,
+  "personality_skills": [
+    "Appraise",
+    "Bargain",
+    "Disguise",
+    "Insight",
+    "Knowledge (Occult)",
+    "Knowledge (University Politics)",
+    "Listen",
+    "Research",
+    "Sense",
+    "Spot",
+    "Stealth",
+    "Technical (Thaumic Apparatus)",
+    "Staff"
+  ],
+  "profession_skills": [
+    "Craft (Ritual Circles)",
+    "Insight",
+    "Knowledge (Occult)",
+    "Knowledge (University Politics)",
+    "Knowledge (History)",
+    "Language (Other)",
+    "Listen",
+    "Perform (Rituals)",
+    "Persuade",
+    "Research",
+    "Blast",
+    "Speak to Mind",
+    "Protection",
+    "Countermagic",
+    "Perception",
+    "Illusion"
+  ],
+  "professional_points": {
+    "Blast": 60,
+    "Speak to Mind": 55,
+    "Protection": 40,
+    "Countermagic": 20,
+    "Perception": 15,
+    "Illusion": 15,
+    "Knowledge (Occult)": 30,
+    "Research": 20,
+    "Persuade": 45,
+    "Knowledge (History)": 30,
+    "Language (Other)": 20,
+    "Knowledge (University Politics)": 10,
+    "Perform (Rituals)": 25
+  },
+  "personal_points": {
+    "Knowledge (University Politics)": 25,
+    "Insight": 30,
+    "Staff": 15,
+    "Dodge": 20,
+    "Teach": 40,
+    "Status": 20
+  },
+  "base_overrides": {
+    "Staff": 25,
+    "Knowledge (Occult)": 5,
+    "Knowledge (University Politics)": 5,
+    "Knowledge (History)": 5,
+    "Technical (Thaumic Apparatus)": 5,
+    "Perform (Rituals)": 5,
+    "Blast": 15,
+    "Speak to Mind": 15,
+    "Protection": 15,
+    "Countermagic": 15,
+    "Perception": 15,
+    "Illusion": 15
+  }
+}
