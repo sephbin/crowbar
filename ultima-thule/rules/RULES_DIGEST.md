@@ -1,4 +1,4 @@
-﻿# BRP rules digest (paraphrased)
+# BRP rules digest (paraphrased)
 
 Page numbers are the book's printed page numbers. The PDF page is printed page + 5.
 This digest is a working summary. When a rule matters, confirm it in the PDF text (`rules/pages/`).

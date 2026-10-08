@@ -1,4 +1,4 @@
-﻿# Decisions from the claude.ai session (7 to 8 Oct 2026)
+# Decisions from the claude.ai session (7 to 8 Oct 2026)
 
 - System: BRP over PF1e for this group (players asked for D&D; expectation of combat).
 - Power level Heroic; passions on; no hit locations; no strike ranks; fate points via PP.

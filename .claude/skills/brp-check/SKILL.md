@@ -1,4 +1,4 @@
-﻿---
+---
 name: brp-check
 description: Check BRP (Basic Roleplaying) characters, NPCs, weapons and spells against the rulebook for the Ultima Thule campaign. Use when building or reviewing pregens, NPCs or stat blocks.
 ---
