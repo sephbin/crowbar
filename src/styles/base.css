@@ -1,0 +1,75 @@
+:root {
+  --bg: #12111a;
+  --bg2: #1a1928;
+  --bg3: #23213a;
+  --border: #2e2c47;
+  --text: #d4cfe8;
+  --text-muted: #7b7899;
+  --accent: #c9a84c;
+  --accent2: #8b0000;
+  --sidebar-w: 260px;
+  --meta-w: 270px;
+  --header-h: 38px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 14px;
+  overflow: hidden;
+}
+
+#app {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr 0px;
+  grid-template-rows: 100vh;
+  height: 100vh;
+  overflow: hidden;
+  transition: grid-template-columns 0.2s ease;
+}
+
+#app.meta-open {
+  grid-template-columns: var(--sidebar-w) 1fr var(--meta-w);
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+}
+
+input, select {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  outline: none;
+}
+
+ul { list-style: none; }
+
+/* ── Mobile backdrop ── */
+.mobile-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 199;
+}
+.mobile-backdrop.visible { display: block; }
+
+/* ── Mobile layout (<= 640px) ── */
+@media (max-width: 640px) {
+  #app {
+    grid-template-columns: 1fr !important;
+  }
+  #app.meta-open {
+    grid-template-columns: 1fr !important;
+  }
+}

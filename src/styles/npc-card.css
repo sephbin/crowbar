@@ -1,0 +1,228 @@
+:root {
+  --card-bg: #1a1628;
+  --card-border: #c9a84c;
+  --card-text: #e8d5b0;
+  --card-muted: #9e8c6e;
+  --card-accent: #8b1a1a;
+  --card-header-bg: #110e1c;
+  --card-section-bg: #16132a;
+  --card-font: 'Crimson Text', 'Georgia', 'Times New Roman', serif;
+}
+
+.char-card {
+  font-family: var(--card-font);
+  background: var(--card-bg);
+  border: 2px solid var(--card-border);
+  border-radius: 6px;
+  color: var(--card-text);
+  overflow: hidden;
+  max-width: 640px;
+  margin: 12px 0;
+  box-shadow: 0 4px 24px #0006;
+}
+
+.char-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  background: var(--card-header-bg);
+  padding: 14px 18px 10px;
+  border-bottom: 1px solid var(--card-border);
+  gap: 12px;
+}
+
+.char-header-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.char-name {
+  font-size: 1.5em;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--card-border);
+  text-shadow: 0 1px 4px #0006;
+}
+
+.char-subline {
+  font-size: 0.9em;
+  color: var(--card-muted);
+  margin-top: 2px;
+}
+
+.char-controller {
+  font-size: 0.75em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--card-header-bg);
+  background: var(--card-border);
+  border-radius: 4px;
+  padding: 3px 8px;
+  flex-shrink: 0;
+  align-self: center;
+  min-width: 2em;
+  text-align: center;
+  outline: none;
+  cursor: text;
+  transition: background 0.15s;
+}
+.char-controller:hover { background: #d9b85c; }
+.char-controller:focus {
+  background: #e8cf88;
+  box-shadow: 0 0 0 2px rgba(201,168,76,0.5);
+}
+
+/* Core stats row */
+.char-stats-row {
+  display: flex;
+  background: var(--card-section-bg);
+  border-bottom: 1px solid #2e2c47;
+}
+
+.char-stat-cell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 8px;
+  border-right: 1px solid #2e2c47;
+}
+.char-stat-cell:last-child { border-right: none; }
+
+.stat-value {
+  font-size: 1.25em;
+  font-weight: 700;
+  color: var(--card-text);
+}
+.stat-label {
+  font-size: 0.7em;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--card-muted);
+  margin-top: 2px;
+}
+
+/* Characteristics row — 9 CoC stats */
+.char-abilities {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 4px;
+  background: var(--card-bg);
+  border-bottom: 1px solid #2e2c47;
+}
+
+.char-ability {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-width: 36px;
+}
+
+.ability-label {
+  font-size: 0.65em;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--card-accent);
+  font-weight: 700;
+}
+.ability-score {
+  font-size: 1.15em;
+  font-weight: 700;
+}
+.ability-mod {
+  font-size: 0.75em;
+  color: var(--card-muted);
+}
+
+/* Sections (skills, weapons) */
+.char-section {
+  padding: 10px 18px;
+  border-top: 1px solid #2e2c47;
+}
+
+.char-section-title {
+  font-size: 0.7em;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--card-accent);
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+/* Weapons */
+.char-attack-list { display: flex; flex-direction: column; gap: 4px; }
+.char-attack {
+  display: flex;
+  gap: 12px;
+  font-size: 0.9em;
+}
+.atk-name { flex: 1; font-weight: 600; }
+.atk-bonus { color: var(--card-border); min-width: 40px; text-align: center; }
+.atk-damage { color: var(--card-muted); }
+
+/* Key skills */
+.char-trait-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.char-trait {
+  background: var(--card-section-bg);
+  border: 1px solid #2e2c47;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.85em;
+}
+
+/* Key-value pairs */
+.char-kv { display: flex; flex-wrap: wrap; gap: 8px; }
+.kv-pair { font-size: 0.85em; }
+.kv-key { color: var(--card-muted); text-transform: capitalize; }
+.kv-key::after { content: ':'; margin-right: 3px; }
+.kv-val { color: var(--card-text); }
+
+/* Tags */
+.char-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 8px 18px;
+  border-top: 1px solid #2e2c47;
+  background: var(--card-header-bg);
+}
+.char-tag {
+  background: rgba(201,168,76,0.12);
+  border: 1px solid rgba(201,168,76,0.3);
+  border-radius: 12px;
+  padding: 1px 8px;
+  font-size: 0.75em;
+  color: var(--card-border);
+}
+
+/* Contenteditable fields inside the card */
+.char-card [contenteditable="true"] {
+  outline: none;
+  border-radius: 3px;
+  transition: background 0.15s;
+  min-width: 1em;
+  display: inline-block;
+}
+.char-card [contenteditable="true"]:hover {
+  background: rgba(255,255,255,0.05);
+}
+.char-card [contenteditable="true"]:focus {
+  background: rgba(201,168,76,0.12);
+  box-shadow: 0 0 0 1px rgba(201,168,76,0.4);
+}
+
+/* Attack list and trait list are block-editable */
+.char-attack-list[contenteditable="true"],
+.char-trait-list[contenteditable="true"] {
+  display: block;
+  min-height: 1.4em;
+}
+
+/* Ability score is a block for alignment */
+.char-ability .ability-score[contenteditable="true"] {
+  display: block;
+  text-align: center;
+  min-width: 2em;
+}

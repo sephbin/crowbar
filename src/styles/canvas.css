@@ -1,0 +1,686 @@
+/* ─── Canvas pane visibility ─────────────────────────────────────────────────── */
+
+#canvas-pane {
+  display: none;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+}
+
+#canvas-pane.canvas-active {
+  display: flex;
+}
+
+#editor-container.canvas-active {
+  display: none;
+}
+
+/* ─── Toolbar ─────────────────────────────────────────────────────────────────── */
+
+.canvas-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  background: var(--bg2);
+  height: var(--header-h);
+}
+
+.canvas-btn {
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  background: none;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.canvas-btn:hover { color: var(--text); border-color: var(--text-muted); }
+.canvas-btn.active { color: var(--accent); border-color: var(--accent); }
+
+.canvas-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-left: auto;
+  opacity: 0.6;
+}
+
+/* ─── Mobile canvas toolbar ──────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .canvas-btn { padding: 8px 12px; font-size: 12px; }
+  .canvas-hint { display: none; }
+  .canvas-toolbar { gap: 6px; padding: 5px 8px; }
+}
+
+/* ─── Viewport ────────────────────────────────────────────────────────────────── */
+
+.canvas-viewport {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  user-select: none;
+  touch-action: none;
+  background: var(--bg);
+  background-image:
+    radial-gradient(circle, #2e2c47 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.canvas-viewport.drag-over {
+  outline: 2px dashed var(--accent);
+  outline-offset: -4px;
+}
+
+/* ─── World ───────────────────────────────────────────────────────────────────── */
+
+.canvas-world {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+}
+
+/* ─── SVG layer ───────────────────────────────────────────────────────────────── */
+
+.canvas-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* ─── Node cards ──────────────────────────────────────────────────────────────── */
+
+.canvas-node {
+  position: absolute;
+  width: 180px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  cursor: default;
+  touch-action: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+}
+
+.canvas-node:hover { border-color: var(--text-muted); }
+
+.canvas-node.edge-pending {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(201,168,76,0.35);
+}
+
+.canvas-node-compact  { min-height: 88px; }
+.canvas-node-name-only { height: 44px; display: flex; align-items: center; }
+
+.canvas-node-ghost {
+  opacity: 0.55;
+  border-color: var(--accent2);
+  border-style: dashed;
+}
+
+/* ─── Node interior ───────────────────────────────────────────────────────────── */
+
+.canvas-node-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.canvas-node-name-only .canvas-node-header {
+  flex: 1;
+  min-width: 0;
+}
+
+.canvas-node-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.canvas-node-props {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.canvas-node-prop {
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.prop-label { opacity: 0.7; }
+.prop-value { color: var(--text); }
+
+.canvas-node-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 10px;
+  color: var(--text-muted);
+  padding: 1px 3px;
+  line-height: 1;
+}
+
+.canvas-node-remove:hover { color: var(--accent2); }
+
+/* ─── Empty state ─────────────────────────────────────────────────────────────── */
+
+.canvas-empty {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.canvas-empty-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.canvas-empty div:last-child { opacity: 0.4; }
+
+/* ─── Edge detail panel (inside #meta-panel) ─────────────────────────────────── */
+
+.edge-panel-conn {
+  font-size: 12px;
+  color: var(--text);
+  padding: 4px 0 2px;
+  word-break: break-all;
+}
+
+.edge-panel-btn {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition: opacity 0.15s, border-color 0.15s;
+  border: 1px solid transparent;
+}
+.edge-panel-btn:disabled { opacity: 0.5; cursor: default; }
+
+.edge-panel-btn-primary {
+  background: rgba(201,168,76,0.12);
+  border-color: rgba(201,168,76,0.4);
+  color: var(--accent);
+}
+.edge-panel-btn-primary:hover:not(:disabled) {
+  background: rgba(201,168,76,0.2);
+  border-color: var(--accent);
+}
+
+.edge-panel-btn-danger {
+  background: rgba(224,138,138,0.08);
+  border-color: rgba(224,138,138,0.3);
+  color: #e08a8a;
+}
+.edge-panel-btn-danger:hover:not(:disabled) {
+  background: rgba(224,138,138,0.15);
+  border-color: #e08a8a;
+}
+
+/* ─── Connection port dots ────────────────────────────────────────────────────── */
+
+.canvas-port {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--bg2);
+  opacity: 0;
+  transition: opacity 0.12s;
+  cursor: crosshair;
+  z-index: 20;
+  box-sizing: border-box;
+}
+
+.canvas-node:hover .canvas-port,
+.canvas-node.canvas-node-selected .canvas-port {
+  opacity: 1;
+}
+
+.canvas-port:hover {
+  box-shadow: 0 0 0 3px rgba(201,168,76,0.35);
+}
+
+/* ─── Rubber-band lasso ───────────────────────────────────────────────────────── */
+
+.canvas-selection-rect {
+  position: absolute;
+  border: 1px solid var(--accent);
+  background: rgba(201,168,76,0.08);
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+/* ─── Selected node ───────────────────────────────────────────────────────────── */
+
+.canvas-node-selected {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px rgba(201,168,76,0.25);
+}
+
+/* ─── Group frames ────────────────────────────────────────────────────────────── */
+
+.canvas-group {
+  position: absolute;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.02);
+  box-sizing: border-box;
+}
+
+.canvas-group:hover { border-color: var(--text-muted); }
+
+.canvas-group-header {
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: move;
+  border-radius: 6px 6px 0 0;
+  user-select: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ─── Sidebar: draggable file rows ────────────────────────────────────────────── */
+
+.file[draggable=true] { cursor: grab; }
+.file[draggable=true]:active { cursor: grabbing; }
+
+/* ─── Edge assignment popover ────────────────────────────────────────────────── */
+
+.edge-assign-popover {
+  position: fixed;
+  z-index: 1000;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 8px 28px #0009;
+  width: 280px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.edge-assign-input {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--text);
+  box-sizing: border-box;
+}
+.edge-assign-input:focus { outline: none; border-color: var(--accent); }
+
+.edge-assign-suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.edge-assign-item {
+  padding: 5px 8px;
+  font-size: 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  color: var(--text);
+  user-select: none;
+}
+.edge-assign-item:hover { background: rgba(201,168,76,0.12); color: var(--accent); }
+
+.edge-assign-create {
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  margin-top: 2px;
+  padding-top: 7px;
+}
+.edge-assign-create:hover { color: var(--accent); background: rgba(201,168,76,0.08); }
+
+.edge-assign-actions {
+  border-top: 1px solid var(--border);
+  padding-top: 6px;
+  margin-top: 2px;
+}
+
+.edge-assign-plain {
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 4px 8px;
+  border-radius: 3px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+.edge-assign-plain:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+
+/* ─── Hub nodes ───────────────────────────────────────────────────────────────── */
+
+.canvas-hub-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: var(--bg2);
+  border: 1.5px solid rgba(201, 168, 76, 0.5);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  cursor: grab;
+  user-select: none;
+  box-sizing: border-box;
+  font-family: Segoe UI, system-ui, sans-serif;
+}
+
+.canvas-hub-node:hover {
+  background: var(--bg3);
+  border-color: var(--accent);
+}
+
+.canvas-hub-node:active { cursor: grabbing; }
+
+.canvas-hub-node .canvas-node-remove {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  display: none;
+  font-size: 9px;
+  line-height: 12px;
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  text-align: center;
+  border-radius: 50%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+.canvas-hub-node:hover .canvas-node-remove { display: block; }
+
+/* ─── Tag drop dialogue ───────────────────────────────────────────────────────── */
+
+.tag-drop-title {
+  font-size: 12px;
+  color: var(--text);
+  padding: 2px 0 0;
+}
+
+.tag-drop-count {
+  font-size: 11px;
+  color: var(--text-muted);
+  padding-bottom: 2px;
+}
+
+/* ─── Page-backed edge panel chips ───────────────────────────────────────────── */
+
+.edge-page-connects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.edge-page-chip {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(201,168,76,0.1);
+  border: 1px solid rgba(201,168,76,0.3);
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+/* ─── Connections meta-panel section ─────────────────────────────────────────── */
+
+.meta-connects-section {
+  margin-bottom: 12px;
+}
+
+.meta-connects-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 4px 0 6px;
+}
+
+.meta-connects-chip {
+  font-size: 11px;
+  padding: 2px 6px 2px 8px;
+  border-radius: 10px;
+  background: rgba(201,168,76,0.1);
+  border: 1px solid rgba(201,168,76,0.25);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.meta-connects-rm {
+  font-size: 12px;
+  line-height: 1;
+  color: var(--text-muted);
+  padding: 0 1px;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+.meta-connects-rm:hover { color: var(--accent2); }
+
+.meta-connects-add {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.meta-connects-add:hover { color: var(--accent); }
+
+/* ─── Layers panel ────────────────────────────────────────────────────────────── */
+
+.layers-panel {
+  position: fixed;
+  z-index: 900;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 8px 28px #0009;
+  width: 210px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.layers-panel.hidden { display: none; }
+
+.layers-panel-header {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 7px 12px 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.layers-list {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+}
+
+.layers-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 10px;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 0;
+}
+
+.layers-row:hover { background: rgba(255,255,255,0.04); }
+.layers-row.layers-row-active { background: rgba(201,168,76,0.07); }
+
+.layers-eye {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: 11px;
+  line-height: 1;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  width: 14px;
+  text-align: center;
+}
+
+.layers-eye.layers-eye-hidden { opacity: 0.3; }
+.layers-eye:hover { color: var(--text); }
+
+.layers-swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+.layers-name {
+  flex: 1;
+  font-size: 12px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.layers-row-active .layers-name { color: var(--accent); }
+
+.layers-delete {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 10px;
+  color: var(--text-muted);
+  padding: 1px 4px;
+  border-radius: 3px;
+  opacity: 0;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.layers-row:hover .layers-delete { opacity: 0.6; }
+.layers-delete:hover { opacity: 1 !important; color: #e08a8a; background: rgba(224,138,138,0.1); }
+
+.layers-add-area {
+  border-top: 1px solid var(--border);
+  padding: 5px 10px;
+}
+
+.layers-add-btn {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 3px 2px;
+  width: 100%;
+  text-align: left;
+}
+
+.layers-add-btn:hover { color: var(--accent); }
+.layers-add-btn.hidden { display: none; }
+
+.layers-add-form {
+  display: flex;
+  gap: 4px;
+}
+
+.layers-add-form.hidden { display: none; }
+
+.layers-add-input {
+  flex: 1;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 4px 8px;
+  font-size: 11px;
+  color: var(--text);
+  min-width: 0;
+}
+
+.layers-add-input:focus { outline: none; border-color: var(--accent); }
+
+.layers-add-confirm {
+  padding: 4px 8px;
+  background: rgba(201,168,76,0.12);
+  border: 1px solid rgba(201,168,76,0.35);
+  border-radius: 3px;
+  color: var(--accent);
+  font-size: 11px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.layers-add-confirm:hover { background: rgba(201,168,76,0.2); }
+
+/* ─── Edge assign popover layer buttons ───────────────────────────────────────── */
+
+.edge-assign-layer-swatch {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.edge-assign-plain.edge-assign-layer-active {
+  color: var(--accent);
+}

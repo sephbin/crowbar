@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crowbar</title>
+  <link rel="stylesheet" href="./styles/base.css" />
+  <link rel="stylesheet" href="./styles/sidebar.css" />
+  <link rel="stylesheet" href="./styles/editor.css" />
+  <link rel="stylesheet" href="./styles/npc-card.css" />
+  <link rel="stylesheet" href="./styles/relationships.css" />
+  <link rel="stylesheet" href="./styles/meta-panel.css" />
+  <link rel="stylesheet" href="./styles/modal.css" />
+  <link rel="stylesheet" href="./styles/canvas.css" />
+</head>
+<body>
+  <div id="app">
+
+    <!-- ── Sidebar ── -->
+    <nav id="sidebar">
+      <div id="sidebar-header">
+        <span class="vault-name">Crowbar</span>
+        <button id="btn-new-page" class="btn-new-page" title="New page">+ New</button>
+      </div>
+
+      <!-- Project switcher -->
+      <div id="project-switcher"></div>
+
+      <!-- View mode tabs -->
+      <div id="sidebar-tabs">
+        <button class="view-btn" data-view="type"  title="By type">Type</button>
+        <button class="view-btn" data-view="tag"   title="By tag">Tag</button>
+        <button class="view-btn" data-view="flat"  title="All pages">All</button>
+      </div>
+
+      <!-- Sub-group layer picker (Type view only) -->
+      <div id="subgroup-row" class="hidden">
+        <label for="subgroup-select">Group by</label>
+        <select id="subgroup-select"></select>
+      </div>
+
+      <div id="file-tree"></div>
+    </nav>
+
+    <!-- ── Editor ── -->
+    <main id="editor-pane">
+      <div id="editor-header">
+        <button id="btn-sidebar-toggle" class="btn-sidebar-toggle" title="Menu" aria-label="Open file list">☰</button>
+        <span id="current-filename">No file open</span>
+        <div class="editor-header-right">
+          <span id="save-status"></span>
+          <button id="btn-toggle-meta" title="Toggle metadata panel">⚙</button>
+        </div>
+      </div>
+      <div id="editor-container"></div>
+      <div id="canvas-pane"></div>
+    </main>
+
+    <!-- ── Meta panel ── -->
+    <aside id="meta-panel" class="hidden">
+      <div id="meta-panel-header">
+        <span id="meta-type-badge">Page</span>
+        <button id="meta-panel-close">✕</button>
+      </div>
+
+      <div id="meta-fields"></div>
+
+      <div id="meta-tags-section">
+        <div class="meta-section-title">Tags</div>
+        <div id="meta-tag-chips"></div>
+        <input id="meta-tag-input" type="text" placeholder="Add tag, press Enter…" autocomplete="off" />
+        <button id="btn-suggest-tags" class="btn-suggest-tags" type="button">✨ Suggest Tags</button>
+        <div id="suggest-tags-status" class="suggest-tags-status hidden"></div>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- Claude floating toolbar -->
+  <div id="claude-toolbar" class="claude-toolbar hidden">
+    <div id="claude-selection-preview"></div>
+    <div class="claude-input-row">
+      <input id="claude-input" type="text" placeholder="Instruct Claude… (e.g. make more intimidating)" autocomplete="off" />
+      <button id="claude-submit">Ask</button>
+      <button id="claude-close" title="Close">✕</button>
+    </div>
+    <div id="claude-status" class="claude-status hidden"></div>
+  </div>
+
+  <!-- Mobile overlay backdrop -->
+  <div id="mobile-backdrop" class="mobile-backdrop"></div>
+
+  <!-- Context menu -->
+  <ul id="context-menu" class="context-menu hidden"></ul>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
