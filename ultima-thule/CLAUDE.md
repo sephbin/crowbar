@@ -33,7 +33,7 @@ Andrew's satirical fantasy/sci-fi setting, run here in Basic Roleplaying (BRP Un
 - `data/npcs/zealots.json`: verified. All six are Wizards: four zealots and the recruit at Normal, the leader (Imre's former student) at Heroic per p.246.
 - `gm/tram-job.html`: GM screen (trackers, stat blocks, binding, threat, rules). Embeds `zealots.json`; run `python tools/sync_gm.py` after editing the JSON.
 - `index.html`: GitHub Pages landing page for the GM screen and the sheets. Pages serves `main` from the repo root with Jekyll on, so the root `README.md` (which links here) is the site's front page. Never write a Liquid tag opener (double left brace, or left brace plus percent sign) in a markdown file: Jekyll parses it and the Pages build fails.
-- `sheets/*.html`: player-facing sheets (one per character, Synth style). Each file embeds its own data; if a pregen changes, update the matching sheet too.
+- `sheets/*.html`: player-facing sheets (one per character, Synth style). Each file embeds its own data; if a pregen changes, update the matching sheet too. Phone layout (viewport meta, weapon cards, touch sizes) comes from `tools/fix_sheet_mobile.py`; re-run it on any regenerated sheet.
 
 ## Book corrections found while checking
 - The p.59 spell summary says "Flame" and "Wound"; the full entries are Fire (p.62) and Wounding (p.65). Use the full-entry names.
