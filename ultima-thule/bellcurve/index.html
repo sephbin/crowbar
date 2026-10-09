@@ -140,6 +140,16 @@ svg{display:block;width:100%;height:auto}
 .wound{font-size:13px;margin-top:6px}
 .wound b{color:var(--accent)}
 .toolbar{display:flex;gap:8px;flex-wrap:wrap}
+/* section tabs, as on the BRP sheets */
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:4;background:var(--paper);display:flex;gap:4px;padding-block:10px;overflow-x:auto;border-bottom:2px solid var(--ink)}
+nav.tabs button{white-space:nowrap;flex:0 0 auto;padding:10px}
+nav.tabs button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+@media (max-width:640px){nav.tabs{flex-wrap:wrap;overflow-x:visible}}
+@media (pointer:coarse){nav.tabs button{padding:12px;font-size:13px}}
+textarea{font:15px/1.5 var(--body);width:100%;min-height:16em;background:var(--paper);border:1.5px solid var(--rule);border-radius:8px;padding:8px;color:var(--ink)}
+/* GURPS levels (3d6 targets) show only in debug mode */
+body:not(.debug) .g{display:none!important}
+#debug[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
 .toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 14px;border-radius:999px;font-size:13px;z-index:5;max-width:calc(100% - 32px)}
 </style>
 </head>
@@ -164,6 +174,7 @@ svg{display:block;width:100%;height:auto}
         <button type="button" id="save">save</button>
         <button type="button" id="copy">copy json</button>
         <button type="button" id="blank">blank</button>
+        <button type="button" id="debug" aria-pressed="false" title="Show GURPS levels and 3d6 values">debug</button>
         <input type="file" id="file" accept=".json,application/json" hidden>
       </div>
     </div>
@@ -171,21 +182,22 @@ svg{display:block;width:100%;height:auto}
 
   <div class="grid">
     <div class="col">
-      <section class="box">
-        <div class="crumb" id="crumb" hidden></div>
+      <nav class="tabs" id="tabs" role="tablist" aria-label="Sheet sections"></nav>
+      <div class="crumb" id="crumb" hidden></div>
+
+      <section class="box" data-tab="base">
         <input class="name" id="cname" type="text" aria-label="Character name">
         <input class="concept" id="concept" type="text" placeholder="concept" aria-label="Concept">
-        <p class="hint" id="cnote"></p>
       </section>
 
-      <section class="box issues">
+      <section class="box issues" data-tab="base">
         <details id="issuebox">
           <summary id="issuesum"></summary>
           <div id="issues" style="margin-top:8px"></div>
         </details>
       </section>
 
-      <section class="box">
+      <section class="box" data-tab="base">
         <h3 class="bar">templates <small>race or meta-traits</small></h3>
         <div id="templates"></div>
         <div class="addrow">
@@ -194,32 +206,13 @@ svg{display:block;width:100%;height:auto}
         </div>
       </section>
 
-      <section class="box">
-        <h3 class="bar">attributes <small>ST/HT 100 per level · DX/IQ 200 · tap to roll</small></h3>
+      <section class="box" data-tab="base">
+        <h3 class="bar">attributes <small>ST/HT 100 per step · DX/IQ 200 · tap to roll</small></h3>
         <div class="attrs" id="attrs"></div>
         <div class="sec" id="sec"></div>
-        <div class="derived" id="derived"></div>
       </section>
 
-      <section class="box">
-        <h3 class="bar">skills <small>10 pts per step · tap a name to roll</small></h3>
-        <div id="skills"></div>
-        <div class="addrow">
-          <input type="search" id="newskill" list="dl-skills" placeholder="add skill, e.g. Hidden Lore (Spirit Lore)" aria-label="Skill">
-          <button type="button" id="addskill">add</button>
-        </div>
-      </section>
-
-      <section class="box">
-        <h3 class="bar">spells <small id="magery"></small></h3>
-        <div id="spells"></div>
-        <div class="addrow">
-          <input type="search" id="newspell" list="dl-spells" placeholder="add spell" aria-label="Spell">
-          <button type="button" id="addspell">add</button>
-        </div>
-      </section>
-
-      <section class="box">
+      <section class="box" data-tab="traits">
         <h3 class="bar">advantages &amp; disadvantages <small>costs ×10 from the library</small></h3>
         <div id="traits"></div>
         <div class="addrow">
@@ -229,7 +222,35 @@ svg{display:block;width:100%;height:auto}
         <div id="conds"></div>
       </section>
 
-      <section class="box">
+      <section class="box" data-tab="combat">
+        <h3 class="bar">defence &amp; damage <small>tap dodge to roll</small></h3>
+        <div class="derived" id="derived" style="margin-top:0"></div>
+      </section>
+
+      <section class="box" data-tab="combat">
+        <h3 class="bar">attacks <small>tap to attack</small></h3>
+        <div id="weapons"></div>
+      </section>
+
+      <section class="box" data-tab="skills">
+        <h3 class="bar">skills <small>10 pts per step · tap a name to roll</small></h3>
+        <div id="skills"></div>
+        <div class="addrow">
+          <input type="search" id="newskill" list="dl-skills" placeholder="add skill, e.g. Hidden Lore (Spirit Lore)" aria-label="Skill">
+          <button type="button" id="addskill">add</button>
+        </div>
+      </section>
+
+      <section class="box" data-tab="magic">
+        <h3 class="bar">spells <small id="magery"></small></h3>
+        <div id="spells"></div>
+        <div class="addrow">
+          <input type="search" id="newspell" list="dl-spells" placeholder="add spell" aria-label="Spell">
+          <button type="button" id="addspell">add</button>
+        </div>
+      </section>
+
+      <section class="box" data-tab="kit">
         <h3 class="bar">equipment <small id="drsum"></small></h3>
         <div id="equipment"></div>
         <div class="addrow">
@@ -238,9 +259,9 @@ svg{display:block;width:100%;height:auto}
         </div>
       </section>
 
-      <section class="box">
-        <h3 class="bar">attacks <small>tap to attack</small></h3>
-        <div id="weapons"></div>
+      <section class="box" data-tab="notes">
+        <h3 class="bar">notes <small>rulings, flags for the GM, background</small></h3>
+        <textarea id="notes" aria-label="Notes"></textarea>
       </section>
     </div>
 
@@ -308,6 +329,22 @@ const pick = (s) => { sel = s; resetRoll(); roller(); toRoller(); };
 const toRoller = () => { if (matchMedia("(max-width:900px)").matches) document.querySelector(".roller").scrollIntoView({ behavior: "smooth", block: "start" }); };
 const change = () => { save(); render(); };
 
+// ---------- view state: current tab and debug mode, per viewer ----------
+const UIKEY = "bellcurve-ui";
+let UI = { tab: "base", debug: false };
+try { Object.assign(UI, JSON.parse(localStorage.getItem(UIKEY)) || {}); } catch (e) { }
+const saveUI = () => { try { localStorage.setItem(UIKEY, JSON.stringify(UI)); } catch (e) { } };
+const TABS = [["base", "base"], ["traits", "traits"], ["combat", "combat"], ["skills", "skills"], ["magic", "magic"], ["kit", "kit"], ["notes", "notes"]];
+const G = (...k) => el("span", { class: "g" }, ...k);   // GURPS level, shown in debug mode only
+function renderTabs() {
+  if (!TABS.some(t => t[0] === UI.tab)) UI.tab = "base";
+  const N = $("tabs"); N.innerHTML = "";
+  for (const [k, label] of TABS) N.append(el("button", { type: "button", role: "tab", "aria-selected": String(k === UI.tab),
+    onclick: () => { UI.tab = k; saveUI(); renderTabs(); window.scrollTo({ top: 0 }); } }, label));
+  document.querySelectorAll("[data-tab]").forEach(s => s.hidden = s.dataset.tab !== UI.tab);
+}
+function applyDebug() { document.body.classList.toggle("debug", !!UI.debug); $("debug").setAttribute("aria-pressed", String(!!UI.debug)); }
+
 // ---------- datalists ----------
 function fillLists() {
   const fill = (id, items) => { const d = $(id); d.innerHTML = ""; for (const v of items) d.append(el("option", { value: v })); };
@@ -330,7 +367,8 @@ function render() {
     const a = RCHAIN[RCHAIN.length - 2].allies.find(x => x.trait.inst === stack[stack.length - 1]);
     $("crumb").append(back, el("span", {}, `ally sheet of ${(stack.length > 1 ? stack[stack.length - 2].character : ROOT).name}: ${a?.pct ?? "?"}% of starting points`));
   }
-  $("cname").value = ch.name || ""; $("concept").value = ch.concept || ""; $("cnote").textContent = ch.notes || "";
+  $("cname").value = ch.name || ""; $("concept").value = ch.concept || ""; $("notes").value = ch.notes || "";
+  renderTabs();
   $("budget").value = R.budget; $("budget").disabled = !!stack.length;
   const pill = $("spent"); pill.textContent = `${R.spent} / ${R.budget}`; pill.classList.toggle("over", R.spent > R.budget);
   renderIssues(); renderTemplates(); renderAttrs(); renderSkills(); renderSpells(); renderTraits(); renderEquipment(); renderWeapons();
@@ -359,7 +397,7 @@ function renderTemplates() {
     const pts = rows.reduce((a, x) => a + x.cost, 0) + Object.values(attrs).reduce((a, v) => a + v, 0);
     T.append(el("div", { class: "row" },
       el("span", { class: "nm" }, name, typeof t === "string" ? "" : " (custom)"),
-      el("span", { class: "meta" }, [...Object.entries(attrs).map(([k, v]) => `${k} ${v > 0 ? "+" : ""}${v / BC.ATTR_COST[k]}`), ...rows.map(x => `${x.name}${x.levels ? " " + x.levels : ""} ${x.cost}`)].join(" · ")),
+      el("span", { class: "meta" }, [...Object.entries(attrs).map(([k, v]) => [`${k} ${v > 0 ? "+" : ""}${v}`, G(` (${v > 0 ? "+" : ""}${v / BC.ATTR_COST[k]})`)]), ...rows.map(x => `${x.name}${x.levels ? " " + x.levels : ""} ${x.cost}`)].flatMap((x, j) => j ? [" · ", x] : [x]).flat()),
       el("span", { class: "val" }, el("b", {}, String(pts)), el("span", {}, "pts")),
       el("span", { class: "ctl" }, el("button", { type: "button", class: "x", "aria-label": `Remove ${name}`, onclick: () => { ch.templates.splice(i, 1); change(); } }, "×"))));
   });
@@ -370,9 +408,9 @@ function renderAttrs() {
   const bump = (k, d) => { ch.attributes[k] = (ch.attributes[k] || 0) + d; if (!ch.attributes[k]) delete ch.attributes[k]; change(); };
   for (const k of ["ST", "DX", "IQ", "HT"]) {
     const v = R.attrs[k], p = ch.attributes[k] || 0, bonus = R.attrBonus[k];
-    A.append(el("div", { class: "attr", role: "button", tabindex: "0", "aria-label": `${k} ${f1(v)}, roll`,
+    A.append(el("div", { class: "attr", role: "button", tabindex: "0", "aria-label": `${k} ${BC.succPct(v)}%, roll`,
       onclick: e => { if (!e.target.closest(".step")) pick({ kind: "attr", k }); }, onkeydown: e => { if (e.key === "Enter" && e.target === e.currentTarget) pick({ kind: "attr", k }); } },
-      el("b", {}, k), el("span", { class: "lvl" }, f1(v)), el("span", { class: "pct" }, BC.succPct(v) + "%"),
+      el("b", {}, k), el("span", { class: "lvl" }, BC.succPct(v) + "%"), G(el("span", { class: "pct" }, "level " + f1(v))),
       el("span", { class: "pts" }, `${p > 0 ? "+" : ""}${p} pts${bonus ? ` · ${bonus > 0 ? "+" : ""}${bonus} traits` : ""}`),
       el("div", { class: "step" }, el("button", { type: "button", "aria-label": `Lower ${k}`, onclick: () => bump(k, -BC.ATTR_COST[k] / 10) }, "−"),
         el("button", { type: "button", "aria-label": `Raise ${k}`, onclick: () => bump(k, BC.ATTR_COST[k] / 10) }, "+"))));
@@ -382,14 +420,14 @@ function renderAttrs() {
     const p = ch.attributes[k] || 0, rollable = k === "Will" || k === "Per";
     S.append(el("div", {},
       el("span", { class: "k" + (rollable ? " roll" : ""), role: rollable ? "button" : null, tabindex: rollable ? "0" : null, onclick: rollable ? () => pick({ kind: "attr", k }) : null }, k),
-      el("span", { class: "v" }, `${f1(R.attrs[k])}${rollable ? ` · ${BC.succPct(R.attrs[k])}%` : ""}`, el("br"), el("span", { class: "muted" }, `${p > 0 ? "+" : ""}${p}`)),
+      el("span", { class: "v" }, rollable ? [`${BC.succPct(R.attrs[k])}%`, G(` · ${f1(R.attrs[k])}`)] : f1(R.attrs[k]), el("br"), el("span", { class: "muted" }, `${p > 0 ? "+" : ""}${p}`)),
       el("button", { type: "button", "aria-label": `Lower ${k}`, onclick: () => bump(k, -10) }, "−"),
       el("button", { type: "button", "aria-label": `Raise ${k}`, onclick: () => bump(k, 10) }, "+")));
   }
   const D = $("derived"); D.innerHTML = "";
   const dr = R.dr.torso;
-  [["Dodge", `${R.dodge} · ${BC.succPct(R.dodge)}%`, () => pick({ kind: "attr", k: "Dodge" })], ["Thrust", BC.diceTxt(R.thr)], ["Swing", BC.diceTxt(R.sw)], ["DR torso", dr], ["Move", f1(R.attrs.Move)]]
-    .forEach(([k, v, fn]) => { const d = el("div", fn ? { role: "button", tabindex: "0", style: "cursor:pointer", onclick: fn } : {}, el("b", {}, String(v)), el("span", {}, k)); D.append(d); });
+  [["Dodge", [`${BC.succPct(R.dodge)}%`, G(` · ${R.dodge}`)], () => pick({ kind: "attr", k: "Dodge" })], ["Thrust", BC.diceTxt(R.thr)], ["Swing", BC.diceTxt(R.sw)], ["DR torso", String(dr)], ["Move", f1(R.attrs.Move)]]
+    .forEach(([k, v, fn]) => { const d = el("div", fn ? { role: "button", tabindex: "0", style: "cursor:pointer", onclick: fn } : {}, el("b", {}, v), el("span", {}, k)); D.append(d); });
 }
 
 const stepper = (label, get, set, step = 10, min = 0) => el("span", { class: "ctl" },
@@ -407,9 +445,9 @@ function renderSkills() {
     K.append(el("div", { class: "row" },
       el("span", { class: "nm roll", role: "button", tabindex: "0", onclick: () => pick(w >= 0 && !R.weapons[w].natural ? { kind: "weapon", i: w } : { kind: "skill", i }), onkeydown: e => e.key === "Enter" && e.currentTarget.click() }, nm),
       el("span", { class: "meta" }, s.rec ? (s.rec.technique ? `technique ${s.diff} · ${s.rec.parent.name}` : `${s.attr}/${s.diff}`) : el("span", { class: "bad" }, "not in library"),
-        s.level != null ? ` · ${s.attr}${s.rel >= 0 ? "+" : ""}${f1(s.rel)}${s.bonus ? ` (incl. ${s.bonus > 0 ? "+" : ""}${s.bonus} traits)` : ""}${s.source === "default" ? " · default" : ""}` : "",
+        s.level != null ? G(` · ${s.attr}${s.rel >= 0 ? "+" : ""}${f1(s.rel)}${s.bonus ? ` (incl. ${s.bonus > 0 ? "+" : ""}${s.bonus} traits)` : ""}`) : "", s.level != null && s.source === "default" ? " · default" : "",
         s.ref ? ` · ${s.ref}` : "", removeBtn(nm, () => ch.skills.splice(i, 1))),
-      el("span", { class: "val" }, el("b", {}, s.level == null ? "—" : BC.succPct(s.level) + "%"), el("span", {}, s.level == null ? "no level" : "level " + f1(s.level))),
+      el("span", { class: "val" }, el("b", {}, s.level == null ? "—" : BC.succPct(s.level) + "%"), s.level == null ? el("span", {}, "no level") : G("level " + f1(s.level))),
       stepper(nm, () => ch.skills[i].points || 0, v => ch.skills[i].points = v)));
   });
 }
@@ -425,7 +463,7 @@ function renderSpells() {
       el("span", { class: "meta" }, s.rec ? `${s.attr}/${s.diff} · ${s.rec.college.join(", ")} · cost ${s.rec.cost} · ${s.rec.time} · ${s.ref}` : el("span", { class: "bad" }, "not in library"),
         s.rec ? (s.prereqOk ? el("span", { class: "good" }, " · prereqs ok") : el("span", { class: "bad" }, ` · needs ${s.missing.join("; ")}`)) : "",
         removeBtn(s.name, () => ch.spells.splice(i, 1))),
-      el("span", { class: "val" }, el("b", {}, s.level == null ? "—" : BC.succPct(s.level) + "%"), el("span", {}, s.level == null ? "no level" : "level " + f1(s.level))),
+      el("span", { class: "val" }, el("b", {}, s.level == null ? "—" : BC.succPct(s.level) + "%"), s.level == null ? el("span", {}, "no level") : G("level " + f1(s.level))),
       stepper(s.name, () => ch.spells[i].points || 0, v => ch.spells[i].points = v)));
   });
 }
@@ -510,7 +548,7 @@ function renderWeapons() {
     W.append(el("div", { class: "row" },
       el("span", { class: "nm roll", role: "button", tabindex: "0", onclick: () => pick({ kind: "weapon", i }), onkeydown: e => e.key === "Enter" && e.currentTarget.click() }, w.name),
       el("span", { class: "meta" }, w.modes.map(m => `${m.usage.toLowerCase()} ${BC.diceTxt(m.dice)} ${m.type} (${m.skillName})`).join(" · ")),
-      el("span", { class: "val" }, el("b", {}, best ? BC.succPct(best.level) + "%" : "—"), el("span", {}, best ? "level " + f1(best.level) : "")),
+      el("span", { class: "val" }, el("b", {}, best ? BC.succPct(best.level) + "%" : "—"), best ? G("level " + f1(best.level)) : ""),
       el("span")));
   });
 }
@@ -519,13 +557,13 @@ function renderWeapons() {
 function target() {
   if (sel.kind === "attr") {
     const k = sel.k;
-    if (k === "Dodge") return { name: "Dodge", base: R.dodge, sub: `floor(Basic Speed ${f1(R.attrs.Speed)}) + 3${R.extra.dodge ? ` + ${R.extra.dodge} traits` : ""}`, key: "Dodge" };
-    return R.attrs[k] == null ? null : { name: k, base: R.attrs[k], sub: "attribute roll", key: k };
+    if (k === "Dodge") return { name: "Dodge", base: R.dodge, sub: ["active defence", G(` · floor(Basic Speed ${f1(R.attrs.Speed)}) + 3${R.extra.dodge ? ` + ${R.extra.dodge} traits` : ""}`)], key: "Dodge" };
+    return R.attrs[k] == null ? null : { name: k, base: R.attrs[k], sub: ["attribute roll"], key: k };
   }
   if (sel.kind === "weapon") { const w = R.weapons[sel.i]; if (!w) return null; return { name: w.name, w, key: w.name }; }
-  if (sel.kind === "spell") { const s = R.spells[sel.i]; if (!s) return null; return { name: s.name, base: s.level, sub: s.rec ? `${s.attr}/${s.diff} spell · ${s.points} pts · cost ${s.rec.cost} · ${s.rec.time}${s.rec.resist ? " · resisted by " + s.rec.resist : ""}` : "", key: s.name, spell: s }; }
+  if (sel.kind === "spell") { const s = R.spells[sel.i]; if (!s) return null; return { name: s.name, base: s.level, sub: [s.rec ? `${s.attr}/${s.diff} spell · ${s.points} pts · cost ${s.rec.cost} · ${s.rec.time}${s.rec.resist ? " · resisted by " + s.rec.resist : ""}` : ""], key: s.name, spell: s }; }
   const s = R.skills[sel.i]; if (!s) return null;
-  return { name: BC.fullName(s.name, s.spec), base: s.level, sub: `${s.attr}/${s.diff} · ${s.points} pts${s.level != null ? ` · ${s.attr}${s.rel >= 0 ? "+" : ""}${f1(s.rel)}` : ""}`, key: s.name, skill: s };
+  return { name: BC.fullName(s.name, s.spec), base: s.level, sub: [`${s.attr}/${s.diff} · ${s.points} pts`, s.level != null ? G(` · ${s.attr}${s.rel >= 0 ? "+" : ""}${f1(s.rel)}`) : ""], key: s.name, skill: s };
 }
 const sign = d => d === 0 ? "±0%" : (d > 0 ? "+" : "−") + Math.abs(d) + "%";
 function sitList(t) {
@@ -547,7 +585,7 @@ function roller() {
   const t = target();
   ["modes", "locs", "sits"].forEach(id => $(id).innerHTML = "");
   $("drrow").hidden = true;
-  if (!t) { $("rname").textContent = "—"; $("rbase").textContent = ""; $("rpct").textContent = "—"; $("rlvl").textContent = ""; $("rbands").innerHTML = ""; $("wound").innerHTML = ""; drawCurve(0, 0); roller.current = null; return; }
+  if (!t) { $("rname").textContent = "—"; $("rbase").replaceChildren(); $("rpct").textContent = "—"; $("rlvl").textContent = ""; $("rbands").innerHTML = ""; $("wound").innerHTML = ""; drawCurve(0, 0); roller.current = null; return; }
   const key = `${stack.length}:${sel.kind}:${sel.i ?? sel.k}`;
   if (roller.key !== key) { roller.key = key; $("result").innerHTML = '<div class="detail">Set the situation, then roll.</div>'; }
   $("rname").textContent = t.name;
@@ -555,8 +593,9 @@ function roller() {
   let m = null, base = t.base, type = null;
   if (isW) {
     mode = Math.min(mode, t.w.modes.length - 1); m = t.w.modes[mode]; base = m.level; type = m.type;
-    $("rbase").textContent = `${m.usage.toLowerCase()} · ${m.skillName}${m.hasSkill ? "" : " (default)"}${m.stPen ? ` · ${m.stPen} for ST` : ""}${m.ratedST ? ` · ST ${m.ratedST}` : ""}${m.reach ? ` · reach ${m.reach}` : ""}${m.range ? ` · range ${m.range}` : ""}`;
-  } else $("rbase").textContent = t.sub;
+    $("rbase").replaceChildren(`${m.usage.toLowerCase()} · ${m.skillName}${m.hasSkill ? "" : " (default)"}`, m.stPen ? " · too weak" : "",
+      G(`${m.stPen ? ` · ${m.stPen} for ST` : ""}${m.ratedST ? ` · ST ${m.ratedST}` : ""}`), `${m.reach ? ` · reach ${m.reach}` : ""}${m.range ? ` · range ${m.range}` : ""}`);
+  } else $("rbase").replaceChildren(...t.sub);
   const ch = C();
   const bsAll = (ch.options?.backstabber || "all") !== "melee";
   const bs = isW && R.houseBackstab && unaware && (bsAll || m.melee);
@@ -573,7 +612,7 @@ function roller() {
       t.w.modes.forEach((mm, i) => M.append(el("button", { type: "button", "aria-pressed": String(i === mode), onclick: () => { mode = i; roller(); } }, `${mm.usage.toLowerCase()} ${BC.diceTxt(mm.dice)} ${mm.type}`))); }
     const LC = $("locs"); LC.append(el("span", { class: "lbl" }, "target"));
     BC.LOCS.forEach((l, i) => { const pen = bs ? l.pen / 2 : l.pen, ok = l.mult[type] !== null;
-      LC.append(el("button", { type: "button", "aria-pressed": String(i === loc), disabled: !ok, title: ok ? `${l.name}: ${f1(pen)} levels, ×${BC.locMult(l, type)}` : `${BC.TYPE_NAME[type] || type} can't target the ${l.name}`,
+      LC.append(el("button", { type: "button", "aria-pressed": String(i === loc), disabled: !ok, title: ok ? `${l.name}: ${UI.debug ? f1(pen) + " levels, " : ""}injury ×${BC.locMult(l, type)}` : `${BC.TYPE_NAME[type] || type} can't target the ${l.name}`,
         onclick: () => { loc = i; roller(); } }, ok ? `${l.name} ${sign(BC.succPct(base + pen + sitSum + mod) - BC.succPct(base + sitSum + mod))}` : `${l.name} n/a`)); });
     LC.append(el("button", { type: "button", class: "unaware", "aria-pressed": String(unaware), onclick: () => { unaware = !unaware; roller(); } }, unaware ? "target unaware ✓" : "target unaware?"));
     if (R.houseBackstab) LC.append(el("button", { type: "button", "aria-pressed": String(!bsAll), title: "Backstabber house rule: which attacks it covers", onclick: () => { ch.options ||= {}; ch.options.backstabber = bsAll ? "melee" : "all"; save(); roller(); } }, bsAll ? "backstabber: all attacks" : "backstabber: melee only"));
@@ -582,10 +621,10 @@ function roller() {
   if (list.length) { const SC = $("sits"); SC.append(el("span", { class: "lbl" }, "circumstances"));
     list.forEach((c, i) => { const on = sits.has(i); const rival = c.group ? [...sits].find(j => j !== i && list[j]?.group === c.group) : undefined;
       const without = base + total - (on ? c.mod : 0) - (rival !== undefined ? list[rival].mod : 0);
-      SC.append(el("button", { type: "button", class: c.cond ? "cond" : null, "aria-pressed": String(on), title: `${c.mod > 0 ? "+" : ""}${c.mod} levels · ${c.title}`,
+      SC.append(el("button", { type: "button", class: c.cond ? "cond" : null, "aria-pressed": String(on), title: UI.debug ? `${c.mod > 0 ? "+" : ""}${c.mod} levels · ${c.title}` : c.title,
         onclick: () => { if (on) sits.delete(i); else { if (c.group) list.forEach((x, j) => { if (x.group === c.group) sits.delete(j); }); sits.add(i); } roller(); } }, `${c.name} ${sign(BC.succPct(without + c.mod) - BC.succPct(without))}`)); }); }
   $("rpct").textContent = pct + "%";
-  $("rlvl").textContent = `level ${f1(base)}${total ? ` ${total > 0 ? "+" : "−"} ${f1(Math.abs(total))} = ${f1(L)}` : ""}`;
+  $("rlvl").replaceChildren(total ? `from ${BC.succPct(base)}% ` : "", G(`level ${f1(base)}${total ? ` ${total > 0 ? "+" : "−"} ${f1(Math.abs(total))} = ${f1(L)}` : ""}`));
   $("rbands").innerHTML = "";
   $("rbands").append(el("span", {}, `crit 01–${String(b.cs).padStart(2, "0")}`), el("span", {}, pct >= 100 ? "success always" : "success 01–" + String(pct).padStart(2, "0")), el("span", {}, pct >= 100 ? "no fumble" : "fumble " + (b.cfStart >= 100 ? "00" : b.cfStart + "–00")));
   $("modout").textContent = `${BC.GRADES[String(mod)]} · ${pct}%`; $("mod").value = mod;
@@ -609,10 +648,10 @@ function drawCurve(L, Lm) {
   for (let i = 0; i < 16; i++) { const k = i + 3, h = (BC.PMF[i] / maxp) * (H - 36), x = pad + i * bw, y = H - 20 - h;
     const fill = k <= Lm ? "var(--accent)" : k <= L ? "var(--wash)" : "var(--rule)";
     s += `<rect x="${x + 1}" y="${y}" width="${bw - 2}" height="${h}" rx="2" fill="${fill}"/>`;
-    if (k % 3 === 0) s += `<text x="${x + bw / 2}" y="${H - 6}" text-anchor="middle" font-size="10" fill="var(--muted)" font-family="Courier Prime,monospace">${k}</text>`; }
+    if (UI.debug && k % 3 === 0) s += `<text x="${x + bw / 2}" y="${H - 6}" text-anchor="middle" font-size="10" fill="var(--muted)" font-family="Courier Prime,monospace">${k}</text>`; }
   const xl = v => pad + (Math.max(2.5, Math.min(18.5, v)) - 2.5) * bw;
   s += `<line x1="${xl(Lm + 0.5)}" x2="${xl(Lm + 0.5)}" y1="8" y2="${H - 20}" stroke="var(--ink)" stroke-width="1.5"/>`;
-  s += `<text x="${Math.min(W - 40, Math.max(4, xl(Lm + 0.5) + 4))}" y="16" font-size="10" fill="var(--ink)" font-family="Courier Prime,monospace">${f1(Lm)}</text>`;
+  if (UI.debug) s += `<text x="${Math.min(W - 40, Math.max(4, xl(Lm + 0.5) + 4))}" y="16" font-size="10" fill="var(--ink)" font-family="Courier Prime,monospace">${f1(Lm)}</text>`;
   svg.innerHTML = s;
 }
 function resolveRoll(r) {
@@ -620,7 +659,7 @@ function resolveRoll(r) {
   const x = BC.resolve(c.L, r);
   const box = $("result"); box.innerHTML = "";
   box.append(el("div", { class: `verdict ${x.win ? "win" : "lose"}` }, x.verdict),
-    el("div", { class: "detail" }, "rolled ", el("b", {}, String(r).padStart(2, "0")), ` against ${x.pct}% · as 3d6 that's a ${f1(x.equiv)} against ${f1(c.L)} · margin `, el("b", {}, `${x.margin >= 0 ? "+" : ""}${f1(x.margin)}`)));
+    el("div", { class: "detail" }, "rolled ", el("b", {}, String(r).padStart(2, "0")), ` against ${x.pct}%`, G(` · as 3d6 that's a ${f1(x.equiv)} against ${f1(c.L)}`), " · margin ", el("b", {}, `${x.margin >= 0 ? "+" : ""}${f1(x.margin)}`)));
   if (c.inj && x.win) { const d = BC.rollInjury(c.inj.dice, c.inj.type, c.inj.mult, c.inj.dr, c.inj.sk);
     box.append(el("div", { class: "detail", style: "margin-top:6px" }, "injury ", el("b", { style: "color:var(--accent);font-size:18px" }, String(d.v)),
       ` · damage ${d.dmg}${d.dr ? ` − DR ${d.dr}` : ""} × ${d.mult}${c.inj.sk ? ` + ${d.ex} sneak` : ""}${x.verdict === "critical success" ? " · critical: roll on the critical hit table" : ""}`)); }
@@ -655,6 +694,8 @@ $("example").addEventListener("change", e => { const v = e.target.value; e.targe
     .catch(() => toast("examples load over http (GitHub Pages or a local server), not from a file:// page")); });
 $("cname").addEventListener("input", e => { C().name = e.target.value; save(); $("rname").textContent = target()?.name || "—"; });
 $("concept").addEventListener("input", e => { C().concept = e.target.value; save(); });
+$("notes").addEventListener("input", e => { C().notes = e.target.value; save(); });
+$("debug").addEventListener("click", () => { UI.debug = !UI.debug; saveUI(); applyDebug(); roller(); });
 $("budget").addEventListener("change", e => { ROOT.budget = Math.max(0, Math.round(+e.target.value || 0)); change(); });
 $("mod").addEventListener("input", e => { mod = +e.target.value; roller(); });
 $("drminus").addEventListener("click", () => { targetDR = Math.max(0, targetDR - 1); roller(); });
@@ -663,7 +704,7 @@ $("roll").addEventListener("click", () => { const r = 1 + Math.floor(Math.random
 $("manual").addEventListener("change", e => { const r = Math.round(+e.target.value); if (r >= 1 && r <= 100) resolveRoll(r); });
 
 if (!LIB) document.body.prepend(el("p", { class: "box" }, "data/library.js is missing. Run node tools/gcs_convert.mjs <gcs_master_library>."));
-else { fillLists(); norm(ROOT); render(); }
+else { applyDebug(); fillLists(); norm(ROOT); render(); }
 </script>
 </body>
 </html>
