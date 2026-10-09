@@ -1,0 +1,9 @@
+{
+  "note": "Natural attacks every character has (B271). GCS adds these in code, so they are not in the library files.",
+  "natural": [
+    {"type": "natural", "name": "Punch", "ref": "B271", "weapons": [{"usage": "punch", "dmg": {"st": "thr", "base": "-1", "type": "cr"}, "reach": "C", "strength": "",
+      "defaults": [{"type": "dx"}, {"type": "skill", "name": {"compare": "is", "qualifier": "Boxing"}}, {"type": "skill", "name": {"compare": "is", "qualifier": "Brawling"}}, {"type": "skill", "name": {"compare": "is", "qualifier": "Karate"}}]}]},
+    {"type": "natural", "name": "Kick", "ref": "B271", "weapons": [{"usage": "kick", "dmg": {"st": "thr", "base": "", "type": "cr"}, "reach": "C,1", "strength": "",
+      "defaults": [{"type": "dx", "modifier": -2}, {"type": "skill", "name": {"compare": "is", "qualifier": "Brawling"}, "modifier": -2}, {"type": "skill", "name": {"compare": "is", "qualifier": "Karate"}, "modifier": -2}]}]}
+  ]
+}

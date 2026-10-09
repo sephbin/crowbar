@@ -1,0 +1,42 @@
+{
+  "note": "Suggested circumstance modifiers (GM values, not RAW), in levels. skill \"*\" means every non-combat skill. Entries sharing a group are exclusive. \"Per\" and other attribute names match attribute rolls.",
+  "circumstances": [
+    {"skill": "*", "name": "half the time", "mod": -5, "group": "time"},
+    {"skill": "*", "name": "double time", "mod": 1, "group": "time"},
+    {"skill": "*", "name": "eight times as long", "mod": 3, "group": "time"},
+
+    {"skill": "Lockpicking", "name": "no tools", "mod": -5, "group": "tools"},
+    {"skill": "Lockpicking", "name": "improvised tools", "mod": -2, "group": "tools"},
+    {"skill": "Lockpicking", "name": "fine tools", "mod": 2, "group": "tools"},
+    {"skill": "Lockpicking", "name": "complex lock", "mod": -3},
+    {"skill": "Lockpicking", "name": "in the dark", "mod": -5},
+
+    {"skill": "Stealth", "name": "alert guards", "mod": -3},
+    {"skill": "Stealth", "name": "moving fast", "mod": -5},
+    {"skill": "Stealth", "name": "in armour", "mod": -2},
+    {"skill": "Stealth", "name": "crowd or cover", "mod": 2},
+
+    {"skill": "Climbing", "name": "wet or icy", "mod": -2},
+    {"skill": "Climbing", "name": "sheer wall", "mod": -3},
+    {"skill": "Climbing", "name": "in armour", "mod": -2},
+    {"skill": "Climbing", "name": "rope", "mod": 2},
+
+    {"skill": "Acrobatics", "name": "narrow ledge", "mod": -2},
+    {"skill": "Acrobatics", "name": "moving surface", "mod": -3},
+    {"skill": "Acrobatics", "name": "in armour", "mod": -2},
+
+    {"skill": "Poisons", "name": "unknown poison", "mod": -3, "group": "knowledge"},
+    {"skill": "Poisons", "name": "known poison", "mod": 2, "group": "knowledge"},
+    {"skill": "Poisons", "name": "no equipment", "mod": -5, "group": "kit"},
+    {"skill": "Poisons", "name": "proper lab", "mod": 2, "group": "kit"},
+
+    {"skills": ["Fast-Talk", "Diplomacy", "Intimidation"], "name": "hostile target", "mod": -3, "group": "attitude"},
+    {"skills": ["Fast-Talk", "Diplomacy", "Intimidation"], "name": "friendly target", "mod": 2, "group": "attitude"},
+    {"skills": ["Fast-Talk", "Diplomacy", "Intimidation"], "name": "outrageous lie", "mod": -3},
+    {"skills": ["Fast-Talk", "Diplomacy", "Intimidation"], "name": "bribe offered", "mod": 2},
+
+    {"skills": ["Observation", "Search", "Per"], "name": "darkness", "mod": -3},
+    {"skills": ["Observation", "Search", "Per"], "name": "crowd", "mod": -2},
+    {"skills": ["Observation", "Search", "Per"], "name": "know what to look for", "mod": 2}
+  ]
+}

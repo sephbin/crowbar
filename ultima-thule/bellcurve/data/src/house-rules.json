@@ -1,0 +1,9 @@
+{
+  "note": "House rules for Bell Curve GURPS. Costs are already x10. Not GURPS RAW.",
+  "traits": [
+    {"type": "trait", "name": "Backstabber", "base": 150, "kind": "advantage", "tags": ["Advantage", "House Rule"], "ref": "house",
+     "summary": "Against an unaware target, hit-location penalties are halved (fractions kept). Applies to ranged attacks too unless the character sets options.backstabber to \"melee\"."},
+    {"type": "trait", "name": "Sneak Attack", "canLevel": true, "perLevel": 50, "maxLevels": 3, "kind": "advantage", "tags": ["Advantage", "House Rule"], "ref": "house",
+     "summary": "+1d injury per level against an unaware target, added after the hit-location multiplier. Level cap is 2 or 3 (undecided); the validator allows 3."}
+  ]
+}

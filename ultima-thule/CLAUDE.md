@@ -39,6 +39,7 @@ Andrew's satirical fantasy/sci-fi setting, run here in Basic Roleplaying (BRP Un
 - The p.59 spell summary says "Flame" and "Wound"; the full entries are Fire (p.62) and Wounding (p.65). Use the full-entry names.
 - The p.59 summary gives Control as 1 PP per level; its p.60 entry says 3. Use 3.
 - `docs/pregens.md`: the full pregen write-up including backstories.
+- `bellcurve/`: Bell Curve GURPS (GURPS ×10 with d100 on the 3d6 curve): engine, GCS library converter, validator, builder. Separate system from the BRP material; see `bellcurve/CLAUDE.md` and the `bellcurve-build` skill.
 - `.claude/skills/brp-check/`: the checking procedure.
 
 ## Working rules

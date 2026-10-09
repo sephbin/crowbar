@@ -1,0 +1,59 @@
+{
+  "format": "bellcurve-character",
+  "version": 1,
+  "name": "Brock Underhill",
+  "concept": "Badger necromancer",
+  "budget": 1500,
+  "notes": "Draft from the handoff. Badger-folk is a custom template (no badger race in the library). The ghost goat sheet uses the library Spirit, Quadruped and Domestic Animal meta-traits (B263); goat attributes are unset because the library has no goat.",
+  "templates": [
+    {
+      "name": "Badger-folk",
+      "custom": true,
+      "ref": "homebrew",
+      "attributes": { "ST": 200, "HT": 100 },
+      "traits": [
+        { "name": "Damage Resistance", "levels": 1, "notes": "Tough Skin", "modifiers": ["Tough Skin"], "points": 30 },
+        { "name": "Blunt Claws", "points": 30 },
+        { "name": "Discriminatory Smell", "points": 150 },
+        { "name": "Night Vision", "levels": 3, "points": 30 },
+        { "name": "Bad Temper", "cr": 12, "points": -100 },
+        { "name": "Stubbornness", "points": -50 }
+      ]
+    }
+  ],
+  "attributes": { "IQ": 400, "Will": 100 },
+  "traits": [
+    { "name": "Magery", "levels": 2, "points": 250 },
+    {
+      "name": "Ally", "notes": "ghost goat familiar", "frequency": 15,
+      "modifiers": ["100% of your starting points", "Summonable"], "points": 300,
+      "character": {
+        "format": "bellcurve-character", "version": 1,
+        "name": "The ghost goat",
+        "concept": "Familiar",
+        "templates": ["Spirit", "Quadruped", "Domestic Animal"],
+        "attributes": {},
+        "traits": [], "skills": [], "spells": [], "equipment": []
+      }
+    },
+    { "name": "Bad Reputation", "levels": 2, "notes": "necromancer", "modifiers": ["People Affected (x1)", "Recognized all the time (x1)"], "points": -100 },
+    { "name": "Odious Personal Habit", "levels": 1, "notes": "carries grave dirt", "points": -50 }
+  ],
+  "skills": [
+    { "name": "Thaumatology", "points": 10 },
+    { "name": "Occultism", "points": 10 },
+    { "name": "Hidden Lore", "spec": "Spirit Lore", "points": 10 },
+    { "name": "Brawling", "points": 10 }
+  ],
+  "spells": [
+    { "name": "Death Vision", "points": 10 },
+    { "name": "Sense Spirit", "points": 10 },
+    { "name": "Summon Spirit", "points": 10 },
+    { "name": "Sense Foes", "points": 10 },
+    { "name": "Sense Emotion", "points": 10 },
+    { "name": "Fear", "points": 10 },
+    { "name": "Turn Spirit", "points": 10 },
+    { "name": "Command Spirit", "notes": "ghosts", "points": 10 }
+  ],
+  "equipment": []
+}

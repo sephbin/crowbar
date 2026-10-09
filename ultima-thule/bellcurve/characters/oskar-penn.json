@@ -1,0 +1,37 @@
+{
+  "format": "bellcurve-character",
+  "version": 1,
+  "name": "Oskar Penn",
+  "concept": "Halfling assassin",
+  "budget": 1500,
+  "notes": "Built without the library Halfling template: ST 7 is bought down directly. The prototype's throwing knife is the Large Knife's thrown mode (B272).",
+  "options": { "backstabber": "all" },
+  "attributes": { "ST": -300, "DX": 1000, "IQ": 200, "HT": 200 },
+  "traits": [
+    { "name": "Combat Reflexes", "points": 150 },
+    { "name": "Silence", "levels": 1, "points": 50 },
+    { "name": "Backstabber", "points": 150 },
+    { "name": "Sneak Attack", "levels": 1, "points": 50 },
+    { "name": "Greed", "cr": 12, "points": -150 },
+    { "name": "Debt", "levels": 10, "notes": "the Fence", "points": -100 },
+    { "name": "Sense of Duty", "notes": "the crew", "modifiers": ["Small Group"], "points": -50 },
+    { "name": "Overconfidence", "cr": 12, "points": -50 },
+    { "name": "Curious", "cr": 12, "points": -50 }
+  ],
+  "skills": [
+    { "name": "Knife", "points": 80 },
+    { "name": "Thrown Weapon", "spec": "Knife", "points": 40 },
+    { "name": "Stealth", "points": 120 },
+    { "name": "Climbing", "points": 20 },
+    { "name": "Acrobatics", "points": 20 },
+    { "name": "Lockpicking", "points": 40 },
+    { "name": "Poisons", "points": 40 },
+    { "name": "Fast-Talk", "points": 20 },
+    { "name": "Observation", "points": 20 }
+  ],
+  "spells": [],
+  "equipment": [
+    { "name": "Large Knife", "qty": 2 },
+    { "name": "Crossbow", "st": 9, "label": "Light crossbow (ST 9)" }
+  ]
+}
