@@ -14,6 +14,14 @@ Table pages, hosted on GitHub Pages at https://sephbin.github.io/crowbar/
 
 Prep files (rules checker, NPC data, pregens) live in [`ultima-thule/`](ultima-thule/).
 
+## Bell Curve GURPS
+
+GURPS 4e with costs ×10 and every roll shown as a d100 percentage on the 3d6 curve.
+
+- [Builder, sheet and roller](https://sephbin.github.io/crowbar/ultima-thule/bellcurve/index.html): open the examples menu for Oskar Penn and Brock Underhill
+- Characters: [Oskar Penn](ultima-thule/bellcurve/characters/oskar-penn.json) · [Brock Underhill](ultima-thule/bellcurve/characters/brock-underhill.json)
+- [Rules, tools and character format](ultima-thule/bellcurve/CLAUDE.md)
+
 ## Features
 
 - **Live preview** — markdown renders inline as you type (Obsidian-style)
