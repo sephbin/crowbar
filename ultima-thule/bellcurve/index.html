@@ -20,7 +20,7 @@
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.45 var(--body);padding-inline:16px;padding-block:0 60px;font-variant-numeric:tabular-nums}
 [hidden]{display:none!important}
-.wrap{max-width:1100px;margin:0 auto}
+.wrap{max-width:860px;margin:0 auto}
 header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:end;gap:10px 16px;padding-block:22px 12px;border-bottom:2px solid var(--ink)}
 .eyebrow{font:12px/1.2 var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .eyebrow::before{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--accent);margin-right:8px}
@@ -33,9 +33,7 @@ button,.btn{font:700 12px/1 var(--body);letter-spacing:.06em;text-transform:lowe
 button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
 button:disabled{opacity:.35;cursor:not-allowed}
-.grid{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:18px;padding-top:18px;align-items:start}
-@media (max-width:900px){.grid{grid-template-columns:1fr}}
-.col{display:grid;gap:18px;min-width:0}
+.col{display:grid;gap:18px;min-width:0;padding-top:8px}
 .box{background:var(--card);border-radius:14px;box-shadow:0 0 0 1px var(--rule) inset;padding:14px;min-width:0}
 .bar{font:700 12px/1.4 var(--body);letter-spacing:.06em;text-transform:lowercase;border-bottom:2px solid var(--ink);padding-bottom:4px;margin:0 0 10px;
   display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
@@ -110,8 +108,14 @@ input.concept{width:100%;margin-top:6px;background:transparent;border:0;border-b
 .chipline{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0}
 .chipline span{border:1px solid var(--rule);border-radius:999px;padding:3px 9px;font-size:12px}
 
-/* roller */
-.roller{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+/* roller: a modal opened from any skill, spell, attribute or attack. Bottom sheet on phones, centred on desktop. */
+.modal{position:fixed;inset:0;z-index:50;background:rgba(18,18,18,.45);display:grid;align-items:end;justify-items:center;
+  padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+@media (min-width:640px){.modal{align-items:center}}
+.roller{width:min(460px,100%);max-height:88vh;overflow:auto;border-radius:18px;box-shadow:0 10px 40px rgba(0,0,0,.25),0 0 0 1.5px var(--ink) inset;padding:16px}
+.mclose{width:40px;height:40px;padding:0;border-radius:50%;font-size:20px;flex:0 0 auto;margin-left:auto}
+.rhead{display:flex;align-items:start;gap:12px}
+body.locked{overflow:hidden}
 .rtitle{font:400 24px var(--display);margin:0;overflow-wrap:anywhere}
 .rsub{color:var(--muted);font-size:13px;margin:2px 0 10px}
 .big{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
@@ -265,10 +269,13 @@ body:not(.debug) .g{display:none!important}
       </section>
     </div>
 
-    <aside class="box roller" aria-live="polite">
-      <h3 class="bar">roller <small>d100 against the curve</small></h3>
-      <p class="rtitle" id="rname">—</p>
-      <p class="rsub" id="rbase"></p>
+  </div>
+  <div class="modal" id="rmodal" hidden>
+    <aside class="box roller" role="dialog" aria-modal="true" aria-labelledby="rname" aria-live="polite">
+      <div class="rhead">
+        <div style="min-width:0"><p class="rtitle" id="rname">—</p><p class="rsub" id="rbase"></p></div>
+        <button type="button" class="mclose" id="rclose" aria-label="Close roller">×</button>
+      </div>
       <div class="big"><span class="p" id="rpct">—</span><span class="l" id="rlvl"></span></div>
       <div class="bands" id="rbands"></div>
       <svg id="curve" viewBox="0 0 320 120" role="img" aria-label="3d6 distribution with the target level marked"></svg>
@@ -325,8 +332,18 @@ function computeAll() {
   R = res;
 }
 const resetRoll = () => { loc = 0; mod = 0; mode = 0; sits = new Set(); };
-const pick = (s) => { sel = s; resetRoll(); roller(); toRoller(); };
-const toRoller = () => { if (matchMedia("(max-width:900px)").matches) document.querySelector(".roller").scrollIntoView({ behavior: "smooth", block: "start" }); };
+const pick = (s) => { sel = s; resetRoll(); roller(); openRoller(); };
+let rollerFrom = null;
+function openRoller() {
+  rollerFrom = document.activeElement;
+  $("rmodal").hidden = false; document.body.classList.add("locked");
+  $("rmodal").querySelector(".roller").scrollTop = 0; $("rclose").focus();
+}
+function closeRoller() {
+  if ($("rmodal").hidden) return;
+  $("rmodal").hidden = true; document.body.classList.remove("locked");
+  if (rollerFrom?.isConnected) rollerFrom.focus();
+}
 const change = () => { save(); render(); };
 
 // ---------- view state: current tab and debug mode, per viewer ----------
@@ -690,11 +707,14 @@ $("copy").addEventListener("click", () => { navigator.clipboard?.writeText(JSON.
 $("blank").addEventListener("click", () => { if (confirm("Start a blank character? The current one is replaced (save it first if you want it).")) loadChar(BLANK()); });
 $("example").addEventListener("change", e => { const v = e.target.value; e.target.value = ""; if (!v) return;
   fetch(`characters/${v}.json`).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then(obj => { loadChar(obj, `loaded ${obj.name}`); if (v === "oskar-penn") { const w = R.weapons.findIndex(x => x.name === "Large Knife"); if (w >= 0) { sel = { kind: "weapon", i: w }; mode = 1; loc = 4; unaware = true; roller(); } } })
+    .then(obj => loadChar(obj, `loaded ${obj.name}`))
     .catch(() => toast("examples load over http (GitHub Pages or a local server), not from a file:// page")); });
 $("cname").addEventListener("input", e => { C().name = e.target.value; save(); $("rname").textContent = target()?.name || "—"; });
 $("concept").addEventListener("input", e => { C().concept = e.target.value; save(); });
 $("notes").addEventListener("input", e => { C().notes = e.target.value; save(); });
+$("rclose").addEventListener("click", closeRoller);
+$("rmodal").addEventListener("click", e => { if (e.target === e.currentTarget) closeRoller(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeRoller(); });
 $("debug").addEventListener("click", () => { UI.debug = !UI.debug; saveUI(); applyDebug(); roller(); });
 $("budget").addEventListener("change", e => { ROOT.budget = Math.max(0, Math.round(+e.target.value || 0)); change(); });
 $("mod").addEventListener("input", e => { mod = +e.target.value; roller(); });
