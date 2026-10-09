@@ -308,7 +308,7 @@ body:not(.debug) .g{display:none!important}
         <input type="number" id="manual" min="1" max="100" placeholder="or enter" aria-label="Enter a d100 roll" style="width:7em">
       </div>
       <div class="result" id="result"><div class="detail">Pick a skill, spell, attribute or attack, set the situation, roll.</div></div>
-      <p class="hint">Success: roll under the %. Above 100% the roll always succeeds; the surplus soaks up penalties. Margin and criticals use the 3d6 value that roll stands for, so margins compare across skill levels.</p>
+      <p class="hint">Success: roll under the %. Above 100% the roll always succeeds; the surplus soaks up penalties. Margin is the % minus the roll. Criticals use the 3d6 value the roll stands for.</p>
       </div>
       <div class="rfoot" id="rfoot" hidden><button type="button" class="danger" id="rremove"></button></div>
     </aside>
@@ -842,7 +842,8 @@ function resolveRoll(r) {
   const x = BC.resolve(c.L, r);
   const box = $("result"); box.innerHTML = "";
   box.append(el("div", { class: `verdict ${x.win ? "win" : "lose"}` }, x.verdict),
-    el("div", { class: "detail" }, "rolled ", el("b", {}, String(r).padStart(2, "0")), ` against ${x.pct}%`, G(` · as 3d6 that's a ${f1(x.equiv)} against ${f1(c.L)}`), " · margin ", el("b", {}, `${x.margin >= 0 ? "+" : ""}${f1(x.margin)}`)));
+    el("div", { class: "detail" }, "rolled ", el("b", {}, String(r).padStart(2, "0")), ` against ${x.pct}%`, " · margin ", el("b", {}, `${x.pct - r >= 0 ? "+" : "−"}${Math.abs(x.pct - r)}%`),
+      G(` · as 3d6 that's a ${f1(x.equiv)} against ${f1(c.L)}, margin ${x.margin >= 0 ? "+" : ""}${f1(x.margin)}`)));
   if (c.inj && x.win) { const d = BC.rollInjury(c.inj.dice, c.inj.type, c.inj.mult, c.inj.dr, c.inj.sk);
     box.append(el("div", { class: "detail", style: "margin-top:6px" }, "injury ", el("b", { style: "color:var(--accent);font-size:18px" }, String(d.v)),
       ` · damage ${d.dmg}${d.dr ? ` − DR ${d.dr}` : ""} × ${d.mult}${c.inj.sk ? ` + ${d.ex} sneak` : ""}${x.verdict === "critical success" ? " · critical: roll on the critical hit table" : ""}`)); }
