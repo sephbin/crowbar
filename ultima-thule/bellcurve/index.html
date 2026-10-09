@@ -118,6 +118,16 @@ input.concept{width:100%;margin-top:6px;background:transparent;border:0;border-b
 body.locked{overflow:hidden}
 .rfoot{display:flex;justify-content:flex-end;margin-top:12px;padding-top:10px;border-top:1px solid var(--rule)}
 button.danger{border-color:var(--bad);color:var(--bad)}
+.mtabs{display:flex;gap:6px;margin:4px 0 12px}
+.mtabs button[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+.rules dl{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:4px 12px;margin:0 0 12px;font-size:14px}
+.rules dt{color:var(--muted);text-transform:lowercase}
+.rules dd{margin:0;overflow-wrap:anywhere}
+.rules h4{font:700 12px/1.4 var(--body);letter-spacing:.06em;text-transform:lowercase;border-bottom:1px solid var(--rule);margin:14px 0 6px;padding-bottom:2px}
+.rules ul{margin:0;padding-left:1.1em;font-size:14px}
+.rules li{margin:2px 0}
+.rules .ok{color:var(--good)} .rules .no{color:var(--bad)}
+.rules p{font-size:14px;margin:6px 0}
 .rtitle{font:400 24px var(--display);margin:0;overflow-wrap:anywhere}
 .rsub{color:var(--muted);font-size:13px;margin:2px 0 10px}
 .big{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
@@ -278,6 +288,12 @@ body:not(.debug) .g{display:none!important}
         <div style="min-width:0"><p class="rtitle" id="rname">—</p><p class="rsub" id="rbase"></p></div>
         <button type="button" class="mclose" id="rclose" aria-label="Close roller">×</button>
       </div>
+      <nav class="mtabs" id="rtabs" role="tablist" aria-label="Roller sections" hidden>
+        <button type="button" role="tab" data-rtab="roll" aria-controls="rpane-roll">roll</button>
+        <button type="button" role="tab" data-rtab="rules" aria-controls="rpane-rules">rules</button>
+      </nav>
+      <div id="rpane-rules" role="tabpanel" class="rules" hidden></div>
+      <div id="rpane-roll" role="tabpanel">
       <div class="big"><span class="p" id="rpct">—</span><span class="l" id="rlvl"></span></div>
       <div class="bands" id="rbands"></div>
       <svg id="curve" viewBox="0 0 320 120" role="img" aria-label="3d6 distribution with the target level marked"></svg>
@@ -292,8 +308,9 @@ body:not(.debug) .g{display:none!important}
         <input type="number" id="manual" min="1" max="100" placeholder="or enter" aria-label="Enter a d100 roll" style="width:7em">
       </div>
       <div class="result" id="result"><div class="detail">Pick a skill, spell, attribute or attack, set the situation, roll.</div></div>
-      <div class="rfoot" id="rfoot" hidden><button type="button" class="danger" id="rremove"></button></div>
       <p class="hint">Success: roll under the %. Above 100% the roll always succeeds; the surplus soaks up penalties. Margin and criticals use the 3d6 value that roll stands for, so margins compare across skill levels.</p>
+      </div>
+      <div class="rfoot" id="rfoot" hidden><button type="button" class="danger" id="rremove"></button></div>
     </aside>
   </div>
 </div>
@@ -610,8 +627,144 @@ function rollerFoot() {
   $("rremove").textContent = `remove ${what}: ${name}`;
   $("rremove").onclick = () => { list.splice(i, 1); sel = { kind: "attr", k: "DX" }; closeRoller(); change(); toast(`removed ${name}`); };
 }
+// ---------- rules tab: library facts for the open skill, spell or attack. The GCS library carries no rule prose,
+// so this shows only recorded data (attribute, difficulty, defaults, prerequisites, spell stats, weapon modes) plus the page reference.
+let rtab = "roll";
+const BOOKS = { B: "Basic Set", M: "Magic", MA: "Martial Arts" };
+const refTxt = r => String(r || "").split(",").map(x => { const m = /^([A-Z]+)(\d+)$/.exec(x.trim()); return m && BOOKS[m[1]] ? `${BOOKS[m[1]]} p.${m[2]}` : x.trim(); }).join(", ");
+const DIFF_WORD = { E: "easy", A: "average", H: "hard", VH: "very hard", W: "wildcard" };
+const ATTR_OF = { st: "ST", dx: "DX", iq: "IQ", ht: "HT", will: "Will", per: "Per" };
+const titleCase = s => String(s).replace(/\b\w/g, c => c.toUpperCase());
+const pctAt = L => [`${BC.succPct(L)}%`, G(` (${f1(L)})`)];
+const joinN = (items, sep) => items.flatMap((x, i) => i ? [sep, ...x] : x);
+const nodeTxt = xs => xs.map(n => typeof n === "string" ? n : n.textContent).join("");
+const strQ = q => { const v = q?.qualifier ?? ""; return { contains: `…${v}…`, starts_with: `${v}…`, ends_with: `…${v}` }[q?.compare] ?? v; };
+function lvlReq(q) {
+  const op = { at_least: "at least ", at_most: "at most ", greater_than: "over ", less_than: "under ", is_not: "not " }[q.compare] ?? "";
+  return [op, ...pctAt(q.qualifier)];
+}
+function fmtPrereq(p) {
+  if (!p) return [];
+  if (p.type === "prereq_list") {
+    const seen = new Set(), items = (p.prereqs || []).map(fmtPrereq).filter(x => x.length && !seen.has(nodeTxt(x)) && seen.add(nodeTxt(x)));
+    if (items.length <= 1) return items[0] || [];
+    return p.all !== false ? joinN(items, " and ") : ["one of: ", ...joinN(items, " or ")];
+  }
+  const not = p.has === false ? "not " : "", num = q => q && q.compare !== "any" ? q : null;
+  switch (p.type) {
+    case "trait_prereq": {
+      const lv = num(p.level), nt = p.notes && /^(is|contains|starts_with)$/.test(p.notes.compare) ? ` (${p.notes.qualifier})` : "";
+      return [`${not}${titleCase(strQ(p.name))}${lv ? ` ${lv.qualifier}${lv.compare === "at_least" ? "+" : ""}` : ""}${nt}`];
+    }
+    case "skill_prereq": {
+      const lv = num(p.level), sp = p.specialization && p.specialization.compare !== "any" ? ` (${strQ(p.specialization)})` : "";
+      return [`${not}${titleCase(strQ(p.name))}${sp}`, ...(lv ? [" at ", ...lvlReq(lv)] : [])];
+    }
+    case "attribute_prereq": return [`${not}${ATTR_OF[p.which] || p.which} `, ...lvlReq(p.qualifier)];
+    case "spell_prereq": {
+      const n = num(p.quantity)?.qualifier ?? 1, s = n === 1 ? "" : "s";
+      if (p.sub_type === "name") return [`${not}${titleCase(strQ(p.qualifier))}`];
+      if (p.sub_type === "college") return [`${not}${n} spell${s} from ${titleCase(strQ(p.qualifier))}`];
+      if (p.sub_type === "college_count") return [`${not}spells from ${n} different colleges`];
+      if (p.sub_type === "tag") return [`${not}${n} spell${s} tagged ${strQ(p.qualifier)}`];
+      return [`${not}${n} spell${s}`];
+    }
+    default: return [`${p.type.replace(/_prereq$/, "")} condition (not checked here)`];
+  }
+}
+function prereqBlock(p) {
+  if (!p) return null;
+  const top = p.type === "prereq_list" && p.all !== false ? (p.prereqs || []).map(fmtPrereq).filter(x => x.length) : [fmtPrereq(p)];
+  const seen = new Set(), rows = top.filter(x => !seen.has(nodeTxt(x)) && seen.add(nodeTxt(x)));
+  return rows.length ? el("ul", {}, rows.map(x => el("li", {}, ...x))) : null;
+}
+const dl = rows => el("dl", {}, rows.filter(r => r && r[1] != null && r[1] !== "" && !(Array.isArray(r[1]) && !r[1].length)).flatMap(([k, v]) => [el("dt", {}, k), el("dd", {}, ...[v].flat())]));
+// cost of the next 10-point step and what it buys
+function nextStep(s) {
+  if (!s.rec || s.rec.technique || !s.attr) return null;
+  const r0 = BC.relLevel(s.points, s.diff);
+  for (let p = s.points + 10; p <= s.points + 200; p += 10) {
+    const r = BC.relLevel(p, s.diff);
+    if (r != null && (r0 == null || r > r0)) {
+      const L = Math.max(R.attrs[s.attr] + r + (s.bonus || 0), s.level ?? -Infinity);
+      return [`+${p - s.points} pts → `, ...pctAt(L)];
+    }
+  }
+  return null;
+}
+function skillRules(s) {
+  const rec = s.rec, out = [];
+  if (!rec) return [el("p", { class: "no" }, "Not in the library.")];
+  const tech = rec.technique, p = rec.parent;
+  const parent = tech ? R.skills.find(x => x.level != null && x.name.toLowerCase() === p.name.toLowerCase() && (!p.spec || (x.spec || "").toLowerCase() === p.spec.toLowerCase())) : null;
+  const fromParent = d => parent ? [...pctAt(parent.level + d), G(` (parent ${d >= 0 ? "+" : "−"}${Math.abs(d)})`)] : ["parent skill not known", G(` (parent ${d >= 0 ? "+" : "−"}${Math.abs(d)})`)];
+  out.push(dl([
+    tech ? ["technique of", BC.fullName(p.name, p.spec)] : ["based on", `${s.attr}, ${DIFF_WORD[s.diff] || s.diff}`],
+    tech ? ["difficulty", DIFF_WORD[s.diff] || s.diff] : null,
+    tech ? ["default", fromParent(p.mod)] : null,
+    tech && rec.limit != null ? ["maximum", fromParent(rec.limit)] : null,
+    ["points", `${s.points}`],
+    ["now", s.level == null ? "no level" : [...pctAt(s.level), s.source === "default" ? " from a default" : ""]],
+    ["next step", nextStep(s)],
+    s.bonus && UI.debug ? ["traits", `${s.bonus > 0 ? "+" : ""}${s.bonus} included`] : null,
+    ["categories", (rec.tags || []).join(", ")],
+    ["page", refTxt(rec.ref)],
+  ]));
+  if (!tech && rec.defaults?.length) {
+    out.push(el("h4", {}, "defaults"), el("p", {}, "With no points, the best of these applies."));
+    out.push(el("ul", {}, rec.defaults.map(d => {
+      let base = null, label;
+      if (d.type === "skill") {
+        label = BC.fullName(d.name?.qualifier, d.specialization?.qualifier);
+        const own = R.skills.find(x => x.points > 0 && x.level != null && BC.strCmp(d.name, x.name) && BC.strCmp(d.specialization, x.spec || ""));
+        base = own?.level ?? null;
+      } else { label = ATTR_OF[d.type] || d.type; base = R.attrs[label] ?? null; }
+      const m = d.modifier || 0;
+      return el("li", {}, label, G(` ${m >= 0 ? "+" : "−"}${Math.abs(m)}`), ": ", ...(base == null ? [el("span", { class: "muted" }, d.type === "skill" ? "skill not known" : "n/a")] : pctAt(base + m)));
+    })));
+  } else if (!tech && (s.diff === "VH" || s.diff === "W")) out.push(el("p", {}, "No default: needs at least 10 points."));
+  const pb = prereqBlock(rec.prereqs);
+  if (pb) out.push(el("h4", {}, "prerequisites"), pb);
+  return out;
+}
+function spellRules(s) {
+  const rec = s.rec;
+  if (!rec) return [el("p", { class: "no" }, "Not in the library.")];
+  const out = [dl([
+    ["college", rec.college.join(", ")], ["class", rec.class], ["based on", `${rec.attr}, ${DIFF_WORD[rec.diff] || rec.diff}`],
+    ["cost", rec.cost], ["maintain", rec.maint], ["time", rec.time], ["duration", rec.duration], ["resisted by", rec.resist], ["power", rec.power],
+    ["points", `${s.points}`], ["now", s.level == null ? "no level" : pctAt(s.level)], ["next step", nextStep(s)],
+    s.bonus && UI.debug ? ["traits", `${s.bonus > 0 ? "+" : ""}${s.bonus} included (Magery and other traits)`] : null,
+    ["page", refTxt(rec.ref)],
+  ]), el("p", {}, "Spells have no default: each needs at least 10 points.")];
+  const pb = prereqBlock(rec.prereqs);
+  if (pb) out.push(el("h4", {}, "prerequisites ", s.prereqOk ? el("span", { class: "ok" }, "· met") : el("span", { class: "no" }, "· not met")), pb,
+    s.prereqOk ? null : G(el("p", { class: "no" }, "Missing: " + s.missing.join("; "))));
+  return out;
+}
+function weaponRules(w) {
+  const out = [];
+  out.push(el("h4", {}, "attacks"), el("ul", {}, w.modes.map(m => el("li", {}, `${m.usage.toLowerCase()}: ${BC.diceTxt(m.dice)} ${BC.TYPE_NAME[m.type] || m.type}`,
+    m.reach ? ` · reach ${m.reach}` : "", m.range ? ` · range ${m.range}` : "", ` · ${m.skillName}`, m.ratedST ? G(` · ST ${m.ratedST}`) : ""))));
+  if (w.item) out.push(dl([["item", w.rec?.name], ["tech level", w.rec?.tl != null ? `TL${w.rec.tl}` : null], ["cost", w.rec?.cost != null ? `$${w.rec.cost}` : null], ["weight", w.rec?.weight], ["page", refTxt(w.rec?.ref)]]));
+  else if (w.rec?.ref) out.push(dl([["page", refTxt(w.rec.ref)]]));
+  // the skill this weapon rolls against
+  const si = sel.skill ?? R.skills.findIndex(s => w.modes.some(m => m.via?.type === "skill" && BC.strCmp(m.via.name, s.name)));
+  if (si >= 0 && R.skills[si]) out.push(el("h4", {}, `skill: ${BC.fullName(R.skills[si].name, R.skills[si].spec)}`), ...skillRules(R.skills[si]));
+  return out;
+}
+function renderRules(t) {
+  const P = $("rpane-rules"), has = !!(t && (t.skill || t.spell || t.w));
+  $("rtabs").hidden = !has;
+  const tab = has ? rtab : "roll";
+  $("rtabs").querySelectorAll("button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.rtab === tab)));
+  P.hidden = tab !== "rules"; $("rpane-roll").hidden = tab !== "roll";
+  P.replaceChildren(...(!has ? [] : t.w ? weaponRules(t.w) : t.spell ? spellRules(t.spell) : skillRules(t.skill)).filter(Boolean));
+}
+
 function roller() {
   rollerFoot();
+  renderRules(target());
   const t = target();
   ["modes", "locs", "sits"].forEach(id => $(id).innerHTML = "");
   $("drrow").hidden = true;
@@ -726,6 +879,7 @@ $("cname").addEventListener("input", e => { C().name = e.target.value; save(); $
 $("concept").addEventListener("input", e => { C().concept = e.target.value; save(); });
 $("notes").addEventListener("input", e => { C().notes = e.target.value; save(); });
 $("rclose").addEventListener("click", closeRoller);
+$("rtabs").addEventListener("click", e => { const b = e.target.closest("[data-rtab]"); if (!b) return; rtab = b.dataset.rtab; renderRules(target()); });
 $("rmodal").addEventListener("click", e => { if (e.target === e.currentTarget) closeRoller(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeRoller(); });
 $("debug").addEventListener("click", () => { UI.debug = !UI.debug; saveUI(); applyDebug(); roller(); });
