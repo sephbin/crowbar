@@ -116,6 +116,8 @@ input.concept{width:100%;margin-top:6px;background:transparent;border:0;border-b
 .mclose{width:40px;height:40px;padding:0;border-radius:50%;font-size:20px;flex:0 0 auto;margin-left:auto}
 .rhead{display:flex;align-items:start;gap:12px}
 body.locked{overflow:hidden}
+.rfoot{display:flex;justify-content:flex-end;margin-top:12px;padding-top:10px;border-top:1px solid var(--rule)}
+button.danger{border-color:var(--bad);color:var(--bad)}
 .rtitle{font:400 24px var(--display);margin:0;overflow-wrap:anywhere}
 .rsub{color:var(--muted);font-size:13px;margin:2px 0 10px}
 .big{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
@@ -290,6 +292,7 @@ body:not(.debug) .g{display:none!important}
         <input type="number" id="manual" min="1" max="100" placeholder="or enter" aria-label="Enter a d100 roll" style="width:7em">
       </div>
       <div class="result" id="result"><div class="detail">Pick a skill, spell, attribute or attack, set the situation, roll.</div></div>
+      <div class="rfoot" id="rfoot" hidden><button type="button" class="danger" id="rremove"></button></div>
       <p class="hint">Success: roll under the %. Above 100% the roll always succeeds; the surplus soaks up penalties. Margin and criticals use the 3d6 value that roll stands for, so margins compare across skill levels.</p>
     </aside>
   </div>
@@ -460,10 +463,10 @@ function renderSkills() {
     const nm = BC.fullName(s.name, s.spec);
     const w = R.weapons.findIndex(w => w.modes.some(m => m.via?.type === "skill" && BC.strCmp(m.via.name, s.name)));
     K.append(el("div", { class: "row" },
-      el("span", { class: "nm roll", role: "button", tabindex: "0", onclick: () => pick(w >= 0 && !R.weapons[w].natural ? { kind: "weapon", i: w } : { kind: "skill", i }), onkeydown: e => e.key === "Enter" && e.currentTarget.click() }, nm),
+      el("span", { class: "nm roll", role: "button", tabindex: "0", onclick: () => pick(w >= 0 && !R.weapons[w].natural ? { kind: "weapon", i: w, skill: i } : { kind: "skill", i }), onkeydown: e => e.key === "Enter" && e.currentTarget.click() }, nm),
       el("span", { class: "meta" }, s.rec ? (s.rec.technique ? `technique ${s.diff} · ${s.rec.parent.name}` : `${s.attr}/${s.diff}`) : el("span", { class: "bad" }, "not in library"),
         s.level != null ? G(` · ${s.attr}${s.rel >= 0 ? "+" : ""}${f1(s.rel)}${s.bonus ? ` (incl. ${s.bonus > 0 ? "+" : ""}${s.bonus} traits)` : ""}`) : "", s.level != null && s.source === "default" ? " · default" : "",
-        s.ref ? ` · ${s.ref}` : "", removeBtn(nm, () => ch.skills.splice(i, 1))),
+        s.ref ? ` · ${s.ref}` : ""),
       el("span", { class: "val" }, el("b", {}, s.level == null ? "—" : BC.succPct(s.level) + "%"), s.level == null ? el("span", {}, "no level") : G("level " + f1(s.level))),
       stepper(nm, () => ch.skills[i].points || 0, v => ch.skills[i].points = v)));
   });
@@ -478,8 +481,7 @@ function renderSpells() {
     K.append(el("div", { class: "row" },
       el("span", { class: "nm roll", role: "button", tabindex: "0", onclick: () => pick({ kind: "spell", i }), onkeydown: e => e.key === "Enter" && e.currentTarget.click() }, s.name, s.inst.notes ? ` (${s.inst.notes})` : ""),
       el("span", { class: "meta" }, s.rec ? `${s.attr}/${s.diff} · ${s.rec.college.join(", ")} · cost ${s.rec.cost} · ${s.rec.time} · ${s.ref}` : el("span", { class: "bad" }, "not in library"),
-        s.rec ? (s.prereqOk ? el("span", { class: "good" }, " · prereqs ok") : el("span", { class: "bad" }, ` · needs ${s.missing.join("; ")}`)) : "",
-        removeBtn(s.name, () => ch.spells.splice(i, 1))),
+        s.rec ? (s.prereqOk ? el("span", { class: "good" }, " · prereqs ok") : el("span", { class: "bad" }, ` · needs ${s.missing.join("; ")}`)) : ""),
       el("span", { class: "val" }, el("b", {}, s.level == null ? "—" : BC.succPct(s.level) + "%"), s.level == null ? el("span", {}, "no level") : G("level " + f1(s.level))),
       stepper(s.name, () => ch.spells[i].points || 0, v => ch.spells[i].points = v)));
   });
@@ -598,7 +600,18 @@ function sitList(t) {
   }
   return out;
 }
+// remove button for the skill or spell the roller was opened from (a skill row that opens its weapon carries the skill index)
+function rollerFoot() {
+  const ch = C(), si = sel.kind === "skill" ? sel.i : sel.kind === "weapon" ? sel.skill : null;
+  const [list, i, what] = sel.kind === "spell" ? [ch.spells, sel.i, "spell"] : si != null ? [ch.skills, si, "skill"] : [null];
+  $("rfoot").hidden = !list?.[i];
+  if (!list?.[i]) return;
+  const name = BC.fullName(list[i].name, list[i].spec);
+  $("rremove").textContent = `remove ${what}: ${name}`;
+  $("rremove").onclick = () => { list.splice(i, 1); sel = { kind: "attr", k: "DX" }; closeRoller(); change(); toast(`removed ${name}`); };
+}
 function roller() {
+  rollerFoot();
   const t = target();
   ["modes", "locs", "sits"].forEach(id => $(id).innerHTML = "");
   $("drrow").hidden = true;
