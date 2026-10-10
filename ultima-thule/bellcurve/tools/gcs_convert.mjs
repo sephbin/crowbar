@@ -181,9 +181,9 @@ for (const dir of SOURCES.templates) {
 
 // general enhancements and limitations (B101-B117): reference list only. Traits still take modifiers from their own
 // mods; several entries share a name and differ by notes ("Limited Use", "Once per day")
-for (const f of SOURCES.modifiers) for (const r of walk(read(L(f)).rows)) {
+for (const f of SOURCES.modifiers) for (const r of walk(read(L(f)).rows.map(function tag(p) { for (const c of p.children || []) { c._parent = p; tag(c); } return p; }))) {
   if (r.children) continue;
-  const g = [...walk(read(L(f)).rows)].find(p => p.children?.includes(r));
+  const g = r._parent;
   const rec = { type: "modifier", kind: /Limitation/.test(f) ? "limitation" : "enhancement", name: stripAt(r.name).replace(/\s*\(\)$/, "") };
   const notes = stripAt(r.local_notes || "").replace(/<script>.*<\/script>/, "").trim();
   if (notes) rec.notes = notes;
