@@ -4,6 +4,7 @@ import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { readFileSync, writeFileSync } from 'fs';
 import cors from 'cors';
 import vaultRoutes from './server/routes/vault.js';
 import claudeRoutes from './server/routes/claude.js';
@@ -37,6 +38,21 @@ app.use('/api/claude', projectScope, claudeRoutes);
 // Static prep pages (Ultima Thule sheets, GM screen, Bell Curve builder, local review pages under the gitignored
 // bellcurve/rules/), e.g. /pages/bellcurve/rules/review.html. Vite proxies /pages in dev.
 app.use('/pages', express.static(join(__dirname, 'ultima-thule')));
+
+// Book-text review marks from rules/review.html, kept in the gitignored rules/ folder so Claude can read them.
+// Entries are { v, note, at } (a removed mark is { at, del: true }); the newer `at` wins, so phone and desktop merge.
+const MARKS = join(__dirname, 'ultima-thule', 'bellcurve', 'rules', 'review-marks.json');
+const readMarks = () => { try { return JSON.parse(readFileSync(MARKS, 'utf8')); } catch { return {}; } };
+app.get('/api/review-marks', (_req, res) => res.json(readMarks()));
+app.put('/api/review-marks', (req, res) => {
+  if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) return res.status(400).json({ error: 'expected an object' });
+  const marks = readMarks();
+  for (const [id, m] of Object.entries(req.body)) {
+    if (m && typeof m.at === 'string' && (!marks[id] || marks[id].at < m.at)) marks[id] = m;
+  }
+  writeFileSync(MARKS, JSON.stringify(marks, null, 1));
+  res.json(marks);
+});
 
 if (isProd) {
   app.use(express.static(join(__dirname, 'dist')));
