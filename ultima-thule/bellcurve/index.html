@@ -133,6 +133,14 @@ button.danger{border-color:var(--bad);color:var(--bad)}
 .rules .ok{color:var(--good)} .rules .no{color:var(--bad)}
 .rules p{font-size:14px;margin:6px 0}
 .rules p.desc{font-size:15px;line-height:1.5;margin:0 0 12px}
+.book{margin:14px 0 0;padding-top:8px;border-top:1px solid var(--rule)}
+.book summary{cursor:pointer;font-weight:700;text-transform:lowercase}
+.book .src{color:var(--muted);font-size:13px;margin:10px 0 4px}
+.booktext p{margin:0 0 8px;font-size:14px;line-height:1.45}
+.booktext p.bh{font-weight:700}
+.booktext .tblwrap{overflow-x:auto;margin:0 0 8px}
+.booktext table{border-collapse:collapse;font-size:13px}
+.booktext th,.booktext td{border:1px solid var(--rule);padding:2px 6px;text-align:left;vertical-align:top}
 .rtitle{font:400 24px var(--display);margin:0;overflow-wrap:anywhere}
 .rsub{color:var(--muted);font-size:13px;margin:2px 0 10px}
 .big{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
@@ -539,7 +547,7 @@ function renderTraits() {
     meta.append(removeBtn(t.name, () => ch.traits.splice(i, 1)));
     if (/^ally$/i.test(t.name)) meta.append(el("button", { type: "button", onclick: () => { inst.character ||= { ...BLANK(), name: inst.notes || "Ally", budget: undefined }; stack.push(inst); sel = { kind: "attr", k: "DX" }; render(); window.scrollTo(0, 0); } }, inst.character ? "ally sheet →" : "make ally sheet"));
     const row = el("div", { class: "row" },
-      el("span", { class: "nm" }, t.name, rec?.canLevel ? ` ${t.levels}` : ""),
+      el("span", { class: "nm roll", role: "button", tabindex: "0", onclick: () => pick({ kind: "trait", i: R.traits.indexOf(t) }), onkeydown: e => e.key === "Enter" && e.currentTarget.click() }, t.name, rec?.canLevel ? ` ${t.levels}` : ""),
       meta,
       el("span", { class: "val" }, el("b", { class: t.cost < 0 ? "neg" : "" }, (t.cost > 0 ? "+" : "") + t.cost), el("span", {}, t.kind || "")),
       rec?.canLevel ? stepper(t.name + " level", () => inst.levels ?? 1, v => inst.levels = v, 1, 0) : el("span"));
@@ -638,6 +646,8 @@ function target() {
     return R.attrs[k] == null ? null : { name: k, base: R.attrs[k], sub: ["attribute roll"], key: k };
   }
   if (sel.kind === "weapon") { const w = R.weapons[sel.i]; if (!w) return null; return { name: w.name, w, key: w.name }; }
+  if (sel.kind === "trait") { const tr = R.traits[sel.i]; if (!tr) return null;
+    return { name: BC.fullName(tr.name, tr.inst.notes), trait: tr, sub: [`${tr.kind || "trait"} · ${tr.cost} pts${tr.from ? ` · from ${tr.from}` : ""}`], key: tr.name }; }
   if (sel.kind === "spell") { const s = R.spells[sel.i]; if (!s) return null; return { name: s.name, base: s.level, sub: [s.rec ? `${s.attr}/${s.diff} spell · ${s.points} pts · cost ${s.rec.cost} · ${s.rec.time}${s.rec.resist ? " · resisted by " + s.rec.resist : ""}` : ""], key: s.name, spell: s }; }
   const s = R.skills[sel.i]; if (!s) return null;
   return { name: BC.fullName(s.name, s.spec), base: s.level, sub: [`${s.attr}/${s.diff} · ${s.points} pts`, s.level != null ? G(` · ${s.attr}${s.rel >= 0 ? "+" : ""}${f1(s.rel)}`) : ""], key: s.name, skill: s };
@@ -661,7 +671,9 @@ function sitList(t) {
 // remove button for the skill or spell the roller was opened from (a skill row that opens its weapon carries the skill index)
 function rollerFoot() {
   const ch = C(), si = sel.kind === "skill" ? sel.i : sel.kind === "weapon" ? sel.skill : null;
-  const [list, i, what] = sel.kind === "spell" ? [ch.spells, sel.i, "spell"] : si != null ? [ch.skills, si, "skill"] : [null];
+  const tr = sel.kind === "trait" ? R.traits[sel.i] : null;   // a template's trait is removed with its template
+  const [list, i, what] = sel.kind === "spell" ? [ch.spells, sel.i, "spell"] : si != null ? [ch.skills, si, "skill"]
+    : tr && !tr.from ? [ch.traits, ch.traits.indexOf(tr.inst), "trait"] : [null];
   $("rfoot").hidden = !list?.[i];
   if (!list?.[i]) return;
   const name = BC.fullName(list[i].name, list[i].spec);
@@ -671,7 +683,7 @@ function rollerFoot() {
 // ---------- rules tab: library facts for the open skill, spell or attack. The GCS library carries no rule prose,
 // so this shows only recorded data (attribute, difficulty, defaults, prerequisites, spell stats, weapon modes) plus the page reference.
 let rtab = "roll";
-const BOOKS = { B: "Basic Set", M: "Magic", MA: "Martial Arts" };
+const BOOKS = { B: "Basic Set", M: "Magic", MA: "Martial Arts", P: "Powers", H: "Horror", PSI: "Psionic Powers", SU: "Supers", UT: "Ultra-Tech", HT: "High-Tech" };
 const refTxt = r => String(r || "").split(",").map(x => { const m = /^([A-Z]+)(\d+)$/.exec(x.trim()); return m && BOOKS[m[1]] ? `${BOOKS[m[1]]} p.${m[2]}` : x.trim(); }).join(", ");
 const DIFF_WORD = { E: "easy", A: "average", H: "hard", VH: "very hard", W: "wildcard" };
 const ATTR_OF = { st: "ST", dx: "DX", iq: "IQ", ht: "HT", will: "Will", per: "Per" };
@@ -739,6 +751,78 @@ function descBlock(kind, keys, ref) {
   const text = keys.map(k => D[String(k).toLowerCase()]).find(Boolean);
   return text ? el("p", { class: "desc" }, text) : el("p", { class: "muted" }, `No description yet. See ${refTxt(ref)}.`);
 }
+// ---------- book text: served by the local crowbar server (/api/booktext, from the gitignored
+// rules/library-with-text.json). On GitHub Pages or from file:// the request fails and nothing is shown.
+const BOOK = new Map();
+function bookFetch(q) {
+  const key = new URLSearchParams(q).toString();
+  if (!BOOK.has(key)) BOOK.set(key, location.protocol.startsWith("http")
+    ? fetch(`/api/booktext?${key}`).then(r => r.ok ? r.json() : null).catch(() => null) : Promise.resolve(null));
+  return BOOK.get(key);
+}
+const bookPage = p => { const m = /^([A-Z]+(?:\d+:)?)0*(\d+)$/.exec(p || ""); return m ? `${BOOKS[m[1]] || m[1].replace(/:$/, "")} p.${m[2]}` : p || ""; };
+function bookText(t) {
+  const box = el("div", { class: "booktext" }); let tbl = null;   // "| a | b |" lines form a table; its first row is the header
+  String(t).split("\n").forEach((line, i) => {
+    if (/^\|.*\|$/.test(line)) {
+      const cells = line.slice(1, -1).split("|").map(c => c.trim());
+      if (!tbl) { tbl = el("table"); box.append(el("div", { class: "tblwrap" }, tbl)); tbl.append(el("tr", {}, cells.map(c => el("th", {}, c)))); }
+      else tbl.append(el("tr", {}, cells.map(c => el("td", {}, c))));
+      return;
+    }
+    tbl = null;
+    if (line.trim()) box.append(el("p", { class: i === 0 ? "bh" : null }, line));
+  });
+  return box;
+}
+// a collapsible section, shown once its text arrives; open or closed is remembered per browser
+function bookSection(title) {
+  const det = el("details", { class: "book", hidden: true }, el("summary", {}, title));
+  det.open = UI.bookOpen !== false;
+  det.addEventListener("toggle", () => { UI.bookOpen = det.open; saveUI(); });
+  return det;
+}
+function bookBlock(q) {
+  const det = bookSection("book text");
+  bookFetch(q).then(d => {
+    if (!d || (!d.text && !d.supplements.length)) return;
+    if (d.text) det.append(el("p", { class: "src" }, bookPage(d.textRef)), bookText(d.text));
+    for (const s of d.supplements) det.append(el("p", { class: "src" }, `from ${s.book}, p.${String(s.textRef || "").replace(/^[A-Z]+(?:\d+:)?0*/, "")}`), bookText(s.text));
+    det.hidden = false;
+  });
+  return det;
+}
+// the text of each modifier a trait has on: its own from the trait's entry, general ones from B101-B117
+function modsBlock(t) {
+  const mods = t.mods || [];
+  if (!mods.length) return null;
+  const det = bookSection("modifiers in the book");
+  Promise.all(mods.map(m => m.general
+    ? bookFetch({ kind: "modifier", name: m.name, spec: m.notes || "" }).then(d => d?.text ? { m, text: d.text, ref: d.textRef } : null)
+    : bookFetch({ kind: "trait", name: t.rec.name, ref: t.rec.ref }).then(d => {
+        const x = d?.mods.find(y => y.name === m.name && y.adj === m.adj) || d?.mods.find(y => y.name === m.name);
+        return x ? { m, text: x.text, ref: x.textRef } : null;
+      }))).then(rs => {
+    const seen = new Set();
+    for (const r of rs) if (r && !seen.has(r.text)) {
+      seen.add(r.text);
+      det.append(el("p", { class: "src" }, `${r.m.name} (${r.m.adj}) · ${bookPage(r.ref)}`), bookText(r.text));
+    }
+    if (seen.size) det.hidden = false;
+  });
+  return det;
+}
+function traitRules(t) {
+  const rec = t.rec;
+  if (!rec) return [el("p", { class: "no" }, "Not in the library.")];
+  const cr = t.inst.cr ?? rec.cr;
+  return [dl([
+    ["type", rec.kind], ["levels", rec.canLevel ? String(t.levels) : null], ["self-control", cr != null ? `${cr} or less` : null],
+    ["notes", t.inst.notes], ["points", `${t.cost}`],
+    ["modifiers", (t.mods || []).map(m => `${m.name}${m.notes ? ` (${m.notes})` : ""} ${m.adj}${(m.levels || 1) > 1 ? ` ×${m.levels}` : ""}`).join("; ")],
+    ["from", t.from], ["categories", (rec.tags || []).join(", ")], ["page", refTxt(rec.ref)],
+  ]), bookBlock({ kind: "trait", name: rec.name, ref: rec.ref }), modsBlock(t)];
+}
 function skillRules(s) {
   const rec = s.rec, out = [];
   if (!rec) return [el("p", { class: "no" }, "Not in the library.")];
@@ -773,6 +857,7 @@ function skillRules(s) {
   } else if (!tech && (s.diff === "VH" || s.diff === "W")) out.push(el("p", {}, "No default: needs at least 10 points."));
   const pb = prereqBlock(rec.prereqs);
   if (pb) out.push(el("h4", {}, "prerequisites"), pb);
+  out.push(bookBlock({ kind: "skill", name: rec.name, spec: rec.spec || "", ref: rec.ref }));
   return out;
 }
 function spellRules(s) {
@@ -788,6 +873,7 @@ function spellRules(s) {
   const pb = prereqBlock(rec.prereqs);
   if (pb) out.push(el("h4", {}, "prerequisites ", s.prereqOk ? el("span", { class: "ok" }, "· met") : el("span", { class: "no" }, "· not met")), pb,
     s.prereqOk ? null : G(el("p", { class: "no" }, "Missing: " + s.missing.join("; "))));
+  out.push(bookBlock({ kind: "spell", name: rec.name, ref: rec.ref }));
   return out;
 }
 function weaponRules(w) {
@@ -802,12 +888,13 @@ function weaponRules(w) {
   return out;
 }
 function renderRules(t) {
-  const P = $("rpane-rules"), has = !!(t && (t.skill || t.spell || t.w));
-  $("rtabs").hidden = !has;
-  const tab = has ? rtab : "roll";
+  // a trait has nothing to roll: rules only, no tabs
+  const P = $("rpane-rules"), has = !!(t && (t.skill || t.spell || t.w || t.trait));
+  $("rtabs").hidden = !has || !!t.trait;
+  const tab = t?.trait ? "rules" : has ? rtab : "roll";
   $("rtabs").querySelectorAll("button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.rtab === tab)));
   P.hidden = tab !== "rules"; $("rpane-roll").hidden = tab !== "roll";
-  P.replaceChildren(...(!has ? [] : t.w ? weaponRules(t.w) : t.spell ? spellRules(t.spell) : skillRules(t.skill)).filter(Boolean));
+  P.replaceChildren(...(!has ? [] : t.trait ? traitRules(t.trait) : t.w ? weaponRules(t.w) : t.spell ? spellRules(t.spell) : skillRules(t.skill)).filter(Boolean));
 }
 
 function roller() {
