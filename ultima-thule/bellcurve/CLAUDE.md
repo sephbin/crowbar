@@ -24,7 +24,7 @@ node tools/gcs_convert.mjs <dir>               # rebuild data/library.*
 On Windows the clone fails on some long paths (Template Toolkit, Discworld, Pyramid). The books used here (Basic Set, Magic, Fantasy races) check out fine. Re-run the self-test after a rebuild: it compares trait costs with the costs GCS computed for every template trait.
 
 ## Library contents
-Basic Set skills, techniques and traits; Magic skills and spells (not Ritual Magic); Basic Set and Magic equipment; templates from Basic Set races, Basic Set meta-traits and GURPS Fantasy races. The GCS library is MPL 2.0; credit it if anything here is shared. To add a book, add its files to `SOURCES` in `tools/gcs_convert.mjs`.
+Basic Set skills, techniques and traits; Magic skills and spells (not Ritual Magic); Basic Set and Magic equipment; templates from Basic Set races, Basic Set meta-traits and GURPS Fantasy races; the general enhancements and limitations (B101-B117) as `modifiers`. That list is reference only: a character's trait can take only the modifiers in that trait's own `mods`, and GCS attaches few general modifiers to non-attack traits (Obscure has no Area Effect, for instance). The GCS library is MPL 2.0; credit it if anything here is shared. To add a book, add its files to `SOURCES` in `tools/gcs_convert.mjs`.
 
 ## Character JSON
 ```

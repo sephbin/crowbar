@@ -23,6 +23,7 @@ const SOURCES = {
   spells: ["Magic/Magic Spells.spl"],
   equipment: ["Basic Set/Basic Set Equipment.eqp", "Magic/Magic Equipment.eqp"],
   templates: ["Basic Set/Races", "Basic Set/Meta-Traits", "Fantasy/Races"],
+  modifiers: ["Basic Set/Basic Set Enhancement Modifiers.adm", "Basic Set/Basic Set Limitation Modifiers.adm"],
 };
 
 const read = f => JSON.parse(fs.readFileSync(f, "utf8"));
@@ -85,8 +86,8 @@ function convTrait(r) {
   return rec;
 }
 
-const out = { meta: {}, skills: [], traits: [], spells: [], equipment: [], templates: [], natural: [], circumstances: [] };
-const seen = { skills: new Set(), traits: new Set(), spells: new Set(), equipment: new Set(), templates: new Set() };
+const out = { meta: {}, skills: [], traits: [], spells: [], equipment: [], templates: [], modifiers: [], natural: [], circumstances: [] };
+const seen = { skills: new Set(), traits: new Set(), spells: new Set(), equipment: new Set(), templates: new Set(), modifiers: new Set() };
 const dupes = [];
 const push = (kind, key, rec, src) => { if (seen[kind].has(key)) { dupes.push(`${kind}: ${key} (${src})`); return; } seen[kind].add(key); out[kind].push(rec); };
 
@@ -178,6 +179,21 @@ for (const dir of SOURCES.templates) {
   }
 }
 
+// general enhancements and limitations (B101-B117): reference list only. Traits still take modifiers from their own
+// mods; several entries share a name and differ by notes ("Limited Use", "Once per day")
+for (const f of SOURCES.modifiers) for (const r of walk(read(L(f)).rows)) {
+  if (r.children) continue;
+  const g = [...walk(read(L(f)).rows)].find(p => p.children?.includes(r));
+  const rec = { type: "modifier", kind: /Limitation/.test(f) ? "limitation" : "enhancement", name: stripAt(r.name).replace(/\s*\(\)$/, "") };
+  const notes = stripAt(r.local_notes || "").replace(/<script>.*<\/script>/, "").trim();
+  if (notes) rec.notes = notes;
+  rec.adj = x10adj(r.cost_adj);
+  if (g) rec.group = stripAt(g.name);
+  if (r.levels) rec.levels = r.levels;
+  rec.ref = r.reference || "";
+  push("modifiers", `${rec.name}|${notes}|${rec.adj}`.toLowerCase(), rec, f);
+}
+
 // hand-authored data
 const SRC = path.join(ROOT, "data", "src");
 const house = read(path.join(SRC, "house-rules.json"));
@@ -191,7 +207,7 @@ out.meta = {
   source: "GCS master library, https://github.com/richardwilkes/gcs_master_library",
   license: "Mozilla Public License 2.0 (library data). Converted for personal use; costs are GURPS x10.",
   commit, books: SOURCES,
-  counts: Object.fromEntries(["skills", "traits", "spells", "equipment", "templates", "natural", "circumstances"].map(k => [k, out[k].length])),
+  counts: Object.fromEntries(["skills", "traits", "spells", "equipment", "templates", "modifiers", "natural", "circumstances"].map(k => [k, out[k].length])),
 };
 
 fs.writeFileSync(path.join(ROOT, "data", "library.json"), JSON.stringify(out));
