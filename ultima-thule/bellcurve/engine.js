@@ -38,7 +38,9 @@ function resolve(L, r) {
   else if (r <= pct) verdict = "success";
   else if (r >= b.cfStart && pct < 100) verdict = "critical failure";
   else verdict = "failure";
-  return { verdict, win: verdict.endsWith("success"), pct, bands: b, equiv: v, margin: L - v };
+  // mos: whole-number margin for rules that use it (contests, spell effects). A success is 0 or more, a failure -1 or less.
+  const win = verdict.endsWith("success"), m = L - v;
+  return { verdict, win, pct, bands: b, equiv: v, margin: m, mos: win ? Math.max(0, Math.round(m)) : Math.min(-1, Math.round(m)) };
 }
 const f1 = x => x == null || !isFinite(x) ? "—" : (Math.round(x * 10) / 10).toFixed(Math.abs(x - Math.round(x)) < 0.05 ? 0 : 1);
 
