@@ -39,6 +39,8 @@ npm run dev
 
 Then open **http://localhost:5174**.
 
+The server also serves the `ultima-thule/` pages under `/pages`, e.g. `http://localhost:5174/pages/bellcurve/index.html`. The dev server listens on your network (`vite --host`), so a phone on the same Wi-Fi can open them at the Network address Vite prints.
+
 By default your vault is at `~/crowbar-vault`. Change it by creating a `.env` file:
 
 ```

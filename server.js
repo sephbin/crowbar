@@ -34,6 +34,10 @@ const projectScope = (req, res, next) => {
 app.use('/api/vault', projectScope, vaultRoutes);
 app.use('/api/claude', projectScope, claudeRoutes);
 
+// Static prep pages (Ultima Thule sheets, GM screen, Bell Curve builder, local review pages under the gitignored
+// bellcurve/rules/), e.g. /pages/bellcurve/rules/review.html. Vite proxies /pages in dev.
+app.use('/pages', express.static(join(__dirname, 'ultima-thule')));
+
 if (isProd) {
   app.use(express.static(join(__dirname, 'dist')));
   app.get('*', (_req, res) => res.sendFile(join(__dirname, 'dist', 'index.html')));
