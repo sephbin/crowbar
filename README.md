@@ -37,9 +37,9 @@ npm install
 npm run dev
 ```
 
-Then open **http://localhost:5174**.
+Then open **http://localhost:5174**: a home page (`home/index.html`) linking everything below. The vault editor is at **http://localhost:5174/vault/**.
 
-The server also serves the `ultima-thule/` pages under `/pages`, e.g. `http://localhost:5174/pages/bellcurve/index.html`. The dev server listens on your network (`vite --host`), so a phone on the same Wi-Fi can open them at the Network address Vite prints.
+The server also serves the `ultima-thule/` pages under `/pages`, e.g. `http://localhost:5174/pages/bellcurve/index.html`. The dev server listens on your network (`vite --host`), so a phone on the same Wi-Fi can open them at the Network address Vite prints (drop the `/vault/` it shows to reach the home page).
 
 By default your vault is at `~/crowbar-vault`. Change it by creating a `.env` file:
 

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Crowbar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cutive+Mono&family=Courier+Prime:wght@400;700&display=swap">
+<style>
+:root{--paper:#e3e3df;--card:#f3f3f0;--ink:#121212;--muted:#5f5f5a;--accent:#e64700;--rule:#c8c8c3;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#161615;--card:#21211f;--ink:#ecebe6;--muted:#a3a29b;--accent:#ff6a26;--rule:#3a3a36;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#161615;--card:#21211f;--ink:#ecebe6;--muted:#a3a29b;--accent:#ff6a26;--rule:#3a3a36;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.45 "Courier Prime","Courier New",monospace;padding:0 16px 48px}
+.wrap{max-width:640px;margin:0 auto}
+h1{font:400 clamp(34px,9vw,52px)/1 "Cutive Mono","Courier New",monospace;text-transform:lowercase;margin:28px 0 6px}
+.sub{color:var(--muted);margin:0 0 20px;padding-bottom:12px;border-bottom:2px solid var(--ink)}
+h2{font:700 12px/1.4 inherit;letter-spacing:.06em;text-transform:lowercase;margin:22px 0 8px}
+a.card{display:block;background:var(--card);box-shadow:0 0 0 1px var(--rule) inset;border-radius:12px;padding:14px 16px;margin:8px 0;color:var(--ink);text-decoration:none}
+a.card:hover,a.card:focus-visible{box-shadow:0 0 0 2px var(--accent) inset;outline:none}
+a.card b{font:400 22px/1.1 "Cutive Mono","Courier New",monospace;display:block}
+a.card span{color:var(--muted);font-size:14px}
+.tag{display:inline-block;margin-left:6px;padding:0 6px;border-radius:6px;font-size:12px;color:var(--muted);box-shadow:0 0 0 1px var(--rule) inset;vertical-align:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>crowbar</h1>
+  <p class="sub">Vault editor and table prep.</p>
+
+  <h2>vault</h2>
+  <a class="card" href="/vault/"><b>vault editor</b><span>Pages, NPC cards, canvases and relationships, with Claude editing</span></a>
+
+  <h2>ultima thule (brp)</h2>
+  <a class="card" href="/pages/gm/tram-job.html"><b>gm screen</b><span>The Tram Job: zealot trackers, stat blocks, the binding, rules quick reference</span></a>
+  <a class="card" href="/pages/sheets/Vesna-Krall-Character-Sheet.html"><b>Vesna Krall</b><span>Player sheet: soldier</span></a>
+  <a class="card" href="/pages/sheets/Oskar-Penn-Character-Sheet.html"><b>Oskar Penn</b><span>Player sheet: thief</span></a>
+  <a class="card" href="/pages/sheets/Imre-Talvy-Character-Sheet.html"><b>Dr Imre Talvy</b><span>Player sheet: wizard</span></a>
+  <a class="card" href="/pages/index.html"><b>table page</b><span>The players' landing page, as published on GitHub Pages</span></a>
+
+  <h2>bell curve gurps</h2>
+  <a class="card" href="/pages/bellcurve/index.html"><b>bell curve builder</b><span>GURPS costs ×10, d100 on the 3d6 curve: builder, sheet and roller</span></a>
+  <a class="card" href="/pages/bellcurve/rules/review.html"><b>book text review</b><span class="tag">this machine only</span><span>Check the extracted book text for skills, spells, traits and modifiers; notes save to the server</span></a>
+</div>
+</body>
+</html>

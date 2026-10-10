@@ -54,9 +54,13 @@ app.put('/api/review-marks', (req, res) => {
   res.json(marks);
 });
 
+// Home page linking the vault editor and the prep pages. Vite proxies exactly "/" here in dev.
+app.get('/', (_req, res) => res.sendFile(join(__dirname, 'home', 'index.html')));
+
+// The vault editor lives under /vault (Vite builds it with base /vault/).
 if (isProd) {
-  app.use(express.static(join(__dirname, 'dist')));
-  app.get('*', (_req, res) => res.sendFile(join(__dirname, 'dist', 'index.html')));
+  app.use('/vault', express.static(join(__dirname, 'dist')));
+  app.get('/vault/*', (_req, res) => res.sendFile(join(__dirname, 'dist', 'index.html')));
 }
 
 const httpServer = createServer(app);
@@ -77,5 +81,5 @@ initVault();
 
 httpServer.listen(PORT, () => {
   console.log(`[crowbar] API server listening on http://localhost:${PORT}`);
-  if (!isProd) console.log(`[crowbar] Open http://localhost:5174 (Vite dev server)`);
+  if (!isProd) console.log(`[crowbar] Open http://localhost:5174 (Vite dev server; the vault editor is at /vault/)`);
 });
