@@ -1,0 +1,36 @@
+{
+  "note": "Standard modifier sets that skill and spell entries point to ('Modifiers: Equipment modifiers (p. 345)'). Labels are paraphrased; values come from the page given, in levels. 'tech' replaces 'mod' for technological skills (TL skills). Entries sharing a group are exclusive. The roller offers a set when the skill's book text names it (local book text only).",
+  "sets": {
+    "equipment": { "ref": "B345", "match": "equipment modifiers", "items": [
+      { "name": "no equipment", "mod": -5, "tech": -10, "group": "equipment" },
+      { "name": "improvised equipment", "mod": -2, "tech": -5, "group": "equipment" },
+      { "name": "good-quality equipment", "mod": 1, "group": "equipment" },
+      { "name": "fine-quality equipment", "mod": 2, "group": "equipment" },
+      { "name": "an important item missing", "mod": -1 },
+      { "name": "damaged equipment", "mod": -2 }
+    ] },
+    "culture": { "ref": "B23", "match": "cultural familiarity", "items": [
+      { "name": "unfamiliar culture", "mod": -3 }
+    ] },
+    "language": { "ref": "B24", "match": "language modifiers", "items": [
+      { "name": "language: accented", "mod": -1, "group": "language" },
+      { "name": "language: broken", "mod": -3, "group": "language" }
+    ] },
+    "physiology": { "ref": "B181", "match": "physiology modifiers", "items": [
+      { "name": "species: similar physiology", "mod": -2, "group": "species" },
+      { "name": "species: quite different (troll)", "mod": -4, "group": "species" },
+      { "name": "species: very different (animals)", "mod": -5, "group": "species" },
+      { "name": "species: utterly alien", "mod": -6, "group": "species" }
+    ] },
+    "long-distance": { "ref": "M14", "match": "long-distance modifier", "items": [
+      { "name": "½ mile away", "mod": -1, "group": "distance" },
+      { "name": "1 mile away", "mod": -2, "group": "distance" },
+      { "name": "3 miles away", "mod": -3, "group": "distance" },
+      { "name": "10 miles away", "mod": -4, "group": "distance" },
+      { "name": "30 miles away", "mod": -5, "group": "distance" },
+      { "name": "100 miles away", "mod": -6, "group": "distance" },
+      { "name": "300 miles away", "mod": -7, "group": "distance" },
+      { "name": "1,000 miles away", "mod": -8, "group": "distance" }
+    ] }
+  }
+}

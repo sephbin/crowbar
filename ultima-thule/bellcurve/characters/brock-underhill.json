@@ -43,7 +43,8 @@
     { "name": "Thaumatology", "points": 10 },
     { "name": "Occultism", "points": 10 },
     { "name": "Hidden Lore", "spec": "Spirit Lore", "points": 10 },
-    { "name": "Brawling", "points": 10 }
+    { "name": "Brawling", "points": 10 },
+    { "name": "Dancing", "points": 10 }
   ],
   "spells": [
     { "name": "Death Vision", "points": 10 },

@@ -83,7 +83,7 @@ app.get('/api/booktext', (req, res) => {
   if (!r) return res.status(404).json({ error: 'not found' });
   const pick = x => ({ text: x.text || null, textRef: x.textRef || null, how: x.how || '' });
   res.json({
-    name: r.name, ref: r.ref || '', ...pick(r), categories: r.categories || [],
+    name: r.name, ref: r.ref || '', ...pick(r), categories: r.categories || [], rollMods: r.rollMods || [],
     supplements: (r.supplements || []).map(s => ({ book: s.book, ...pick(s) })),
     mods: (r.mods || []).filter(m => m.text).map(m => ({ name: m.name, adj: m.adj, group: m.group || '', ...pick(m) })),
   });

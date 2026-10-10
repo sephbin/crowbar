@@ -200,6 +200,7 @@ const house = read(path.join(SRC, "house-rules.json"));
 for (const t of house.traits) out.traits.unshift({ ...t, house: true });
 out.natural = read(path.join(SRC, "natural.json")).natural;
 out.circumstances = read(path.join(SRC, "circumstances.json")).circumstances;
+out.modsets = read(path.join(SRC, "modifier-sets.json")).sets;
 
 let commit = "";
 try { commit = execFileSync("git", ["-C", libRoot, "log", "-1", "--format=%h %cs"], { encoding: "utf8" }).trim(); } catch { }
