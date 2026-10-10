@@ -50,7 +50,7 @@ Basic Set skills, techniques and traits; Magic skills and spells (not Ritual Mag
 
 ## AI build workflow
 1. Read the description. List every trait, skill, spell, item and template it implies.
-2. Look each one up with `node tools/bc_find.mjs`. Use the library's name, cost, modifiers and specializations. Never write a stat from memory. If something is not in the library, keep it out of the library-backed fields, put it in `notes` and flag it for Andrew. A custom template (`"custom": true`) is fine for a homebrew race when its traits are library traits.
+2. Look each one up with `node tools/bc_find.mjs`. Use the library's name, cost, modifiers and specializations. Never write a stat from memory. Where `rules/library-with-text.json` exists (local only), add `--text` to read the book and supplement text for each chosen trait: check its limits, incompatibilities and GM-permission notes before using it. Costs still come from the library; never copy the book text into a character or the repo. If something is not in the library, keep it out of the library-backed fields, put it in `notes` and flag it for Andrew. A custom template (`"custom": true`) is fine for a homebrew race when its traits are library traits.
 3. Write `characters/<slug>.json`.
 4. Run `node tools/bc_check.mjs characters/<slug>.json`. Fix every ERROR. Read every WARN and fix it or record the ruling in `notes`.
 5. Report the point breakdown and any design problems with numbers. Open the file in the builder (open, or the examples menu after adding it there) to play it.
