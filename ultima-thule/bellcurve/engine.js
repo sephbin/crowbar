@@ -420,9 +420,20 @@ function compute(ch, lib, opts = {}) {
     } else tpls.push({ tpl: t, j });
   });
   const tplAttrs = {};
+  // traits taken off a template for this character ("templateRemoved": [{ "template": "Badger-folk", "trait": "Stubbornness" }]);
+  // the template is left as it is, so the trait can be put back
+  const removedKey = (tn, t) => lc(`${tn}|${fullName(t.name, t.notes)}`);
+  const removedSet = new Set((ch.templateRemoved || []).map(r => lc(`${r.template}|${r.trait}`)));
+  const removed = [];
   for (const { tpl, j } of tpls) {
     for (const k of ATTR_KEYS) if (tpl.attributes?.[k]) tplAttrs[k] = (tplAttrs[k] || 0) + tpl.attributes[k];
-    (tpl.traits || []).forEach((t, i) => traitRows.push({ inst: t, from: tpl.name, path: `templates[${j}].traits[${i}]` }));
+    (tpl.traits || []).forEach((t, i) => {
+      if (!removedSet.has(removedKey(tpl.name, t)) && !removedSet.has(lc(`${tpl.name}|${t.name}`))) { traitRows.push({ inst: t, from: tpl.name, path: `templates[${j}].traits[${i}]` }); return; }
+      const rec = t.rec || findOne(ix.traits, t.name);
+      const cost = rec ? traitCost(rec, t, lib.modifiers || []).cost : (t.points ?? 0);
+      removed.push({ template: tpl.name, trait: fullName(t.name, t.notes), name: t.name, inst: t, rec, cost });
+      add("ok", `${fullName(t.name, t.notes)}: taken off the ${tpl.name} template (${cost < 0 ? "+" : "−"}${Math.abs(cost)} pts to the total)`, rec?.ref || "", `templates[${j}].traits[${i}]`);
+    });
     if (tpl.custom) add("WARN", `template ${tpl.name}: custom, not in the library${tpl.ref ? " (" + tpl.ref + ")" : ""}; its traits are checked one by one`, "", `templates[${j}]`);
   }
   const tpl = tpls.map(t => t.tpl);
@@ -572,8 +583,8 @@ function compute(ch, lib, opts = {}) {
     const r = row.points >= 10 ? relLevel(row.points, rec.diff) : null;
     row.bonus = spellBonus(rec);
     row.level = r == null ? null : baseOf(rec.attr) + r + row.bonus;
+    // any point total from 10 up: levels interpolate between the steps, as for skills
     if (row.points < 10) add("ERROR", `spell ${inst.name}: spells have no default; needs at least 10 pts`, rec.ref, path);
-    else if (row.points % 10) add("WARN", `spell ${inst.name}: ${row.points} pts is not a 10-point step`, rec.ref, path);
     return row;
   });
 
@@ -681,7 +692,7 @@ function compute(ch, lib, opts = {}) {
 
   return {
     name: ch.name, budget, spent, breakdown, attrs: A, attrPoints: pts, attrBonus, extra, dodge, thr, sw,
-    traits, skills: skillRows, spells: spellRows, weapons: weaponOf, dr, natDR, conditionals, reactions, allies, templates: tpl, issues,
+    traits, templateRemoved: removed, skills: skillRows, spells: spellRows, weapons: weaponOf, dr, natDR, conditionals, reactions, allies, templates: tpl, issues,
     houseBackstab: traits.some(t => /^backstabber$/i.test(t.name)),
     sneakDice: traits.filter(t => /^sneak attack$/i.test(t.name)).reduce((a, t) => a + (t.levels || 1), 0),
   };

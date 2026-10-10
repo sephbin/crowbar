@@ -94,6 +94,8 @@ input.concept{width:100%;margin-top:6px;background:transparent;border:0;border-b
 .row .ctl .p{min-width:3.2em;text-align:center;font-size:13px}
 .row .bad{color:var(--bad)} .row .good{color:var(--good)}
 .row details{grid-column:1 / -1;font-size:13px}
+.row.removed .nm{text-decoration:line-through;color:var(--muted);font-weight:400}
+.row.removed .val b{color:var(--muted)}
 .row details summary{cursor:pointer;color:var(--muted)}
 .mods{display:grid;gap:2px;margin-top:6px;max-height:260px;overflow:auto;padding-right:4px}
 .mods .mg{font-weight:700;margin-top:6px}
@@ -488,6 +490,30 @@ const stepper = (label, get, set, step = 10, min = 0) => el("span", { class: "ct
   el("button", { type: "button", "aria-label": `Lower ${label}`, onclick: () => { set(Math.max(min, get() - step)); change(); } }, "−"),
   el("span", { class: "p" }, String(get())),
   el("button", { type: "button", "aria-label": `Raise ${label}`, onclick: () => { set(get() + step); change(); } }, "+"));
+// skills and spells: + buys the fewest points that raise the roll by at least 1%, − sells back to the most points that
+// lower it by at least 1% (levels interpolate between point steps). Found by binary search on a recomputed copy.
+function pctOf(kind, i, pts) {
+  const ch = structuredClone(C()); ch[kind][i].points = pts;
+  const row = BC.compute(ch, LIB)[kind][i];
+  return row?.level == null ? -1 : BC.succPct(row.level);
+}
+function pctStep(kind, i, dir, min) {
+  const cur = C()[kind][i].points || 0, now = pctOf(kind, i, cur);
+  if (dir > 0) {
+    let lo = cur, hi = cur + 400;
+    if (pctOf(kind, i, hi) <= now) return cur + 10;          // already at the top of the curve
+    while (hi - lo > 1) { const m = (lo + hi) >> 1; if (pctOf(kind, i, m) > now) hi = m; else lo = m; }
+    return hi;
+  }
+  if (cur <= min || pctOf(kind, i, min) >= now) return min;
+  let lo = min, hi = cur;
+  while (hi - lo > 1) { const m = (lo + hi) >> 1; if (pctOf(kind, i, m) < now) lo = m; else hi = m; }
+  return lo;
+}
+const pctStepper = (label, kind, i, min = 0) => el("span", { class: "ctl" },
+  el("button", { type: "button", "aria-label": `Lower ${label} by 1%`, onclick: () => { C()[kind][i].points = pctStep(kind, i, -1, min); change(); } }, "−"),
+  el("span", { class: "p", title: "points" }, String(C()[kind][i].points || 0)),
+  el("button", { type: "button", "aria-label": `Raise ${label} by 1%`, onclick: () => { C()[kind][i].points = pctStep(kind, i, 1, min); change(); } }, "+"));
 const removeBtn = (label, fn) => el("button", { type: "button", class: "x", "aria-label": `Remove ${label}`, onclick: () => { fn(); change(); } }, "×");
 
 function renderSkills() {
@@ -502,7 +528,7 @@ function renderSkills() {
         s.level != null ? G(` · ${s.attr}${s.rel >= 0 ? "+" : ""}${f1(s.rel)}${s.bonus ? ` (incl. ${s.bonus > 0 ? "+" : ""}${s.bonus} traits)` : ""}`) : "", s.level != null && s.source === "default" ? " · default" : "",
         s.ref ? ` · ${s.ref}` : ""),
       el("span", { class: "val" }, el("b", {}, s.level == null ? "—" : BC.succPct(s.level) + "%"), s.level == null ? el("span", {}, "no level") : G("level " + f1(s.level))),
-      stepper(nm, () => ch.skills[i].points || 0, v => ch.skills[i].points = v)));
+      pctStepper(nm, "skills", i)));
   });
 }
 
@@ -517,14 +543,35 @@ function renderSpells() {
       el("span", { class: "meta" }, s.rec ? `${s.attr}/${s.diff} · ${s.rec.college.join(", ")} · cost ${s.rec.cost} · ${s.rec.time} · ${s.ref}` : el("span", { class: "bad" }, "not in library"),
         s.rec ? (s.prereqOk ? el("span", { class: "good" }, " · prereqs ok") : el("span", { class: "bad" }, ` · needs ${s.missing.join("; ")}`)) : ""),
       el("span", { class: "val" }, el("b", {}, s.level == null ? "—" : BC.succPct(s.level) + "%"), s.level == null ? el("span", {}, "no level") : G("level " + f1(s.level))),
-      stepper(s.name, () => ch.spells[i].points || 0, v => ch.spells[i].points = v)));
+      pctStepper(s.name, "spells", i, 10)));
   });
 }
 
 function renderTraits() {
   const ch = C(), T = $("traits"); T.innerHTML = "";
-  const own = R.traits.filter(t => !t.from);
-  if (!own.length) T.append(el("div", { class: "list-note" }, "No traits."));
+  // the character's own traits, then each template's (fixed by the template, but removable: a badger can be less stubborn)
+  const own = R.traits.filter(t => !t.from), fromTpl = R.traits.filter(t => t.from);
+  if (!own.length && !fromTpl.length && !R.templateRemoved.length) T.append(el("div", { class: "list-note" }, "No traits."));
+  for (const t of fromTpl) {
+    const inst = t.inst, rec = t.rec, cr = inst.cr ?? rec?.cr;
+    const meta = el("span", { class: "meta" }, el("span", {}, [`from ${t.from}`, inst.notes, cr != null ? `CR ${cr}` : "",
+      (t.mods || []).map(m => m.name).filter(n => n !== inst.notes).join(", "), rec?.ref].filter(Boolean).join(" · ")),
+      removeBtn(`${t.name} from ${t.from}`, () => { (ch.templateRemoved ||= []).push({ template: t.from, trait: BC.fullName(t.name, inst.notes) }); toast(`${t.name} taken off ${t.from}`); }));
+    T.append(el("div", { class: "row tpl" },
+      el("span", { class: "nm roll", role: "button", tabindex: "0", onclick: () => pick({ kind: "trait", i: R.traits.indexOf(t) }), onkeydown: e => e.key === "Enter" && e.currentTarget.click() }, t.name, rec?.canLevel ? ` ${t.levels}` : ""),
+      meta,
+      el("span", { class: "val" }, el("b", { class: t.cost < 0 ? "neg" : "" }, (t.cost > 0 ? "+" : "") + t.cost), el("span", {}, t.kind || "")),
+      el("span")));
+  }
+  for (const x of R.templateRemoved) {
+    const k = (ch.templateRemoved || []).findIndex(r => r.template === x.template && (r.trait === x.trait || r.trait === x.name));
+    T.append(el("div", { class: "row tpl removed" },
+      el("span", { class: "nm" }, x.trait),
+      el("span", { class: "meta" }, `taken off ${x.template} · ${x.cost < 0 ? "costs" : "saves"} ${Math.abs(x.cost)} pts`,
+        el("button", { type: "button", "aria-label": `Put ${x.trait} back on ${x.template}`, onclick: () => { ch.templateRemoved.splice(k, 1); if (!ch.templateRemoved.length) delete ch.templateRemoved; change(); } }, "put back")),
+      el("span", { class: "val" }, el("b", {}, "0"), el("span", {}, "removed")),
+      el("span")));
+  }
   own.forEach((t) => {
     const i = ch.traits.indexOf(t.inst), inst = t.inst, rec = t.rec;
     const meta = el("span", { class: "meta" });
@@ -671,7 +718,13 @@ function sitList(t) {
 // remove button for the skill or spell the roller was opened from (a skill row that opens its weapon carries the skill index)
 function rollerFoot() {
   const ch = C(), si = sel.kind === "skill" ? sel.i : sel.kind === "weapon" ? sel.skill : null;
-  const tr = sel.kind === "trait" ? R.traits[sel.i] : null;   // a template's trait is removed with its template
+  const tr = sel.kind === "trait" ? R.traits[sel.i] : null;
+  if (tr?.from) {   // a template's trait is taken off the template for this character, and can be put back
+    $("rfoot").hidden = false;
+    $("rremove").textContent = `take ${tr.name} off ${tr.from}`;
+    $("rremove").onclick = () => { (ch.templateRemoved ||= []).push({ template: tr.from, trait: BC.fullName(tr.name, tr.inst.notes) }); sel = { kind: "attr", k: "DX" }; closeRoller(); change(); toast(`${tr.name} taken off ${tr.from}`); };
+    return;
+  }
   const [list, i, what] = sel.kind === "spell" ? [ch.spells, sel.i, "spell"] : si != null ? [ch.skills, si, "skill"]
     : tr && !tr.from ? [ch.traits, ch.traits.indexOf(tr.inst), "trait"] : [null];
   $("rfoot").hidden = !list?.[i];

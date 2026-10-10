@@ -89,5 +89,16 @@ eq("Aura without Melee Attack (Reach C) warns", cost("Innate Attack (Toxic)", { 
 eq("Contact Agent with Area Effect warns about +150%", cost("Affliction", { modifiers: ["Contact Agent", "Area Effect"] }).warns.some(w => /\+150%/.test(w)), true);
 eq("two penetration modifiers warn", cost("Affliction", { modifiers: ["Respiratory Agent", { name: "Blood Agent", notes: "" , adj: "-40%" }, "Area Effect"] }).warns.some(w => /penetration/.test(w)), true);
 
+// a trait taken off a template for one character: a disadvantage removed costs its points back
+const brock = JSON.parse(fs.readFileSync(path.join(HERE, "..", "characters", "brock-underhill.json"), "utf8"));
+const b0 = BC.compute(brock, lib).spent;
+const b1 = BC.compute({ ...brock, templateRemoved: [{ template: "Badger-folk", trait: "Stubbornness" }] }, lib);
+eq("Badger-folk without Stubbornness costs 50 more", b1.spent - b0, 50);
+eq("removed template trait is listed", b1.templateRemoved.map(x => x.name).join(), "Stubbornness");
+// spells take any point total from 10, interpolating like skills
+const sp = BC.compute({ ...brock, spells: [{ name: "Death Vision", points: 15 }] }, lib);
+eq("spell at 15 pts: no step warning", sp.issues.some(x => /Death Vision/.test(x.msg) && /step/.test(x.msg)), false);
+eq("spell at 15 pts sits between 10 and 20", (() => { const at = p => BC.compute({ ...brock, spells: [{ name: "Death Vision", points: p }] }, lib).spells[0].level; return at(10) < sp.spells[0].level && sp.spells[0].level < at(20); })(), true);
+
 console.log(fail ? `${fail} failure(s)` : "all passed");
 process.exit(fail ? 1 : 0);
