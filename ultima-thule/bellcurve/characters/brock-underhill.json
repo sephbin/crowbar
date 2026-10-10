@@ -23,7 +23,7 @@
   ],
   "attributes": { "IQ": 400, "Will": 100 },
   "traits": [
-    { "name": "Magery", "levels": 2, "points": 250 },
+    { "name": "Magery", "levels": 3, "points": 350 },
     {
       "name": "Ally", "notes": "ghost goat familiar", "frequency": 15,
       "modifiers": ["100% of your starting points", "Summonable", "Minion (50%)", "Sympathy (-25%)"], "points": 340,
@@ -57,7 +57,13 @@
       }
     },
     { "name": "Bad Reputation", "levels": 2, "notes": "necromancer", "modifiers": ["People Affected (x1)", "Recognized all the time (x1)"], "points": -100 },
-    { "name": "Odious Personal Habit", "levels": 1, "notes": "carries grave dirt", "points": -50 }
+    { "name": "Odious Personal Habit", "levels": 1, "notes": "carries grave dirt", "points": -50 },
+    { "name": "Callous", "points": -50 },
+    { "name": "Distinctive Features", "notes": "smells of turned earth", "points": -10 },
+    { "name": "Habit", "notes": "talks to the dead as if they were in the room", "points": -10 },
+    { "name": "Uncongenial", "points": -10 },
+    { "name": "Careful", "points": -10 },
+    { "name": "Broad-Minded", "points": -10 }
   ],
   "skills": [
     { "name": "Thaumatology", "points": 10 },

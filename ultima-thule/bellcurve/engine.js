@@ -394,6 +394,10 @@ function weaponModes(item, rec, st) {
     const b = parseDice(w.dmg.base);
     const bad = b == null;
     if (b) { dice = { n: dice.n + b.n, add: dice.add + b.add }; }
+    // a trait's damage per level (Innate Attack "1d" a level), and "+1 per die" (Strikers, Claws; B88), which the
+    // Striker limitation Weak removes
+    if (w.dmg.leveled) { const l = parseDice(w.dmg.leveled), n = item.levels || 1; if (l) dice = { n: dice.n + l.n * n, add: dice.add + l.add * n }; }
+    if (w.dmg.perDie && !item.noPerDie) dice = { n: dice.n, add: dice.add + w.dmg.perDie * dice.n };
     const melee = !!w.reach && !w.range;
     out.push({ usage: w.usage || (melee ? "melee" : "ranged"), dice, type: w.dmg.type, melee, reach: w.reach, range: w.range, parry: w.parry,
       acc: w.acc, strength: w.strength, ratedST, defaults: w.defaults || [], dmgText: w.dmgText, unparsed: bad ? w.dmg.base : null });
@@ -643,7 +647,16 @@ function compute(ch, lib, opts = {}) {
     for (const d of rec.dr || []) if (item.worn !== false) for (const loc of d.locations) for (const L of DR_LOC[loc] || []) dr[L] = Math.max(dr[L], d.amount);
     addWeapon(item.label || item.name + (item.st ? ` (ST ${item.st})` : ""), rec, item, path);
   });
-  for (const n of NATURAL(lib)) addWeapon(n.name, n, {}, "natural", true);
+  // weapons that come with traits: Strikers (horns, tails), Claws, Teeth, Hooves, Innate Attacks. Afflictions and
+  // Binding do no injury, so the injury roller does not fit them; they are left out. A trait's punch or kick (Blunt
+  // Claws) replaces the plain one.
+  const traitWeapons = traits.map(t => ({ t, ws: (t.rec?.weapons || []).filter(w => !/^(aff|binding)$/.test(w.dmg.type) && (w.dmg.st || w.dmg.base || w.dmg.leveled)) })).filter(x => x.ws.length);
+  const replaced = new Set(traitWeapons.flatMap(x => x.ws.map(w => lc(w.usage))).filter(Boolean));
+  for (const n of NATURAL(lib)) if (!n.weapons.every(w => replaced.has(lc(w.usage)))) addWeapon(n.name, n, {}, "natural", true);
+  for (const { t, ws } of traitWeapons) {
+    const weak = (t.mods || []).some(m => /^weak$/i.test(m.name));
+    addWeapon(fullName(t.name, t.inst.notes), { ...t.rec, weapons: ws }, { levels: t.levels, noPerDie: weak }, t.path, true);
+  }
   // natural DR from traits (Damage Resistance, Tough Skin etc.) stacks on armour
   const traitDR = features.filter(f => f.type === "dr_bonus");
   const natDR = {}; LOCS.forEach(l => natDR[l.name] = 0);

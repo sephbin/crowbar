@@ -100,5 +100,15 @@ const sp = BC.compute({ ...brock, spells: [{ name: "Death Vision", points: 15 }]
 eq("spell at 15 pts: no step warning", sp.issues.some(x => /Death Vision/.test(x.msg) && /step/.test(x.msg)), false);
 eq("spell at 15 pts sits between 10 and 20", (() => { const at = p => BC.compute({ ...brock, spells: [{ name: "Death Vision", points: p }] }, lib).spells[0].level; return at(10) < sp.spells[0].level && sp.spells[0].level < at(20); })(), true);
 
+// weapons that come with traits (B88: a Striker does thrust +1 per die; Weak drops the bonus)
+const tw = (traits, ST = 0) => BC.compute({ attributes: { ST }, traits, skills: [], spells: [], equipment: [] }, lib).weapons;
+const horn = tw([{ name: "Crushing Striker", notes: "Horns" }], 100).find(w => /Striker/.test(w.name));
+eq("Crushing Striker at ST 11: 1d crushing", horn && BC.diceTxt(horn.modes[0].dice) + " " + horn.modes[0].type, "1d cr");
+const weakHorn = tw([{ name: "Crushing Striker", notes: "Horns", modifiers: ["Weak"] }], 100).find(w => /Striker/.test(w.name));
+eq("Weak Striker at ST 11: 1d-1", weakHorn && BC.diceTxt(weakHorn.modes[0].dice), "1d-1");
+const claws = tw([{ name: "Blunt Claws" }]);
+eq("Blunt Claws replace the plain punch", claws.some(w => w.name === "Punch"), false);
+eq("Innate Attack (Burn) 3: 3d", BC.diceTxt(tw([{ name: "Innate Attack (Burn)", levels: 3 }]).find(w => /Innate/.test(w.name)).modes[0].dice), "3d");
+
 console.log(fail ? `${fail} failure(s)` : "all passed");
 process.exit(fail ? 1 : 0);

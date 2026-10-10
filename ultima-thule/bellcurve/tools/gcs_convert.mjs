@@ -50,6 +50,16 @@ function kindOf(tags, pts) {
   return pts < 0 ? "disadvantage" : "advantage";
 }
 
+// a weapon on an item or a trait. perDie: "+1 per die" (Strikers, Claws, Hooves; Weak Bite is -2); leveled: damage per
+// level of the trait (Innate Attack "1d").
+const convWeapon = w => ({
+  usage: w.usage || "",
+  dmg: { st: w.damage?.st || null, base: w.damage?.base || "", type: w.damage?.type || "",
+    ...(w.damage?.modifier_per_die ? { perDie: w.damage.modifier_per_die } : {}), ...(w.damage?.base_leveled ? { leveled: w.damage.base_leveled } : {}) },
+  dmgText: w.calc?.damage || "", strength: w.strength || "", reach: w.reach, parry: w.parry, acc: w.accuracy, range: w.range,
+  rof: w.rate_of_fire, shots: w.shots, bulk: w.bulk, defaults: clean(w.defaults || []),
+});
+
 function convMods(mods, group) {
   const out = [];
   for (const m of mods || []) {
@@ -80,6 +90,7 @@ function convTrait(r) {
   const mods = convMods(r.modifiers);
   if (mods.length) rec.mods = mods;
   if (r.features?.length) rec.features = clean(r.features);
+  if (r.weapons?.length) rec.weapons = r.weapons.map(convWeapon);
   if (r.prereqs?.prereqs?.length) rec.prereqs = clean(r.prereqs);
   rec.tags = r.tags || [];
   rec.ref = r.reference || "";
@@ -142,11 +153,7 @@ for (const f of SOURCES.equipment) for (const r of walk(read(L(f)).rows)) {
   if (r.children?.length && !r.weapons) continue;
   const rec = { type: "equipment", name: r.description, tl: r.tech_level ?? "", cost: +r.base_value || 0, weight: r.base_weight || "" };
   if (r.rated_strength) rec.ratedST = r.rated_strength;
-  if (r.weapons?.length) rec.weapons = r.weapons.map(w => ({
-    usage: w.usage || "", dmg: { st: w.damage?.st || null, base: w.damage?.base || "", type: w.damage?.type || "" },
-    dmgText: w.calc?.damage || "", strength: w.strength || "", reach: w.reach, parry: w.parry, acc: w.accuracy, range: w.range,
-    rof: w.rate_of_fire, shots: w.shots, bulk: w.bulk, defaults: clean(w.defaults || []),
-  }));
+  if (r.weapons?.length) rec.weapons = r.weapons.map(convWeapon);
   const dr = (r.features || []).filter(x => x.type === "dr_bonus").map(x => ({ locations: x.locations || [x.location], amount: x.amount }));
   if (dr.length) rec.dr = dr;
   rec.tags = r.tags || []; rec.ref = r.reference || "";
