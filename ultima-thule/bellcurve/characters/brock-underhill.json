@@ -51,8 +51,9 @@
           },
           "Quadruped", "Domestic Animal"
         ],
-        "attributes": {},
-        "traits": [], "skills": [], "spells": [], "equipment": []
+        "notes": "Materializes at 1 FP per second (Insubstantiality, Usually On, B62): 16 seconds on its own FP, longer when Brock casts Lend Energy on it. Phases through a wall, turns solid behind someone, butts, fades.",
+        "attributes": { "ST": 100, "FP": 120 },
+        "traits": [], "skills": [{ "name": "Brawling", "points": 20 }], "spells": [], "equipment": []
       }
     },
     { "name": "Bad Reputation", "levels": 2, "notes": "necromancer", "modifiers": ["People Affected (x1)", "Recognized all the time (x1)"], "points": -100 },
@@ -62,8 +63,7 @@
     { "name": "Thaumatology", "points": 10 },
     { "name": "Occultism", "points": 10 },
     { "name": "Hidden Lore", "spec": "Spirit Lore", "points": 10 },
-    { "name": "Brawling", "points": 10 },
-    { "name": "Dancing", "points": 10 }
+    { "name": "Brawling", "points": 10 }
   ],
   "spells": [
     { "name": "Death Vision", "points": 10 },
@@ -73,7 +73,12 @@
     { "name": "Sense Emotion", "points": 10 },
     { "name": "Fear", "points": 10 },
     { "name": "Turn Spirit", "points": 10 },
-    { "name": "Command Spirit", "notes": "ghosts", "points": 10 }
+    { "name": "Command Spirit", "notes": "ghosts", "points": 10 },
+    { "name": "Lend Energy", "points": 10 },
+    { "name": "Lend Vitality", "points": 10 },
+    { "name": "Minor Healing", "points": 10 },
+    { "name": "Steal Energy", "points": 10 },
+    { "name": "Zombie", "points": 10 }
   ],
   "equipment": []
 }

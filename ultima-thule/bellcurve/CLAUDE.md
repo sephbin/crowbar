@@ -71,7 +71,7 @@ Basic Set skills, techniques and traits; Magic skills and spells (not Ritual Mag
 - `script_prereq` prerequisites (4 in the library) are not evaluated.
 
 ## Open issues for Andrew
-- Brock's ghost goat (resolved): built per Ally's Familiars rules as a custom "Ghost goat" template (homebrew goat stats scaled from B457-B459; Spirit's traits without Affects Substantial and Resistant, so it cannot touch the physical world) with Quadruped and Domestic Animal: 1250 of a 1500 share. Ally is Summonable, Minion, Sympathy (340). The goat has 250 unspent; Brock 40.
+- Brock's ghost goat (resolved): built per Ally's Familiars rules as a custom "Ghost goat" template (homebrew goat stats scaled from B457-B459; Spirit's traits without Affects Substantial and Resistant, so it cannot touch the physical world) with Quadruped and Domestic Animal: 1250 of a 1500 share. Ally is Summonable, Minion, Sympathy (340). The goat spends its spare points on ST 11, FP 16 and Brawling 13 so it is dangerous when it materializes (Usually On: 1 FP per second); Brock's Lend Energy refuels it. Brock is at 1500 exactly. Open: Brock has FP 11, but Summon Spirit costs 20 energy; he needs an energy source (Extra FP, a powerstone, or the goat as a familiar with Special Abilities giving FP). The engine does not list Striker traits (the goat's horns) as attacks.
 - Oskar has no Crossbow skill: his ST 9 crossbow rolls at DX−4 = 11 (63%), and at ST 7 he cannot cock it by hand.
 
 ## Writing style for anything shown to Andrew
