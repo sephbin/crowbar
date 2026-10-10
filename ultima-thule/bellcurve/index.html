@@ -94,6 +94,11 @@ input.concept{width:100%;margin-top:6px;background:transparent;border:0;border-b
 .row .ctl .p{min-width:3.2em;text-align:center;font-size:13px}
 .row .bad{color:var(--bad)} .row .good{color:var(--good)}
 .row details{grid-column:1 / -1;font-size:13px}
+/* read-only view (the default): editing controls hidden, their values shown as text (.vw) */
+body.view .ed,body.view .ctl,body.view .step,body.view .x,body.view .addrow,body.view #rfoot,body.view #sec button{display:none!important}
+body:not(.view) .vw{display:none!important}
+body.view input[readonly],body.view textarea[readonly]{border-color:transparent;background:transparent;padding-left:0}
+#editmode[aria-pressed="true"]{background:var(--accent);color:var(--paper);border-color:var(--accent)}
 .row.removed .nm{text-decoration:line-through;color:var(--muted);font-weight:400}
 .row.removed .val b{color:var(--muted)}
 .row details summary{cursor:pointer;color:var(--muted)}
@@ -205,7 +210,8 @@ body:not(.debug) .g{display:none!important}
         <button type="button" id="open">open</button>
         <button type="button" id="save">save</button>
         <button type="button" id="copy">copy json</button>
-        <button type="button" id="blank">blank</button>
+        <button type="button" id="blank" class="ed">blank</button>
+        <button type="button" id="editmode" aria-pressed="false" title="Show the editing controls">edit</button>
         <button type="button" id="debug" aria-pressed="false" title="Show GURPS levels and 3d6 values">debug</button>
         <input type="file" id="file" accept=".json,application/json" hidden>
       </div>
@@ -398,6 +404,15 @@ function renderTabs() {
   document.querySelectorAll("[data-tab]").forEach(s => s.hidden = s.dataset.tab !== UI.tab);
 }
 function applyDebug() { document.body.classList.toggle("debug", !!UI.debug); $("debug").setAttribute("aria-pressed", String(!!UI.debug)); }
+// read-only view by default on every load; the edit button shows the editing controls
+let editing = false;
+function applyMode() {
+  document.body.classList.toggle("view", !editing);
+  $("editmode").setAttribute("aria-pressed", String(editing));
+  $("editmode").textContent = editing ? "done" : "edit";
+  for (const id of ["cname", "concept", "notes"]) $(id).readOnly = !editing;
+  $("budget").disabled = !editing || !!stack.length;
+}
 
 // ---------- datalists ----------
 function fillLists() {
@@ -426,7 +441,7 @@ function render() {
   }
   $("cname").value = ch.name || ""; $("concept").value = ch.concept || ""; $("notes").value = ch.notes || "";
   renderTabs();
-  $("budget").value = R.budget; $("budget").disabled = !!stack.length;
+  $("budget").value = R.budget; applyMode();
   const pill = $("spent"); pill.textContent = `${R.spent} / ${R.budget}`; pill.classList.toggle("over", R.spent > R.budget);
   renderIssues(); renderTemplates(); renderAttrs(); renderSkills(); renderSpells(); renderTraits(); renderEquipment(); renderWeapons();
   roller();
@@ -569,31 +584,35 @@ function renderTraits() {
     T.append(el("div", { class: "row tpl removed" },
       el("span", { class: "nm" }, x.trait),
       el("span", { class: "meta" }, `taken off ${x.template} · ${x.cost < 0 ? "costs" : "saves"} ${Math.abs(x.cost)} pts`,
-        el("button", { type: "button", "aria-label": `Put ${x.trait} back on ${x.template}`, onclick: () => { ch.templateRemoved.splice(k, 1); if (!ch.templateRemoved.length) delete ch.templateRemoved; change(); } }, "put back")),
+        el("button", { type: "button", class: "ed", "aria-label": `Put ${x.trait} back on ${x.template}`, onclick: () => { ch.templateRemoved.splice(k, 1); if (!ch.templateRemoved.length) delete ch.templateRemoved; change(); } }, "put back")),
       el("span", { class: "val" }, el("b", {}, "0"), el("span", {}, "removed")),
       el("span")));
   }
   own.forEach((t) => {
     const i = ch.traits.indexOf(t.inst), inst = t.inst, rec = t.rec;
     const meta = el("span", { class: "meta" });
-    meta.append(el("input", { type: "text", value: inst.notes || "", placeholder: rec?.sub ? rec.sub.toLowerCase() : "notes", "aria-label": `${t.name} notes`, style: "width:9em",
+    // editing inputs (.ed) with a plain-text twin (.vw) for the read-only view
+    meta.append(el("input", { type: "text", class: "ed", value: inst.notes || "", placeholder: rec?.sub ? rec.sub.toLowerCase() : "notes", "aria-label": `${t.name} notes`, style: "width:9em",
       onchange: e => { if (e.target.value) inst.notes = e.target.value; else delete inst.notes; change(); } }));
+    if (inst.notes) meta.append(el("span", { class: "vw" }, inst.notes));
     if (rec?.cr != null || inst.cr != null) {
-      const s = el("select", { "aria-label": "Self-control number", onchange: e => { inst.cr = +e.target.value; change(); } });
+      const s = el("select", { class: "ed", "aria-label": "Self-control number", onchange: e => { inst.cr = +e.target.value; change(); } });
       for (const v of [6, 9, 12, 15]) s.append(el("option", { value: v, selected: (inst.cr ?? rec.cr) === v }, `CR ${v}`));
-      meta.append(s);
+      meta.append(s, el("span", { class: "vw" }, `CR ${inst.cr ?? rec.cr}`));
     }
     if (rec?.fr != null || inst.frequency != null) {
-      const s = el("select", { "aria-label": "Frequency of appearance", onchange: e => { inst.frequency = +e.target.value; change(); } });
+      const s = el("select", { class: "ed", "aria-label": "Frequency of appearance", onchange: e => { inst.frequency = +e.target.value; change(); } });
       for (const v of [6, 9, 12, 15, 18]) s.append(el("option", { value: v, selected: (inst.frequency ?? rec.fr) === v }, v === 18 ? "constant" : `${v} or less`));
-      meta.append(s);
+      const fr = inst.frequency ?? rec.fr;
+      meta.append(s, el("span", { class: "vw" }, fr === 18 ? "constant" : `${fr} or less`));
     }
+    if ((t.mods || []).length) meta.append(el("span", { class: "vw" }, t.mods.map(m => `${m.name}${(m.levels || 1) > 1 ? ` ×${m.levels}` : ""}`).join(", ")));
     if (t.house) meta.append(el("span", {}, "house rule"));
     if (rec?.ref) meta.append(el("span", {}, rec.ref));
     if (!rec) meta.append(el("span", { class: "bad" }, "not in library"));
     if (t.from) meta.append(el("span", {}, `from ${t.from}`));
     meta.append(removeBtn(t.name, () => ch.traits.splice(i, 1)));
-    if (/^ally$/i.test(t.name)) meta.append(el("button", { type: "button", onclick: () => { inst.character ||= { ...BLANK(), name: inst.notes || "Ally", budget: undefined }; stack.push(inst); sel = { kind: "attr", k: "DX" }; render(); window.scrollTo(0, 0); } }, inst.character ? "ally sheet →" : "make ally sheet"));
+    if (/^ally$/i.test(t.name)) meta.append(el("button", { type: "button", class: inst.character ? null : "ed", onclick: () => { inst.character ||= { ...BLANK(), name: inst.notes || "Ally", budget: undefined }; stack.push(inst); sel = { kind: "attr", k: "DX" }; render(); window.scrollTo(0, 0); } }, inst.character ? "ally sheet →" : "make ally sheet"));
     const row = el("div", { class: "row" },
       el("span", { class: "nm roll", role: "button", tabindex: "0", onclick: () => pick({ kind: "trait", i: R.traits.indexOf(t) }), onkeydown: e => e.key === "Enter" && e.currentTarget.click() }, t.name, rec?.canLevel ? ` ${t.levels}` : ""),
       meta,
@@ -601,7 +620,7 @@ function renderTraits() {
       rec?.canLevel ? stepper(t.name + " level", () => inst.levels ?? 1, v => inst.levels = v, 1, 0) : el("span"));
     if (rec) {
       const on = new Set((t.mods || []));
-      const det = el("details", {}, el("summary", {}, `modifiers (${on.size} on)`));
+      const det = el("details", { class: "ed" }, el("summary", {}, `modifiers (${on.size} on)`));
       const box = el("div", { class: "mods" }); let g = null;
       const keep = () => { if (inst.modifiers && !inst.modifiers.length) delete inst.modifiers; det.dataset.keep = "1"; openMods.add(t.path); change(); };
       const nameOf = x => String(typeof x === "string" ? x : x.name).toLowerCase();
@@ -663,8 +682,10 @@ function renderEquipment() {
   ch.equipment.forEach((it, i) => {
     const rec = LIB.equipment.find(e => e.name.toLowerCase() === String(it.name).toLowerCase());
     const meta = el("span", { class: "meta" }, rec ? `TL${rec.tl} · $${rec.cost} · ${rec.weight} · ${rec.ref}` : el("span", { class: "bad" }, "not in library"));
-    if (rec?.ratedST != null) meta.append(el("span", {}, " · ST"), el("input", { type: "number", value: it.st ?? rec.ratedST, style: "width:4.5em", "aria-label": `${it.name} strength`, onchange: e => { const v = Math.round(+e.target.value); if (v && v !== rec.ratedST) it.st = v; else delete it.st; change(); } }));
-    if (rec?.dr) meta.append(el("label", {}, el("input", { type: "checkbox", checked: it.worn !== false, onchange: e => { if (e.target.checked) delete it.worn; else it.worn = false; change(); } }), " worn"), el("span", {}, ` DR ${rec.dr.map(d => `${d.amount} ${d.locations.join("/")}`).join(", ")}`));
+    if (rec?.ratedST != null) meta.append(el("span", {}, " · ST"), el("input", { type: "number", class: "ed", value: it.st ?? rec.ratedST, style: "width:4.5em", "aria-label": `${it.name} strength`, onchange: e => { const v = Math.round(+e.target.value); if (v && v !== rec.ratedST) it.st = v; else delete it.st; change(); } }),
+      el("span", { class: "vw" }, String(it.st ?? rec.ratedST)));
+    if (rec?.dr) meta.append(el("label", { class: "ed" }, el("input", { type: "checkbox", checked: it.worn !== false, onchange: e => { if (e.target.checked) delete it.worn; else it.worn = false; change(); } }), " worn"),
+      el("span", { class: "vw" }, it.worn !== false ? "worn" : "not worn"), el("span", {}, ` DR ${rec.dr.map(d => `${d.amount} ${d.locations.join("/")}`).join(", ")}`));
     meta.append(removeBtn(it.name, () => ch.equipment.splice(i, 1)));
     E.append(el("div", { class: "row" }, el("span", { class: "nm" }, it.label || it.name), meta,
       el("span", { class: "val" }, el("b", {}, "×" + (it.qty || 1))),
@@ -1098,6 +1119,7 @@ $("rtabs").addEventListener("click", e => { const b = e.target.closest("[data-rt
 $("rmodal").addEventListener("click", e => { if (e.target === e.currentTarget) closeRoller(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeRoller(); });
 $("debug").addEventListener("click", () => { UI.debug = !UI.debug; saveUI(); applyDebug(); roller(); });
+$("editmode").addEventListener("click", () => { editing = !editing; applyMode(); });
 $("budget").addEventListener("change", e => { ROOT.budget = Math.max(0, Math.round(+e.target.value || 0)); change(); });
 $("mod").addEventListener("input", e => { mod = +e.target.value; roller(); });
 $("drminus").addEventListener("click", () => { targetDR = Math.max(0, targetDR - 1); roller(); });
