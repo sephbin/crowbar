@@ -13,3 +13,4 @@ All paths are relative to `ultima-thule/bellcurve/`; run commands from there. Re
 4. Run `node tools/bc_check.mjs characters/<slug>.json`. Fix every ERROR. Resolve or record every WARN.
 5. Report the point breakdown, key rolls as percentages, and any design problem with numbers (e.g. an ally that cannot be built on its share).
 6. Label house rules (Backstabber, Sneak Attack) as house rules.
+7. For each skill or spell the character uses that has no entry in `data/src/descriptions.json`, read its page in `rules/pages/` (see `CLAUDE.md` for setting that up), write a short paraphrase in your own words, and run `node tools/build_desc.mjs`.

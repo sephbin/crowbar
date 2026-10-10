@@ -128,6 +128,7 @@ button.danger{border-color:var(--bad);color:var(--bad)}
 .rules li{margin:2px 0}
 .rules .ok{color:var(--good)} .rules .no{color:var(--bad)}
 .rules p{font-size:14px;margin:6px 0}
+.rules p.desc{font-size:15px;line-height:1.5;margin:0 0 12px}
 .rtitle{font:400 24px var(--display);margin:0;overflow-wrap:anywhere}
 .rsub{color:var(--muted);font-size:13px;margin:2px 0 10px}
 .big{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
@@ -318,6 +319,7 @@ body:not(.debug) .g{display:none!important}
 
 <script src="engine.js"></script>
 <script src="data/library.js"></script>
+<script src="data/descriptions.js"></script>
 <script>
 "use strict";
 const LIB = globalThis.BC_LIBRARY, f1 = BC.f1;
@@ -692,9 +694,16 @@ function nextStep(s) {
   }
   return null;
 }
+// paraphrased description from data/src/descriptions.json (built into data/descriptions.js)
+function descBlock(kind, keys, ref) {
+  const D = globalThis.BC_DESC?.[kind] || {};
+  const text = keys.map(k => D[String(k).toLowerCase()]).find(Boolean);
+  return text ? el("p", { class: "desc" }, text) : el("p", { class: "muted" }, `No description yet. See ${refTxt(ref)}.`);
+}
 function skillRules(s) {
   const rec = s.rec, out = [];
   if (!rec) return [el("p", { class: "no" }, "Not in the library.")];
+  out.push(descBlock("skills", [BC.fullName(s.name, s.spec), s.name], rec.ref));
   const tech = rec.technique, p = rec.parent;
   const parent = tech ? R.skills.find(x => x.level != null && x.name.toLowerCase() === p.name.toLowerCase() && (!p.spec || (x.spec || "").toLowerCase() === p.spec.toLowerCase())) : null;
   const fromParent = d => parent ? [...pctAt(parent.level + d), G(` (parent ${d >= 0 ? "+" : "−"}${Math.abs(d)})`)] : ["parent skill not known", G(` (parent ${d >= 0 ? "+" : "−"}${Math.abs(d)})`)];
@@ -730,7 +739,7 @@ function skillRules(s) {
 function spellRules(s) {
   const rec = s.rec;
   if (!rec) return [el("p", { class: "no" }, "Not in the library.")];
-  const out = [dl([
+  const out = [descBlock("spells", [s.name], rec.ref), dl([
     ["college", rec.college.join(", ")], ["class", rec.class], ["based on", `${rec.attr}, ${DIFF_WORD[rec.diff] || rec.diff}`],
     ["cost", rec.cost], ["maintain", rec.maint], ["time", rec.time], ["duration", rec.duration], ["resisted by", rec.resist], ["power", rec.power],
     ["points", `${s.points}`], ["now", s.level == null ? "no level" : pctAt(s.level)], ["next step", nextStep(s)],

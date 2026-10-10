@@ -9,3 +9,5 @@ Thumbs.db
 ultima-thule/rules/*.pdf
 ultima-thule/rules/pages/
 ultima-thule/rules/brp_all.txt
+# copyrighted GURPS books (Bell Curve): PDFs and extracted text stay local
+ultima-thule/bellcurve/rules/
