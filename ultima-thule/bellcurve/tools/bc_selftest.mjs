@@ -75,5 +75,19 @@ for (const t of lib.templates) for (const i of t.traits) {
 eq(`trait costs match GCS on ${n} template traits`, bad, 0);
 eq("Ally 100%, 15 or less, Summonable = 300", BC.traitCost(lib.traits.find(t => t.name === "Ally"), { frequency: 15, modifiers: ["100% of your starting points", "Summonable"] }).cost, 300);
 
+// general enhancements and limitations (B101-B117) on traits that don't list them
+const T = n => lib.traits.find(t => t.name === n), G = lib.modifiers;
+const cost = (n, inst) => BC.traitCost(T(n), inst, G);
+eq("Third Rail: Burn 4d, AD 2, Surge, Melee C = 280", cost("Innate Attack (Burn)", { levels: 4, modifiers: ["Surge", "Armor Divisor (50%)", "Melee Attack, Reach C"] }).cost, 280);
+const plenary = cost("Affliction", { levels: 1, modifiers: [{ name: "Sense-Based", adj: "+150%" }, { name: "Area Effect", levels: 2 }, "Selective Area", "Sleep", "Emanation", { name: "Takes Recharge", notes: "15 seconds" }] });
+eq("Plenary Session: Affliction 1 +380% = 480", plenary.cost, 480);
+eq("Plenary Session: no rule warnings", plenary.warns.length, 0);
+eq("Bursar's Evil Eye: Affliction 2 +140% = 480", cost("Affliction", { levels: 2, modifiers: [{ name: "Malediction", notes: "-1 per yard" }, { name: "Sense-Based", adj: "-20%" }, "Terrible Pain"] }).cost, 480);
+eq("Harbour Fog: Affliction 1 +260% = 360", cost("Affliction", { levels: 1, modifiers: ["Respiratory Agent", { name: "Area Effect", levels: 3 }, "Persistent", "Drifting", "Nauseated", { name: "Limited Use", notes: "2 uses per day" }] }).cost, 360);
+eq("ambiguous general modifier is an error", cost("Affliction", { modifiers: ["Limited Use"] }).errors.length, 1);
+eq("Aura without Melee Attack (Reach C) warns", cost("Innate Attack (Toxic)", { levels: 1, modifiers: ["Aura"] }).warns.some(w => /B102/.test(w)), true);
+eq("Contact Agent with Area Effect warns about +150%", cost("Affliction", { modifiers: ["Contact Agent", "Area Effect"] }).warns.some(w => /\+150%/.test(w)), true);
+eq("two penetration modifiers warn", cost("Affliction", { modifiers: ["Respiratory Agent", { name: "Blood Agent", notes: "" , adj: "-40%" }, "Area Effect"] }).warns.some(w => /penetration/.test(w)), true);
+
 console.log(fail ? `${fail} failure(s)` : "all passed");
 process.exit(fail ? 1 : 0);

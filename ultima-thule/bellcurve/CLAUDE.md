@@ -24,7 +24,7 @@ node tools/gcs_convert.mjs <dir>               # rebuild data/library.*
 On Windows the clone fails on some long paths (Template Toolkit, Discworld, Pyramid). The books used here (Basic Set, Magic, Fantasy races) check out fine. Re-run the self-test after a rebuild: it compares trait costs with the costs GCS computed for every template trait.
 
 ## Library contents
-Basic Set skills, techniques and traits; Magic skills and spells (not Ritual Magic); Basic Set and Magic equipment; templates from Basic Set races, Basic Set meta-traits and GURPS Fantasy races; the general enhancements and limitations (B101-B117) as `modifiers`. That list is reference only: a character's trait can take only the modifiers in that trait's own `mods`, and GCS attaches few general modifiers to non-attack traits (Obscure has no Area Effect, for instance). The GCS library is MPL 2.0; credit it if anything here is shared. To add a book, add its files to `SOURCES` in `tools/gcs_convert.mjs`.
+Basic Set skills, techniques and traits; Magic skills and spells (not Ritual Magic); Basic Set and Magic equipment; templates from Basic Set races, Basic Set meta-traits and GURPS Fantasy races; the general enhancements and limitations (B101-B117) as `modifiers`. Any trait can take a general modifier; the trait's own `mods` are matched first. The GCS library is MPL 2.0; credit it if anything here is shared. To add a book, add its files to `SOURCES` in `tools/gcs_convert.mjs`.
 
 ## Character JSON
 ```
@@ -45,6 +45,7 @@ Basic Set skills, techniques and traits; Magic skills and spells (not Ritual Mag
 - Attribute values are points spent (×10), not levels. Skill, spell and trait `points` are ×10.
 - Trait `points` is the declared cost; the validator recomputes it and reports a mismatch. The builder keeps it in step.
 - Modifiers are named as in the library. Where two share a name, use the label `"Name (adj)"`, e.g. `"People Affected (x1)"`.
+- General enhancements and limitations (`node tools/bc_find.mjs <name> modifiers`) go in the same list, as a name or an object: `{ "name": "Area Effect", "levels": 2 }` (4 yd), `{ "name": "Limited Use", "notes": "Once per day" }` (notes pick a variant, matched from the start), `{ "name": "Sense-Based", "adj": "+150%" }` (a value picks the variant with that value). An `adj` that matches no variant sets the value by hand (Cone width, Cyclic cycles) and the validator reports it. The validator warns on combinations the book forbids or requires (Aura needs Melee Attack (Reach C), Drifting needs Delay or Persistent, one penetration modifier, and so on), and on Contact Agent or Blood Agent with Area Effect or Cone, which become +150% and +100% enhancements (B110-B111). GCS lists only the limitation value for Contact Agent, so set `"adj": "+150%"` there.
 - Techniques take their parent skill as the specialization: `{ "name": "Arm Lock", "spec": "Judo" }`.
 - An ally's sheet is built on its share of the owner's budget, taken from the point-total modifier.
 

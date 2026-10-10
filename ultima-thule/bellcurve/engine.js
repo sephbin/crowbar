@@ -151,23 +151,78 @@ function parseAdj(adj) {
 }
 const modLabel = m => `${m.name} (${m.adj})`;
 
-// pick modifiers for an instance; returns {mods, errors}
-function selectMods(rec, inst) {
-  const all = rec.mods || [], out = [], errors = [];
+// pick modifiers for an instance; returns {mods, errors, warns}
+// A modifier is a string ("Surge", "Armor Divisor (50%)") or an object {name, notes?, levels?, adj?}. The trait's own
+// mods are tried first, then the general enhancements and limitations (lib.modifiers, B101-B117). "notes" picks a
+// general variant ("Limited Use", notes "Once per day"); "levels" multiplies a per-level value (Area Effect 2 = 4 yd);
+// "adj" sets a value by hand for the variable ones (Cone width, Contact Agent with Area Effect) and is reported.
+const generalLabel = m => m.notes ? `${m.name} (${m.notes})` : m.name;
+function selectMods(rec, inst, general = []) {
+  const all = rec.mods || [], out = [], errors = [], warns = [];
   for (const m of all) if (m.on) out.push(m);
   for (const want of inst.modifiers || []) {
-    const w = String(want).toLowerCase().trim();
-    let hits = all.filter(m => modLabel(m).toLowerCase() === w);
-    if (!hits.length) hits = all.filter(m => m.name.toLowerCase() === w);
-    if (!hits.length) { errors.push(`modifier "${want}" not in the library entry`); continue; }
-    const costs = new Set(hits.map(h => h.adj));
-    if (costs.size > 1) { errors.push(`modifier "${want}" is ambiguous: ${hits.map(modLabel).join(", ")}`); continue; }
-    if (!out.includes(hits[0])) out.push(hits[0]);
+    const o = typeof want === "string" ? { name: want } : { ...want };
+    const w = lc(o.name), label = o.notes ? `${o.name} (${o.notes})` : o.name;
+    let hits = all.filter(m => lc(modLabel(m)) === w);
+    if (!hits.length) hits = all.filter(m => lc(m.name) === w);
+    if (hits.length) {
+      const costs = new Set(hits.map(h => h.adj));
+      if (costs.size > 1) { errors.push(`modifier "${o.name}" is ambiguous: ${hits.map(modLabel).join(", ")}`); continue; }
+      const m = o.levels != null || o.adj != null ? { ...hits[0], ...(o.levels != null ? { levels: o.levels } : {}), ...(o.adj != null ? { adj: o.adj } : {}) } : hits[0];
+      if (o.adj != null && o.adj !== hits[0].adj) warns.push(`modifier ${o.name}: value set by hand to ${o.adj} (library ${hits[0].adj})`);
+      if (!out.includes(m)) out.push(m);
+      continue;
+    }
+    // "Sense-Based" finds "Sense-Based (senses)"; notes match from the start ("15 seconds" picks that Takes Recharge);
+    // an adj equal to one variant's value picks that variant
+    hits = general.filter(m => lc(m.name) === w || lc(m.name.replace(/\s*\([^)]*\)$/, "")) === w || lc(generalLabel(m)) === w || lc(modLabel(m)) === w);
+    if (o.notes) hits = hits.some(m => lc(m.notes) === lc(o.notes)) ? hits.filter(m => lc(m.notes) === lc(o.notes)) : hits.filter(m => lc(m.notes).startsWith(lc(o.notes)));
+    if (o.adj != null && hits.some(h => h.adj === String(o.adj).replace(/^\+/, ""))) { hits = hits.filter(h => h.adj === String(o.adj).replace(/^\+/, "")); delete o.adj; }
+    if (!hits.length && o.adj == null) { errors.push(`modifier "${label}" is not in the library entry or the general enhancements and limitations`); continue; }
+    if (new Set(hits.map(h => h.adj)).size > 1 && o.adj == null) {
+      errors.push(`modifier "${label}" has several values; add "notes": ${hits.map(h => `"${h.notes || ""}" (${h.adj})`).join(", ")}`); continue;
+    }
+    const base = hits[0] || { name: o.name, kind: String(o.adj).startsWith("-") ? "limitation" : "enhancement", ref: "" };
+    const m = { ...base, general: true, levels: o.levels ?? base.levels ?? 1, ...(o.adj != null ? { adj: o.adj } : {}) };
+    if (o.adj != null && o.adj !== base.adj) warns.push(`modifier ${label}: value set by hand to ${o.adj}${base.adj != null ? ` (library ${base.adj})` : ""}${base.ref ? `; check ${base.ref}` : ""}`);
+    out.push(m);
   }
-  return { mods: out, errors };
+  warns.push(...modRules(out));
+  return { mods: out, errors, warns };
 }
 
-function traitCost(rec, inst) {
+// combination rules for the general modifiers, from their entries on B102-B116
+const MOD_RULES = [
+  ["aura", { needs: [["melee attack, reach c"]], ref: "B102", why: "Aura must be taken with Melee Attack (Reach C)" }],
+  ["emanation", { needs: [["area effect"]], excludes: ["melee attack"], ref: "B112", why: "Emanation needs Area Effect and is incompatible with Melee Attack" }],
+  ["persistent", { needs: [["area effect"]], ref: "B107", why: "Persistent needs Area Effect" }],
+  ["drifting", { needs: [["persistent", "delay", "fixed delay", "variable delay", "triggered delay"]], ref: "B105", why: "Drifting needs Delay or Persistent" }],
+  ["selective area", { needs: [["area effect", "cone"]], ref: "B108", why: "Selective Area needs Area Effect or Cone" }],
+  ["respiratory agent", { needs: [["area effect", "cone", "jet"]], ref: "B108", why: "Respiratory Agent needs Area Effect, Cone or Jet" }],
+  ["onset", { needs: [["blood agent", "contact agent", "follow-up", "malediction", "respiratory agent"]], ref: "B113", why: "Onset must be stacked with Blood Agent, Contact Agent, Follow-Up, Malediction or Respiratory Agent" }],
+  ["exposure time", { needs: [["aura", "persistent"]], ref: "B113", why: "Exposure Time needs Aura or Persistent" }],
+  ["cone", { excludes: ["area effect", "aura", "jet", "rapid fire", "emanation", "melee attack"], ref: "B103", why: "Cone cannot be combined with Area Effect, Aura, Jet, Melee Attack, Rapid Fire or Emanation" }],
+];
+const PENETRATION = ["blood agent", "contact agent", "follow-up", "respiratory agent"];
+function modRules(mods) {
+  const names = mods.map(m => lc(m.name).replace(/\s*\([^)]*\)$/, ""));
+  const has = n => names.some(x => x === n || x.startsWith(n + ","));
+  const out = [];
+  for (const [n, r] of MOD_RULES) {
+    if (!has(n)) continue;
+    if ((r.needs || []).some(any => !any.some(has)) || r.excludes?.some(has)) out.push(`${r.why} [${r.ref}]`);
+  }
+  const pen = PENETRATION.filter(has);
+  if (pen.length > 1) out.push(`only one penetration modifier allowed, found ${pen.join(", ")} [B108]`);
+  // with Area Effect or Cone these two become enhancements (B110, B111); the library lists only the limitation for Contact Agent
+  for (const [n, v, ref] of [["contact agent", "+150%", "B111"], ["blood agent", "+100%", "B110"]]) {
+    const m = mods.find(x => lc(x.name) === n);
+    if (m && parseFloat(m.adj) < 0 && (has("area effect") || has("cone"))) out.push(`${m.name} with Area Effect or Cone is a ${v} enhancement, not ${m.adj} [${ref}]`);
+  }
+  return out;
+}
+
+function traitCost(rec, inst, general = []) {
   const canLevel = !!rec.canLevel;
   let base = rec.base || 0;
   let ppl = canLevel ? (rec.perLevel || 0) : 0;
@@ -175,7 +230,7 @@ function traitCost(rec, inst) {
   let baseEnh = 0, baseLim = 0, levelEnh = 0, levelLim = 0;
   const cr = inst.cr ?? rec.cr, fr = inst.frequency ?? rec.fr;
   let mult = (cr != null ? (CR_MULT[cr] ?? 1) : 1) * (fr != null ? (FR_MULT[fr] ?? 1) : 1);
-  const { mods, errors } = selectMods(rec, inst);
+  const { mods, errors, warns } = selectMods(rec, inst, general);
   for (const m of mods) {
     const a = parseAdj(m.adj), lv = m.levels || 1, affects = m.affects || "total";
     if (a.kind === "add") { if (affects === "levels_only") { if (canLevel) ppl += a.amount * lv; } else base += a.amount * lv; }
@@ -195,7 +250,7 @@ function traitCost(rec, inst) {
     else pts = base * (1 + baseMod / 100) + leveled * (1 + levelMod / 100);
   } else pts = base + leveled;
   const v = pts * mult;
-  return { cost: rec.roundDown ? Math.floor(v / 10 + 1e-9) * 10 : roundUp10(v), mods, errors };
+  return { cost: rec.roundDown ? Math.floor(v / 10 + 1e-9) * 10 : roundUp10(v), mods, errors, warns };
 }
 
 // ---------------------------------------------------------------- matching helpers
@@ -381,10 +436,11 @@ function compute(ch, lib, opts = {}) {
       row.kind = (inst.points ?? 0) < 0 ? "disadvantage" : "advantage";
       return row;
     }
-    const c = traitCost(rec, inst);
+    const c = traitCost(rec, inst, lib.modifiers || []);
     row.cost = c.cost; row.mods = c.mods; row.kind = rec.kind; row.house = !!rec.house; row.ref = rec.ref;
     row.features = (rec.features || []).map(f => ({ ...f, amount: f.per_level ? f.amount * (row.levels || 0) : f.amount, source: fullName(inst.name, inst.notes) }));
     for (const e of c.errors) add("ERROR", `${inst.name}: ${e}`, rec.ref, path);
+    for (const w of c.warns) add("WARN", `${inst.name}: ${w}`, rec.ref, path);
     if (inst.points != null && inst.points !== c.cost) add("ERROR", `${fullName(inst.name, inst.notes)}: declared ${inst.points} pts, rules give ${c.cost}`, rec.ref, path);
     if (inst.levels != null && !rec.canLevel) add("WARN", `${inst.name}: has no levels; "levels" ignored`, rec.ref, path);
     if (rec.canLevel && rec.maxLevels && (inst.levels ?? 1) > rec.maxLevels) add("ERROR", `${inst.name}: level ${inst.levels} above the maximum ${rec.maxLevels}`, rec.ref, path);
@@ -635,7 +691,7 @@ G.BC = {
   CUM, PMF, cdfInt, cdf, inv, succPct, critS, critF, bands, resolve, f1,
   ATTR_COST, ATTR_KEYS, ATTR_REF, DIFF_BASE, DEFAULT_PEN, DIFF_NAME, relLevel, thrust, swing, diceTxt, parseDice,
   LOCS, TYPE_NAME, locMult, typeKnown, GRADES, injuryDist, rollInjury,
-  CR_MULT, FR_MULT, parseAdj, traitCost, selectMods, modLabel, strCmp, numCmp, splitSpec, fullName,
+  CR_MULT, FR_MULT, parseAdj, traitCost, selectMods, modLabel, generalLabel, modRules, strCmp, numCmp, splitSpec, fullName,
   indexLibrary, findSkill, checkPrereq, compute,
 };
 })(typeof globalThis !== "undefined" ? globalThis : window);

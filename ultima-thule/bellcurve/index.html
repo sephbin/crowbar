@@ -96,9 +96,13 @@ input.concept{width:100%;margin-top:6px;background:transparent;border:0;border-b
 .row details{grid-column:1 / -1;font-size:13px}
 .row details summary{cursor:pointer;color:var(--muted)}
 .mods{display:grid;gap:2px;margin-top:6px;max-height:260px;overflow:auto;padding-right:4px}
-.mods .g{font-weight:700;margin-top:6px}
+.mods .mg{font-weight:700;margin-top:6px}
 .mods label{display:flex;gap:6px;align-items:center;cursor:pointer}
 .mods input{width:18px;height:18px}
+.mods.genmods{max-height:none;overflow:visible}
+.mods .genmod{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.mods .genmod input{width:3.5em;height:auto}
+.mods select{max-width:100%;margin-top:4px}
 .c{font-weight:700;min-width:4em;text-align:right}
 .c.neg{color:var(--good)}
 .x{width:30px;height:30px;padding:0;border-radius:50%;min-height:0}
@@ -399,7 +403,10 @@ function render() {
   computeAll();
   const ch = C();
   // keep declared trait points in step with the rules, so saved files validate
-  for (const t of R.traits) if (t.rec && t.inst.points !== t.cost && !t.from) t.inst.points = t.cost;
+  // (then recompute, or the check list shows the old declared cost as an error until the next change)
+  let synced = false;
+  for (const t of R.traits) if (t.rec && t.inst.points !== t.cost && !t.from) { t.inst.points = t.cost; synced = true; }
+  if (synced) { computeAll(); save(); }
   $("crumb").hidden = !stack.length; $("crumb").innerHTML = "";
   if (stack.length) {
     const back = el("button", { type: "button", onclick: () => { stack.pop(); sel = { kind: "attr", k: "DX" }; render(); } }, "← back");
@@ -536,21 +543,53 @@ function renderTraits() {
       meta,
       el("span", { class: "val" }, el("b", { class: t.cost < 0 ? "neg" : "" }, (t.cost > 0 ? "+" : "") + t.cost), el("span", {}, t.kind || "")),
       rec?.canLevel ? stepper(t.name + " level", () => inst.levels ?? 1, v => inst.levels = v, 1, 0) : el("span"));
-    if (rec?.mods?.length) {
+    if (rec) {
       const on = new Set((t.mods || []));
       const det = el("details", {}, el("summary", {}, `modifiers (${on.size} on)`));
       const box = el("div", { class: "mods" }); let g = null;
-      for (const m of rec.mods) {
-        if (m.group !== g) { g = m.group; if (g) box.append(el("div", { class: "g" }, g)); }
-        const label = BC.modLabel(m), checked = on.has(m);
+      const keep = () => { if (inst.modifiers && !inst.modifiers.length) delete inst.modifiers; det.dataset.keep = "1"; openMods.add(t.path); change(); };
+      const nameOf = x => String(typeof x === "string" ? x : x.name).toLowerCase();
+      const ownNames = new Set((rec.mods || []).flatMap(m => [BC.modLabel(m).toLowerCase(), m.name.toLowerCase()]));
+      for (const m of rec.mods || []) {
+        if (m.group !== g) { g = m.group; if (g) box.append(el("div", { class: "mg" }, g)); }
+        const label = BC.modLabel(m), checked = on.has(m) || [...on].some(x => x.name === m.name && x.adj === m.adj && !x.general);
         box.append(el("label", {}, el("input", { type: "checkbox", checked, disabled: m.on, onchange: e => {
-          inst.modifiers = (inst.modifiers || []).filter(x => x.toLowerCase() !== label.toLowerCase() && x.toLowerCase() !== m.name.toLowerCase());
+          inst.modifiers = (inst.modifiers || []).filter(x => nameOf(x) !== label.toLowerCase() && nameOf(x) !== m.name.toLowerCase());
           if (e.target.checked) inst.modifiers.push(label);
-          if (!inst.modifiers.length) delete inst.modifiers;
-          det.dataset.keep = "1"; openMods.add(t.path); change();
+          keep();
         } }), el("span", {}, `${m.name} (${m.adj})${m.on ? " · always on" : ""}`)));
       }
-      det.append(box); if (openMods.has(t.path)) det.open = true;
+      // general enhancements and limitations (B101-B117) on this trait: levels, remove, add
+      const gbox = el("div", { class: "mods genmods" }, el("div", { class: "mg" }, "general enhancements and limitations"));
+      const resolved = (t.mods || []).filter(m => m.general);
+      (inst.modifiers || []).forEach((x, j) => {
+        if (ownNames.has(nameOf(x))) return;
+        const o = typeof x === "string" ? { name: x } : x;
+        const m = resolved.find(r => r.name.toLowerCase() === o.name.toLowerCase() || r.name.toLowerCase().replace(/\s*\([^)]*\)$/, "") === o.name.toLowerCase());
+        gbox.append(el("div", { class: "genmod" },
+          el("span", {}, `${o.name}${o.notes ? ` (${o.notes})` : ""} ${m ? m.adj : "?"}${m?.ref ? ` · ${m.ref}` : ""}`),
+          el("label", {}, "levels ", el("input", { type: "number", min: 1, value: o.levels ?? 1, style: "width:3.5em", "aria-label": `${o.name} levels`, onchange: e => {
+            const v = Math.max(1, Math.round(+e.target.value) || 1);
+            inst.modifiers[j] = v === 1 ? (o.notes != null || o.adj != null ? (({ levels, ...r }) => r)(o) : o.name) : { ...o, levels: v };
+            keep();
+          } })),
+          el("button", { type: "button", "aria-label": `remove ${o.name}`, onclick: () => { inst.modifiers.splice(j, 1); keep(); } }, "remove")));
+      });
+      const addSel = el("select", { "aria-label": `add a general modifier to ${t.name}` }, el("option", { value: "" }, "add enhancement or limitation…"));
+      for (const kind of ["enhancement", "limitation"]) {
+        const og = el("optgroup", { label: kind === "enhancement" ? "enhancements" : "limitations" });
+        (LIB.modifiers || []).forEach((m, k) => { if (m.kind === kind) og.append(el("option", { value: k }, `${m.name} (${m.adj})${m.notes ? " · " + m.notes : ""}`)); });
+        addSel.append(og);
+      }
+      addSel.addEventListener("change", () => {
+        const m = LIB.modifiers[+addSel.value]; if (!m) return;
+        const variants = LIB.modifiers.filter(x => x.name === m.name);
+        (inst.modifiers ||= []).push(variants.length > 1 ? { name: m.name, notes: m.notes ?? "" } : m.name);
+        keep();
+      });
+      gbox.append(addSel);
+      if (rec.mods?.length) det.append(box);
+      det.append(gbox); if (openMods.has(t.path)) det.open = true;
       det.addEventListener("toggle", () => det.open ? openMods.add(t.path) : openMods.delete(t.path));
       row.append(det);
     }
