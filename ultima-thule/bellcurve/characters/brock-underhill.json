@@ -4,7 +4,7 @@
   "name": "Brock Underhill",
   "concept": "Badger necromancer",
   "budget": 1500,
-  "notes": "Draft from the handoff. Badger-folk is a custom template (no badger race in the library). The ghost goat sheet uses the library Spirit, Quadruped and Domestic Animal meta-traits (B263); goat attributes are unset because the library has no goat.",
+  "notes": "Draft from the handoff. Badger-folk is a custom template (no badger race in the library). The ghost goat is built as a familiar per Ally's Familiars rules: the animal's template plus the supernatural traits it needs, IQ raised to 6. Goat stats are homebrew, scaled from the red deer, large boar and donkey (B457-B459): about 120 lbs, SM 0. Its ghost traits are the Spirit meta-trait (B263) without Affects Substantial and Resistant, so it can't touch the physical world.",
   "templates": [
     {
       "name": "Badger-folk",
@@ -26,12 +26,31 @@
     { "name": "Magery", "levels": 2, "points": 250 },
     {
       "name": "Ally", "notes": "ghost goat familiar", "frequency": 15,
-      "modifiers": ["100% of your starting points", "Summonable"], "points": 300,
+      "modifiers": ["100% of your starting points", "Summonable", "Minion (50%)", "Sympathy (-25%)"], "points": 340,
       "character": {
         "format": "bellcurve-character", "version": 1,
         "name": "The ghost goat",
         "concept": "Familiar",
-        "templates": ["Spirit", "Quadruped", "Domestic Animal"],
+        "templates": [
+          {
+            "name": "Ghost goat",
+            "custom": true,
+            "ref": "homebrew: goat scaled from B457-B459, ghost traits from Spirit (B263)",
+            "attributes": { "DX": 400, "IQ": -800, "HT": 200, "Will": 250, "Per": 300 },
+            "traits": [
+              { "name": "Doesn't Breathe", "points": 200 },
+              { "name": "Doesn't Eat or Drink", "points": 100 },
+              { "name": "Doesn't Sleep", "points": 200 },
+              { "name": "Unaging", "points": 150 },
+              { "name": "Insubstantiality", "modifiers": ["Usually On"], "points": 480 },
+              { "name": "Invisibility", "modifiers": ["Substantial Only"], "points": 360 },
+              { "name": "Hooves", "points": 30 },
+              { "name": "Weak Bite", "points": -20 },
+              { "name": "Crushing Striker", "notes": "Horns", "points": 50 }
+            ]
+          },
+          "Quadruped", "Domestic Animal"
+        ],
         "attributes": {},
         "traits": [], "skills": [], "spells": [], "equipment": []
       }
