@@ -1,11 +1,317 @@
 {
   "note": "Book traits the GCS library lacks. Costs x10. Each has its page; none is a house rule. A trait with no cost here (Book-Learned Wisdom) is priced per character from the book's formula and recorded as declared points.",
   "traits": [
-    { "type": "trait", "name": "Code of Honor (Bushido)", "base": -150, "kind": "disadvantage", "tags": ["Disadvantage", "Mental"], "ref": "DF1:9" },
-    { "type": "trait", "name": "Equipment Bond", "canLevel": true, "perLevel": 10, "kind": "perk", "tags": ["Perk"], "ref": "DF4:4" },
-    { "type": "trait", "name": "Compulsive Inventing", "base": -50, "cr": 12, "kind": "disadvantage", "tags": ["Disadvantage", "Mental"], "ref": "DF4:5" },
-    { "type": "trait", "name": "Book-Learned Wisdom", "kind": "advantage", "tags": ["Advantage", "Mental"], "ref": "DF4:8", "variable": "5 per slot + 2 per point of abilities in the slot" },
-    { "type": "trait", "name": "Ninja Talent", "canLevel": true, "perLevel": 100, "kind": "advantage", "tags": ["Advantage", "Talent"], "ref": "DF12:4" },
-    { "type": "trait", "name": "Resistant to Psionics", "canLevel": true, "perLevel": 20, "maxLevels": 6, "kind": "advantage", "tags": ["Advantage"], "ref": "DF14:14" }
+    {
+      "type": "trait",
+      "name": "Code of Honor (Bushido)",
+      "base": -150,
+      "kind": "disadvantage",
+      "tags": [
+        "Disadvantage",
+        "Mental"
+      ],
+      "ref": "DF1:9"
+    },
+    {
+      "type": "trait",
+      "name": "Equipment Bond",
+      "canLevel": true,
+      "perLevel": 10,
+      "kind": "perk",
+      "tags": [
+        "Perk"
+      ],
+      "ref": "DF4:4"
+    },
+    {
+      "type": "trait",
+      "name": "Compulsive Inventing",
+      "base": -50,
+      "cr": 12,
+      "kind": "disadvantage",
+      "tags": [
+        "Disadvantage",
+        "Mental"
+      ],
+      "ref": "DF4:5"
+    },
+    {
+      "type": "trait",
+      "name": "Book-Learned Wisdom",
+      "kind": "advantage",
+      "tags": [
+        "Advantage",
+        "Mental"
+      ],
+      "ref": "DF4:8",
+      "variable": "5 per slot + 2 per point of abilities in the slot"
+    },
+    {
+      "type": "trait",
+      "name": "Ninja Talent",
+      "canLevel": true,
+      "perLevel": 100,
+      "kind": "advantage",
+      "tags": [
+        "Advantage",
+        "Talent"
+      ],
+      "ref": "DF12:4"
+    },
+    {
+      "type": "trait",
+      "name": "Resistant to Psionics",
+      "canLevel": true,
+      "perLevel": 20,
+      "maxLevels": 6,
+      "kind": "advantage",
+      "tags": [
+        "Advantage"
+      ],
+      "ref": "DF14:14"
+    },
+    {
+      "type": "trait",
+      "name": "Demonic Attunement",
+      "kind": "advantage",
+      "tags": [
+        "Advantage",
+        "Talent"
+      ],
+      "ref": "DF9:8",
+      "canLevel": true,
+      "perLevel": 80,
+      "talentOf": "demonologist"
+    },
+    {
+      "type": "trait",
+      "name": "Deathliness",
+      "kind": "advantage",
+      "tags": [
+        "Advantage",
+        "Talent"
+      ],
+      "ref": "DF9:15",
+      "canLevel": true,
+      "perLevel": 80,
+      "talentOf": "necromancer"
+    },
+    {
+      "type": "trait",
+      "name": "Elemental Influence (One Element)",
+      "kind": "advantage",
+      "tags": [
+        "Advantage",
+        "Talent"
+      ],
+      "ref": "DF9:10",
+      "canLevel": true,
+      "perLevel": 80,
+      "sub": "Air, Earth, Fire or Water",
+      "talentOf": "elementalist"
+    },
+    {
+      "type": "trait",
+      "name": "Elemental Influence (All Elements)",
+      "kind": "advantage",
+      "tags": [
+        "Advantage",
+        "Talent"
+      ],
+      "ref": "DF9:10",
+      "canLevel": true,
+      "perLevel": 100,
+      "talentOf": "elementalist"
+    },
+    {
+      "type": "trait",
+      "name": "Power Investiture (Shamanic)",
+      "kind": "advantage",
+      "tags": [
+        "Advantage",
+        "Supernatural"
+      ],
+      "ref": "DF9:19",
+      "canLevel": true,
+      "perLevel": 100,
+      "talentOf": "shaman"
+    },
+    {
+      "type": "trait",
+      "name": "Licensed Exorcist",
+      "base": 10,
+      "kind": "perk",
+      "tags": [
+        "Perk"
+      ],
+      "ref": "DF9:5",
+      "sub": "category of spirits"
+    },
+    {
+      "type": "trait",
+      "name": "Spirit Badge",
+      "base": 10,
+      "kind": "perk",
+      "tags": [
+        "Perk"
+      ],
+      "ref": "DF9:5"
+    },
+    {
+      "type": "trait",
+      "name": "Hammer Hand",
+      "base": 10,
+      "kind": "perk",
+      "tags": [
+        "Perk"
+      ],
+      "ref": "DF9:11"
+    },
+    {
+      "type": "trait",
+      "name": "Slayer Training",
+      "kind": "advantage",
+      "tags": [
+        "Advantage"
+      ],
+      "ref": "DF9:7",
+      "variable": "4 per skill for Slayer Swing at Neck, 3 for Slayer Thrust to Vitals; other variants by the book formula",
+      "sub": "variant and skill"
+    },
+    {
+      "type": "trait",
+      "name": "Resistant to Demonic Powers",
+      "kind": "advantage",
+      "tags": [
+        "Advantage"
+      ],
+      "ref": "DF9",
+      "variable": "priced by the book (DF9)"
+    },
+    {
+      "type": "trait",
+      "name": "Resistant to Divine Powers",
+      "kind": "advantage",
+      "tags": [
+        "Advantage"
+      ],
+      "ref": "DF9",
+      "variable": "priced by the book (DF9)"
+    },
+    {
+      "type": "trait",
+      "name": "Resistant to Supernatural Abilities of the Undead",
+      "kind": "advantage",
+      "tags": [
+        "Advantage"
+      ],
+      "ref": "DF9",
+      "variable": "priced by the book (DF9)"
+    },
+    {
+      "type": "trait",
+      "name": "Resistant to Disease",
+      "kind": "advantage",
+      "tags": [
+        "Advantage"
+      ],
+      "ref": "DF9",
+      "variable": "priced by the book (DF9)"
+    },
+    {
+      "type": "trait",
+      "name": "Resistant to Spirit Powers",
+      "kind": "advantage",
+      "tags": [
+        "Advantage"
+      ],
+      "ref": "DF9",
+      "variable": "priced by the book (DF9)"
+    },
+    {
+      "type": "trait",
+      "name": "Immunity to Disease",
+      "kind": "advantage",
+      "tags": [
+        "Advantage"
+      ],
+      "ref": "DF9",
+      "variable": "priced by the book (DF9)"
+    },
+    {
+      "type": "trait",
+      "name": "Doesn't Breathe",
+      "kind": "advantage",
+      "tags": [
+        "Advantage"
+      ],
+      "ref": "DF9",
+      "variable": "priced by the book (DF9)"
+    },
+    {
+      "type": "trait",
+      "name": "Burning Attack",
+      "kind": "advantage",
+      "tags": [
+        "Advantage"
+      ],
+      "ref": "DF9",
+      "variable": "priced by the book (DF9)"
+    },
+    {
+      "type": "trait",
+      "name": "Spirit Weapon",
+      "base": 10,
+      "kind": "perk",
+      "tags": [
+        "Perk"
+      ],
+      "ref": "DF9:5"
+    },
+    {
+      "type": "trait",
+      "name": "Code of Honor (Shaman's)",
+      "base": -50,
+      "kind": "disadvantage",
+      "tags": [
+        "Disadvantage",
+        "Mental"
+      ],
+      "ref": "DF9:18"
+    },
+    {
+      "type": "trait",
+      "name": "Acute Senses",
+      "kind": "advantage",
+      "tags": [
+        "Advantage",
+        "Physical"
+      ],
+      "ref": "B35",
+      "canLevel": true,
+      "perLevel": 20,
+      "sub": "Hearing, Taste and Smell, Touch, or Vision"
+    },
+    {
+      "type": "trait",
+      "name": "Sensitive",
+      "base": 50,
+      "kind": "advantage",
+      "tags": [
+        "Advantage",
+        "Mental"
+      ],
+      "ref": "B51"
+    },
+    {
+      "type": "trait",
+      "name": "Resistant to Evil Supernatural Powers",
+      "kind": "advantage",
+      "tags": [
+        "Advantage"
+      ],
+      "ref": "DF9",
+      "variable": "priced by the book (DF9)"
+    }
   ]
 }

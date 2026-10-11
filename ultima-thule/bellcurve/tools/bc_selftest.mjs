@@ -180,5 +180,21 @@ eq("Research at TL3 needs literacy only, not Computer Operation", ch({ tl: 3, sk
   eq("Striking ST: swing rises, lift and HP don't", [b.attrs.Strike, BC.diceTxt(b.strikeSw) !== BC.diceTxt(a.sw), b.enc.bl === a.enc.bl, b.attrs.HP === a.attrs.HP], [5, true, true, true]);
   eq("Striking ST: no longer a warning", b.issues.some(i => /not applied to the sheet/.test(i.msg)), false);
 }
+{ // DF9 summoners: the talent stands for Magery on the class's own spells, adds its level, and a book price stands
+  const mk = (traits, spells) => BC.compute({ format: "bellcurve-character", version: 1, name: "t", budget: 5000, attributes: { IQ: 1000 }, templates: [], traits, skills: [], spells, equipment: [] }, lib);
+  const da = { name: "Demonic Attunement", levels: 3 };
+  const r = mk([da], [{ name: "Counterspell", points: 10, power: "demonologist" }, { name: "Detect Magic", points: 10, power: "demonologist" }, { name: "Seek Gate", points: 10, power: "demonologist" }, { name: "Banish", points: 10, power: "demonologist" }]);
+  const sp = n => r.spells.find(x => x.name === n);
+  eq("demonologist: talent adds its level to spells", [sp("Counterspell").bonus, sp("Counterspell").level], [3, 10 + 3 + 3 + (sp("Counterspell").level - 16)]);
+  eq("demonologist: Banish wants Counterspell plus three other spells (has two)", [sp("Banish").prereqOk, sp("Seek Gate").prereqOk], [false, false]);
+  const r2 = mk([{ name: "Demonic Attunement", levels: 1 }], [{ name: "Control Gate", points: 10, power: "demonologist" }]);
+  eq("demonologist: Control Gate needs Demonic Attunement 3", r2.spells[0].prereqOk, false);
+  const r3 = mk([{ name: "Ally", notes: "Bound demon; Built on 100%; 12 or less; PM, -10%; Summonable, +100%", points: 190, bookPrice: true }], []);
+  eq("a book-priced ability keeps the book's price", r3.traits.find(t => t.name === "Ally").cost, 190);
+  const r4 = mk([{ name: "Power Investiture (Shamanic)", levels: 2 }], [{ name: "Affect Spirits", points: 10, power: "shamanic" }, { name: "Banish", points: 10, power: "shamanic" }]);
+  eq("shaman: PI 2 reaches Affect Spirits (PI 2) but not Banish (PI 3)", [r4.spells[0].prereqOk ?? true, r4.issues.some(i => /Banish.*needs Power Investiture \(Shamanic\) 3/.test(i.msg))], [true, true]);
+  const el = mk([{ name: "Elemental Influence (One Element)", levels: 2, notes: "Fire" }], [{ name: "Ignite Fire", points: 10, power: "elementalist" }, { name: "Create Water", points: 10, power: "elementalist" }]);
+  eq("elementalist: Fire influence opens Fire spells, not Water", [el.spells[0].prereqOk, el.spells[1].prereqOk], [true, false]);
+}
 console.log(fail ? `${fail} failure(s)` : "all passed");
 process.exit(fail ? 1 : 0);

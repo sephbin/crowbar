@@ -13338,7 +13338,7 @@
        "cost": 50
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Sensitive",
        "cost": 50
       },
@@ -15498,7 +15498,7 @@
        "per": 20
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Sensitive",
        "cost": 50
       },
@@ -16227,7 +16227,7 @@
        "cost": 50
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Sensitive",
        "cost": 50
       },
@@ -17580,11 +17580,11 @@
        "cost": 150
       },
       {
-       "type": "note",
-       "name": "Enhanced Dodge 1-3 (Vehicular)",
+       "type": "trait",
+       "name": "Enhanced Dodge (Vehicular)",
        "cost": 50,
        "min": 1,
-       "max": null,
+       "max": 3,
        "per": 50
       },
       {
@@ -18841,7 +18841,7 @@
      "prev": 0,
      "options": [
       {
-       "type": "note",
+       "type": "trait",
        "name": "Acute Senses",
        "cost": 20,
        "min": 1,
@@ -19202,7 +19202,7 @@
      "prev": 0,
      "options": [
       {
-       "type": "note",
+       "type": "trait",
        "name": "Acute Senses",
        "cost": 20,
        "min": 1,
@@ -19549,7 +19549,7 @@
      "prev": 0,
      "options": [
       {
-       "type": "note",
+       "type": "trait",
        "name": "Acute Senses",
        "cost": 20,
        "min": 1,
@@ -20321,7 +20321,7 @@
      "prev": 0,
      "options": [
       {
-       "type": "note",
+       "type": "trait",
        "name": "Acute Senses",
        "cost": 20,
        "min": 1,
@@ -20382,7 +20382,7 @@
        "variable": true
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Sensitive",
        "cost": 50
       },
@@ -20709,7 +20709,7 @@
      "prev": 0,
      "options": [
       {
-       "type": "note",
+       "type": "trait",
        "name": "Acute Senses",
        "cost": 20,
        "min": 1,
@@ -20758,7 +20758,7 @@
        ]
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Sensitive",
        "cost": 50
       },
@@ -21244,7 +21244,7 @@
        "cost": 30
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Sensitive",
        "cost": 50
       },
@@ -21741,7 +21741,7 @@
      "prev": 0,
      "options": [
       {
-       "type": "note",
+       "type": "trait",
        "name": "Acute Senses",
        "cost": 20,
        "min": 1,
@@ -22438,7 +22438,7 @@
      "prev": 0,
      "options": [
       {
-       "type": "note",
+       "type": "trait",
        "name": "Acute Senses",
        "cost": 20,
        "min": 1,
@@ -23015,7 +23015,7 @@
      "prev": 0,
      "options": [
       {
-       "type": "note",
+       "type": "trait",
        "name": "Acute Senses",
        "cost": 20,
        "min": 1,
@@ -23480,7 +23480,7 @@
      "prev": 0,
      "options": [
       {
-       "type": "note",
+       "type": "trait",
        "name": "Acute Senses",
        "cost": 20,
        "min": 1,
@@ -23528,7 +23528,7 @@
        "per": 10
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Sensitive",
        "cost": 50
       },
@@ -25906,9 +25906,14 @@
        "per": 20
       },
       {
-       "type": "note",
-       "name": "Licensed Exorcist (Summoners)",
-       "cost": 10
+       "type": "trait",
+       "name": "Licensed Exorcist",
+       "notes": "Summoners",
+       "cost": 10,
+       "noteChoices": [
+        "Summoners",
+        "p. 5"
+       ]
       },
       {
        "type": "trait",
@@ -25955,15 +25960,21 @@
        "variable": true
       },
       {
-       "type": "note",
-       "name": "Slayer Training (Summoners, p. 7)",
+       "type": "trait",
+       "name": "Slayer Training",
+       "notes": "Summoners, p. 7",
        "cost": null,
        "variable": true
       },
       {
-       "type": "note",
-       "name": "Spirit Badge (Summoners)",
-       "cost": 10
+       "type": "trait",
+       "name": "Spirit Badge",
+       "notes": "Summoners",
+       "cost": 10,
+       "noteChoices": [
+        "Summoners",
+        "p. 5"
+       ]
       },
       {
        "type": "trait",
@@ -25990,7 +26001,8 @@
        "noteChoices": [
         "Summoners",
         "p. 5"
-       ]
+       ],
+       "ref": "DF9:5"
       },
       {
        "type": "trait",
@@ -34496,9 +34508,10 @@
      "kind": "fixed",
      "options": [
       {
-       "type": "note",
-       "name": "Demonic Attunement 3",
-       "cost": 240
+       "type": "trait",
+       "name": "Demonic Attunement",
+       "cost": 240,
+       "levels": 3
       },
       {
        "type": "trait",
@@ -34520,8 +34533,9 @@
      "section": "advantages",
      "kind": "points",
      "n": 180,
-     "open": "Demonological abilities (p. 8); put leftovers into spells (p. 8)",
-     "options": []
+     "open": "Demonological abilities; put leftovers into spells",
+     "options": [],
+     "abilities": "demonologist"
     },
     {
      "id": "g3",
@@ -34604,16 +34618,18 @@
        "cost": 150
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Demonic Attunement",
        "cost": 80,
-       "levels": 4
+       "levels": 4,
+       "upgrade": true
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Demonic Attunement",
        "cost": 160,
-       "levels": 5
+       "levels": 5,
+       "upgrade": true
       },
       {
        "type": "trait",
@@ -34675,8 +34691,9 @@
        ]
       },
       {
-       "type": "note",
-       "name": "Licensed Exorcist (Demons; p. 5)",
+       "type": "trait",
+       "name": "Licensed Exorcist",
+       "notes": "Demons",
        "cost": 10
       },
       {
@@ -34720,24 +34737,26 @@
        "variable": true
       },
       {
-       "type": "note",
-       "name": "Slayer Training (Any; p. 7)",
+       "type": "trait",
+       "name": "Slayer Training",
+       "notes": "Any",
        "cost": null,
        "variable": true
       },
       {
-       "type": "note",
-       "name": "Social Regard 1-2 (Feared)",
+       "type": "trait",
+       "name": "Social Regard",
+       "notes": "Feared",
        "cost": 50,
        "min": 1,
-       "max": null,
+       "max": 2,
        "per": 50
       },
       {
        "type": "trait",
        "name": "Spirit Weapon",
-       "notes": "see p. 5",
-       "cost": 10
+       "cost": 10,
+       "ref": "DF9:5"
       },
       {
        "type": "trait",
@@ -34749,7 +34768,8 @@
         "Sword"
        ]
       }
-     ]
+     ],
+     "abilities": "demonologist"
     },
     {
      "id": "g4",
@@ -35097,14 +35117,14 @@
            "spec": "Buckler",
            "cost": 40,
            "diff": "E"
-          },
-          {
-           "type": "skill",
-           "name": "Knife",
-           "cost": 40,
-           "diff": "E"
           }
          ]
+        },
+        {
+         "type": "skill",
+         "name": "Knife",
+         "cost": 40,
+         "diff": "E"
         }
        ]
       },
@@ -35317,50 +35337,15 @@
     {
      "id": "g10",
      "section": "spells",
-     "kind": "fixed",
-     "options": [
-      {
-       "type": "group",
-       "kind": "count",
-       "n": 1,
-       "options": [
-        {
-         "type": "note",
-         "name": "Choose 10 demonologist spells (p. 8)"
-        },
-        {
-         "type": "note",
-         "name": "which will be either"
-        },
-        {
-         "type": "note",
-         "name": "(VH) IQ [1]-15 with the +3 for Demonic Attunement",
-         "cost": 10
-        }
-       ]
-      }
-     ],
-     "label": "Spells"
-    },
-    {
-     "id": "g11",
-     "section": "remainder",
-     "kind": "points",
-     "n": 140,
-     "open": "14 points this app couldn't read from the template (see DF9:6)",
-     "incomplete": true,
+     "kind": "count",
+     "n": 10,
+     "cost": 10,
+     "spellList": "demonologist",
      "options": []
     }
    ],
    "template": 250,
-   "points": 250,
-   "incomplete": {
-    "parsed": 236,
-    "missing": 14,
-    "unread": [
-     "unparsed skill entry: (VH) IQ [1]-15 with the +3 for Demonic Attunement"
-    ]
-   }
+   "points": 250
   },
   {
    "name": "Elementalist",
@@ -35496,19 +35481,40 @@
       },
       {
        "type": "note",
-       "name": "additional Elemental abilities",
-       "cost": null,
-       "variable": true
-      },
-      {
-       "type": "note",
        "name": "additional levels of Elemental Influence (see below for initial level)",
        "cost": 80,
        "min": 1,
        "max": null,
        "per": 80
+      },
+      {
+       "type": "trait",
+       "name": "Elemental Influence (One Element)",
+       "notes": "Fire",
+       "noteChoices": [
+        "Air",
+        "Earth",
+        "Fire",
+        "Water"
+       ],
+       "min": 4,
+       "max": 6,
+       "per": 80,
+       "from": 3,
+       "upgrade": true
+      },
+      {
+       "type": "trait",
+       "name": "Elemental Influence (All Elements)",
+       "min": 4,
+       "max": 6,
+       "per": 100,
+       "from": 3,
+       "upgrade": true
       }
-     ]
+     ],
+     "abilities": "elementalist",
+     "open": "Elemental abilities"
     },
     {
      "id": "g2",
@@ -35517,50 +35523,68 @@
      "n": 1,
      "options": [
       {
-       "type": "note",
-       "name": "these two core advantages packages (put leftovers into spells, pp. 11-12): 1. Elemental Influence 3 (One Element)",
-       "cost": 240
-      },
-      {
-       "type": "trait",
-       "name": "Spirit Empathy",
-       "cost": 30,
-       "book": "Accessibility, One element only, -20%; Specialized, Elementals, -50%",
-       "modifiers": [
+       "type": "bundle",
+       "label": "One element",
+       "items": [
         {
-         "name": "Accessibility",
-         "notes": "One element only",
-         "adj": "-20%"
+         "type": "trait",
+         "name": "Elemental Influence (One Element)",
+         "notes": "Fire",
+         "noteChoices": [
+          "Air",
+          "Earth",
+          "Fire",
+          "Water"
+         ],
+         "levels": 3,
+         "cost": 240
         },
         {
-         "name": "Specialized",
-         "notes": "Elementals",
-         "adj": "-50%"
-        }
-       ]
-      },
-      {
-       "type": "note",
-       "name": "26 points in Elemental abilities (p. 10). 2. Elemental Influence 3 (All Elements)",
-       "cost": 300
-      },
-      {
-       "type": "trait",
-       "name": "Spirit Empathy",
-       "cost": 50,
-       "book": "Specialized, Elementals, -50%",
-       "modifiers": [
+         "type": "trait",
+         "name": "Spirit Empathy",
+         "notes": "Accessibility, One element only, -20%; Specialized, Elementals, -50%",
+         "cost": 30
+        },
         {
-         "name": "Specialized",
-         "notes": "Elementals",
-         "adj": "-50%"
+         "type": "group",
+         "kind": "points",
+         "n": 260,
+         "section": "advantages",
+         "open": "Elemental abilities",
+         "abilities": "elementalist",
+         "options": []
         }
        ]
       },
       {
-       "type": "note",
-       "name": "and 18 points in Elemental abilities (p. 10)",
-       "cost": null
+       "type": "bundle",
+       "label": "All elements",
+       "items": [
+        {
+         "type": "trait",
+         "name": "Elemental Influence (All Elements)",
+         "levels": 3,
+         "cost": 300
+        },
+        {
+         "type": "trait",
+         "name": "Spirit Empathy",
+         "notes": "Specialized, Elementals, -50%",
+         "cost": 50,
+         "modifiers": [
+          "Specialized (-50%)"
+         ]
+        },
+        {
+         "type": "group",
+         "kind": "points",
+         "n": 180,
+         "section": "advantages",
+         "open": "Elemental abilities",
+         "abilities": "elementalist",
+         "options": []
+        }
+       ]
       }
      ]
     },
@@ -36015,51 +36039,15 @@
     {
      "id": "g9",
      "section": "spells",
-     "kind": "fixed",
-     "options": [
-      {
-       "type": "group",
-       "kind": "count",
-       "n": 1,
-       "options": [
-        {
-         "type": "note",
-         "name": "Choose 20 elementalist spells (pp. 11-12)"
-        },
-        {
-         "type": "note",
-         "name": "which will be either"
-        },
-        {
-         "type": "note",
-         "name": "(VH) IQ [1]-15 with the +3 for Elemental Influence",
-         "cost": 10
-        }
-       ]
-      }
-     ],
-     "label": "Spells"
-    },
-    {
-     "id": "g10",
-     "section": "remainder",
-     "kind": "points",
-     "n": 490,
-     "open": "49 points this app couldn't read from the template (see DF9:9)",
-     "incomplete": true,
+     "kind": "count",
+     "n": 20,
+     "cost": 10,
+     "spellList": "elementalist",
      "options": []
     }
    ],
    "template": 250,
-   "points": 250,
-   "incomplete": {
-    "parsed": 201,
-    "missing": 49,
-    "unread": [
-     "unparsed trait entry: and 18 points in Elemental abilities (p. 10)",
-     "unparsed skill entry: (VH) IQ [1]-15 with the +3 for Elemental Influence"
-    ]
-   }
+   "points": 250
   },
   {
    "name": "Necromancer",
@@ -36079,9 +36067,10 @@
      "kind": "fixed",
      "options": [
       {
-       "type": "note",
-       "name": "Deathliness 3",
-       "cost": 240
+       "type": "trait",
+       "name": "Deathliness",
+       "cost": 240,
+       "levels": 3
       },
       {
        "type": "trait",
@@ -36109,8 +36098,9 @@
      "section": "advantages",
      "kind": "points",
      "n": 200,
-     "open": "Necromantic abilities (p. 15); put leftovers into spells (p. 15)",
-     "options": []
+     "open": "Necromantic abilities; put leftovers into spells",
+     "options": [],
+     "abilities": "necromancer"
     },
     {
      "id": "g3",
@@ -36174,16 +36164,18 @@
        "levels": 2
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Deathliness",
        "cost": 80,
-       "levels": 4
+       "levels": 4,
+       "upgrade": true
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Deathliness",
        "cost": 160,
-       "levels": 5
+       "levels": 5,
+       "upgrade": true
       },
       {
        "type": "trait",
@@ -36248,8 +36240,9 @@
        "per": 20
       },
       {
-       "type": "note",
-       "name": "Licensed Exorcist (Ghosts; p. 5)",
+       "type": "trait",
+       "name": "Licensed Exorcist",
+       "notes": "Ghosts",
        "cost": 10
       },
       {
@@ -36307,8 +36300,9 @@
        "variable": true
       },
       {
-       "type": "note",
-       "name": "Slayer Training (Any; p. 7)",
+       "type": "trait",
+       "name": "Slayer Training",
+       "notes": "Any",
        "cost": null,
        "variable": true
       },
@@ -36318,31 +36312,28 @@
        "cost": 50
       },
       {
-       "type": "note",
-       "name": "Spirit Badge (p. 5)",
+       "type": "trait",
+       "name": "Spirit Badge",
        "cost": 10
       },
       {
        "type": "trait",
        "name": "Spirit Weapon",
-       "notes": "p. 5",
-       "cost": 10
+       "cost": 10,
+       "ref": "DF9:5"
       },
       {
-       "type": "note",
-       "name": "Temperature Tolerance 1-2 (Cold)",
+       "type": "trait",
+       "name": "Temperature Tolerance",
+       "notes": "Cold",
        "cost": 10,
        "min": 1,
-       "max": null,
+       "max": 2,
        "per": 10
-      },
-      {
-       "type": "note",
-       "name": "additional Necromantic abilities",
-       "cost": null,
-       "variable": true
       }
-     ]
+     ],
+     "abilities": "necromancer",
+     "open": "Necromantic abilities"
     },
     {
      "id": "g4",
@@ -36597,15 +36588,165 @@
      "kind": "fixed",
      "options": [
       {
-       "type": "note",
-       "name": "Secondary Skills and",
-       "cost": null
+       "type": "skill",
+       "name": "Stealth",
+       "cost": 40,
+       "diff": "A"
       }
      ],
-     "label": "Primary Skills"
+     "label": "Secondary Skills and Techniques"
     },
     {
      "id": "g8",
+     "section": "skills",
+     "kind": "count",
+     "n": 3,
+     "options": [
+      {
+       "type": "skill",
+       "name": "Fast-Talk",
+       "cost": 40,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Research",
+       "cost": 40,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Thaumatology",
+       "cost": 40,
+       "diff": "VH"
+      },
+      {
+       "type": "skill",
+       "name": "Search",
+       "cost": 40,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Exorcism",
+       "cost": 40,
+       "diff": "H"
+      }
+     ],
+     "label": "Secondary Skills and Techniques"
+    },
+    {
+     "id": "g9",
+     "section": "skills",
+     "kind": "count",
+     "n": 1,
+     "options": [
+      {
+       "type": "bundle",
+       "items": [
+        {
+         "type": "group",
+         "kind": "count",
+         "n": 1,
+         "options": [
+          {
+           "type": "skill",
+           "name": "Axe/Mace",
+           "cost": 120,
+           "diff": "A"
+          },
+          {
+           "type": "skill",
+           "name": "Broadsword",
+           "cost": 120,
+           "diff": "A"
+          },
+          {
+           "type": "skill",
+           "name": "Shortsword",
+           "cost": 120,
+           "diff": "A"
+          },
+          {
+           "type": "skill",
+           "name": "Spear",
+           "cost": 120,
+           "diff": "A"
+          }
+         ]
+        },
+        {
+         "type": "group",
+         "kind": "count",
+         "n": 1,
+         "options": [
+          {
+           "type": "skill",
+           "name": "Shield",
+           "choices": [
+            "Buckler",
+            "Force Shield",
+            "Shield"
+           ],
+           "cost": 40,
+           "diff": "E"
+          },
+          {
+           "type": "skill",
+           "name": "Shield",
+           "spec": "Buckler",
+           "cost": 40,
+           "diff": "E"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "type": "bundle",
+       "items": [
+        {
+         "type": "skill",
+         "name": "Brawling",
+         "cost": 20,
+         "diff": "E"
+        },
+        {
+         "type": "skill",
+         "name": "Wrestling",
+         "cost": 20,
+         "diff": "A"
+        },
+        {
+         "type": "skill",
+         "name": "Knife",
+         "cost": 120,
+         "diff": "E"
+        }
+       ]
+      },
+      {
+       "type": "bundle",
+       "items": [
+        {
+         "type": "skill",
+         "name": "Two-Handed Axe/Mace",
+         "cost": 120,
+         "diff": "A"
+        },
+        {
+         "type": "skill",
+         "name": "Knife",
+         "cost": 40,
+         "diff": "E"
+        }
+       ]
+      }
+     ],
+     "label": "Secondary Skills and Techniques"
+    },
+    {
+     "id": "g10",
      "section": "skills",
      "kind": "count",
      "n": 8,
@@ -36715,53 +36856,17 @@
      "label": "Background Skills"
     },
     {
-     "id": "g9",
+     "id": "g11",
      "section": "spells",
-     "kind": "fixed",
-     "options": [
-      {
-       "type": "group",
-       "kind": "count",
-       "n": 1,
-       "options": [
-        {
-         "type": "note",
-         "name": "Choose 10 Deathly spells (p. 15)"
-        },
-        {
-         "type": "note",
-         "name": "which will be either"
-        },
-        {
-         "type": "note",
-         "name": "(VH) IQ [1]-14 with the +3 for Deathliness",
-         "cost": 10
-        }
-       ]
-      }
-     ],
-     "label": "Spells"
-    },
-    {
-     "id": "g10",
-     "section": "remainder",
-     "kind": "points",
-     "n": 420,
-     "open": "42 points this app couldn't read from the template (see DF9:13)",
-     "incomplete": true,
+     "kind": "count",
+     "n": 10,
+     "cost": 10,
+     "spellList": "necromancer",
      "options": []
     }
    ],
    "template": 250,
-   "points": 250,
-   "incomplete": {
-    "parsed": 208,
-    "missing": 42,
-    "unread": [
-     "unparsed skill entry: Secondary Skills and",
-     "unparsed skill entry: (VH) IQ [1]-14 with the +3 for Deathliness"
-    ]
-   }
+   "points": 250
   },
   {
    "name": "Shaman",
@@ -36796,8 +36901,7 @@
       },
       {
        "type": "trait",
-       "name": "Power Investiture",
-       "notes": "Shamanic) (p. 18",
+       "name": "Power Investiture (Shamanic)",
        "cost": 200,
        "levels": 2
       },
@@ -36813,14 +36917,39 @@
      "section": "advantages",
      "kind": "points",
      "n": 150,
-     "open": "Shamanic abilities (p. 19); put leftovers into Shamanic spells (p. 19)",
-     "options": []
+     "open": "Shamanic abilities; put leftovers into Shamanic spells",
+     "options": [],
+     "abilities": "shaman"
+    },
+    {
+     "id": "g14",
+     "section": "advantages",
+     "kind": "points",
+     "n": 600,
+     "abilities": "shaman",
+     "open": "additional Shamanic abilities, shamanic spells, Allies (p. 17), a Contact Group (Local Spirits, p. 18) or a Patron (p. 17)",
+     "options": [
+      {
+       "type": "trait",
+       "name": "Contact Group",
+       "notes": "Local Spirits; skill-15; Supernatural Abilities; 12 or less; Somewhat Reliable",
+       "cost": 300,
+       "bookPrice": true
+      },
+      {
+       "type": "trait",
+       "name": "Contact Group",
+       "notes": "Local Spirits; skill-15; Supernatural Abilities; 15 or less; Somewhat Reliable",
+       "cost": 450,
+       "bookPrice": true
+      }
+     ]
     },
     {
      "id": "g3",
      "section": "advantages",
      "kind": "note",
-     "text": "A further 60 points spent on additional Shamanic abilities, spells, or Allies (p. 17) [Varies], Contact Group (Local Spirits, p. 18; skill-15; Supernatural Abilities; 12 or less; Somewhat Reliable) [30] or (15 or less) [45], or Patron (see Shamanic Allies and Patrons, p. 17) [Varies]."
+     "text": "A further 60 points spent on additional Shamanic abilities, spells, or Allies [Varies], Contact Group (Local Spirits, p. 18; skill-15; Supernatural Abilities; 12 or less; Somewhat Reliable) [30] or (15 or less) [45], or Patron (see Shamanic Allies and Patrons, p. 17) [Varies]."
     },
     {
      "id": "g4",
@@ -36871,7 +37000,7 @@
        "per": 30
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Acute Senses",
        "cost": 20,
        "min": 1,
@@ -36897,7 +37026,7 @@
       {
        "type": "trait",
        "name": "Claim to Hospitality",
-       "notes": "Local Community) (p. 18",
+       "notes": "Local Community",
        "cost": null,
        "variable": true
       },
@@ -36917,7 +37046,7 @@
        "cost": 150
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Sensitive",
        "cost": 50
       },
@@ -36982,29 +37111,30 @@
       },
       {
        "type": "trait",
-       "name": "Power Investiture",
-       "notes": "Shamanic",
+       "name": "Power Investiture (Shamanic)",
        "cost": 100,
-       "levels": 1
+       "levels": 3,
+       "upgrade": true
       },
       {
-       "type": "note",
-       "name": "Social Regard 1-3 (Respected)",
+       "type": "trait",
+       "name": "Social Regard",
+       "notes": "Respected",
        "cost": 50,
        "min": 1,
-       "max": null,
+       "max": 3,
        "per": 50
       },
       {
-       "type": "note",
-       "name": "Spirit Badge (p. 5)",
+       "type": "trait",
+       "name": "Spirit Badge",
        "cost": 10
       },
       {
        "type": "trait",
        "name": "Spirit Weapon",
-       "notes": "p. 5",
-       "cost": 10
+       "cost": 10,
+       "ref": "DF9:5"
       },
       {
        "type": "trait",
@@ -37017,7 +37147,8 @@
        "name": "Voice",
        "cost": 100
       }
-     ]
+     ],
+     "abilities": "shaman"
     },
     {
      "id": "g5",
@@ -37028,8 +37159,7 @@
      "options": [
       {
        "type": "trait",
-       "name": "Code of Honor",
-       "notes": "Shaman's) (p. 18",
+       "name": "Code of Honor (Shaman's)",
        "cost": -50
       },
       {
@@ -37417,8 +37547,10 @@
          "n": 1,
          "options": [
           {
-           "type": "note",
-           "name": "Either Axe/Mace"
+           "type": "skill",
+           "name": "Axe/Mace",
+           "cost": 40,
+           "diff": "A"
           },
           {
            "type": "skill",
@@ -37675,51 +37807,15 @@
     {
      "id": "g13",
      "section": "spells",
-     "kind": "fixed",
-     "options": [
-      {
-       "type": "group",
-       "kind": "count",
-       "n": 1,
-       "options": [
-        {
-         "type": "note",
-         "name": "Choose eight shamanic spells (p. 19)"
-        },
-        {
-         "type": "note",
-         "name": "which will be either"
-        },
-        {
-         "type": "note",
-         "name": "(VH) IQ-1 [1]-12 with the +2 for Power Investiture",
-         "cost": 10
-        }
-       ]
-      }
-     ],
-     "label": "Spells"
-    },
-    {
-     "id": "g14",
-     "section": "remainder",
-     "kind": "points",
-     "n": 720,
-     "open": "72 points this app couldn't read from the template (see DF9:16)",
-     "incomplete": true,
+     "kind": "count",
+     "n": 8,
+     "cost": 10,
+     "spellList": "shamanic",
      "options": []
     }
    ],
    "template": 250,
-   "points": 250,
-   "incomplete": {
-    "parsed": 178,
-    "missing": 72,
-    "unread": [
-     "unparsed advantages clause: A further 60 points spent on additional Shamanic abilities, spells, or Allies (p. 17) [Varie",
-     "unparsed skill entry: (VH) IQ-1 [1]-12 with the +2 for Power Investiture"
-    ]
-   }
+   "points": 250
   },
   {
    "name": "The Chimera",
@@ -42964,7 +43060,7 @@
        "cost": 150
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Sensitive",
        "cost": 50
       },
@@ -45660,7 +45756,7 @@
        "cost": 150
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Sensitive",
        "cost": 50
       },
@@ -46132,7 +46228,7 @@
        "cost": 150
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Sensitive",
        "cost": 50
       },
@@ -46604,7 +46700,7 @@
        "cost": 150
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Sensitive",
        "cost": 50
       },
@@ -49196,7 +49292,7 @@
        "variable": true
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Sensitive",
        "cost": 50
       },
@@ -51818,7 +51914,7 @@
        "variable": true
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Sensitive",
        "cost": 50
       },
@@ -55210,19 +55306,21 @@
      "prev": 0,
      "options": [
       {
-       "type": "note",
+       "type": "trait",
        "name": "Acute Senses",
        "cost": 20
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Acute Senses",
-       "cost": 40
+       "cost": 40,
+       "levels": 2
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Acute Senses",
-       "cost": 60
+       "cost": 60,
+       "levels": 3
       },
       {
        "type": "trait",
@@ -62556,7 +62654,7 @@
        "variable": true
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Sensitive",
        "cost": 50
       },
@@ -63694,7 +63792,7 @@
        "variable": true
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Sensitive",
        "cost": 50
       },
@@ -66982,7 +67080,7 @@
        "per": 10
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Sensitive",
        "cost": 50
       },
@@ -74192,7 +74290,7 @@
        "variable": true
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Sensitive",
        "cost": 50
       },
@@ -76070,7 +76168,7 @@
      "prev": 0,
      "options": [
       {
-       "type": "note",
+       "type": "trait",
        "name": "Acute Senses",
        "cost": 20,
        "min": 1,
@@ -78719,7 +78817,7 @@
        "cost": 50
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Sensitive",
        "cost": 50
       },
@@ -79705,7 +79803,7 @@
        ]
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Sensitive",
        "cost": 50
       },
@@ -80448,7 +80546,7 @@
        "per": 20
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Sensitive",
        "cost": 50
       },
@@ -81250,7 +81348,7 @@
        "variable": true
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Sensitive",
        "cost": 50
       },
@@ -81936,7 +82034,7 @@
        ]
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Sensitive",
        "cost": 50
       },
@@ -84403,7 +84501,7 @@
        "variable": true
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Sensitive",
        "cost": 50
       },
@@ -87053,7 +87151,7 @@
        "from": 1
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Acute Senses",
        "cost": 20,
        "min": 1,
@@ -87654,7 +87752,7 @@
        "levels": 1
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Acute Senses",
        "cost": 20,
        "min": 1,
@@ -88685,7 +88783,7 @@
        "cost": 50
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Sensitive",
        "cost": 50
       },
@@ -91786,7 +91884,7 @@
        "variable": true
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Sensitive",
        "cost": 50
       },
@@ -92969,7 +93067,7 @@
        "per": 20
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Sensitive",
        "cost": 50
       },
@@ -94103,7 +94201,7 @@
        "variable": true
       },
       {
-       "type": "note",
+       "type": "trait",
        "name": "Sensitive",
        "cost": 50
       },
@@ -97457,11 +97555,15 @@
      "kind": "points",
      "n": 210,
      "prev": 0,
+     "open": "your template's advantage options",
      "options": [
       {
-       "type": "note",
-       "name": "your template's advantage options or IQ +1",
-       "cost": 200
+       "type": "attr",
+       "key": "IQ",
+       "name": "IQ +1",
+       "min": 1,
+       "max": 1,
+       "per": 200
       },
       {
        "type": "attr",
@@ -97543,9 +97645,15 @@
        "per": 20
       },
       {
-       "type": "note",
-       "name": "Licensed Exorcist (Summoners)",
-       "cost": 10
+       "type": "trait",
+       "name": "Licensed Exorcist",
+       "notes": "Summoners",
+       "cost": 10,
+       "cr": 12,
+       "noteChoices": [
+        "Summoners",
+        "p. 5"
+       ]
       },
       {
        "type": "trait",
@@ -97585,15 +97693,21 @@
        "variable": true
       },
       {
-       "type": "note",
-       "name": "Slayer Training (Summoners, p. 7)",
+       "type": "trait",
+       "name": "Slayer Training",
+       "notes": "Summoners, p. 7",
        "cost": null,
        "variable": true
       },
       {
-       "type": "note",
-       "name": "Spirit Badge (Summoners)",
-       "cost": 10
+       "type": "trait",
+       "name": "Spirit Badge",
+       "notes": "Summoners",
+       "cost": 10,
+       "noteChoices": [
+        "Summoners",
+        "p. 5"
+       ]
       },
       {
        "type": "trait",
@@ -97621,7 +97735,8 @@
        "noteChoices": [
         "Summoners",
         "p. 5"
-       ]
+       ],
+       "ref": "DF9:5"
       },
       {
        "type": "trait",
@@ -97793,19 +97908,188 @@
     },
     {
      "id": "g3",
-     "section": "remainder",
-     "kind": "points",
-     "n": 350,
-     "open": "35 points this app couldn't read from the lens (see DF15:34)",
-     "incomplete": true,
-     "options": []
+     "section": "advantages",
+     "kind": "count",
+     "n": 1,
+     "label": "Special abilities and spells (one 35-point package)",
+     "options": [
+      {
+       "type": "bundle",
+       "label": "Demonologist",
+       "items": [
+        {
+         "type": "trait",
+         "name": "Demonic Attunement",
+         "levels": 2,
+         "addLevels": true,
+         "cost": 160
+        },
+        {
+         "type": "group",
+         "kind": "points",
+         "n": 190,
+         "section": "advantages",
+         "open": "any combo of Demonic Attunement 3 [8], Demonological abilities and demonologist spells (Summoners, p. 8)",
+         "options": [
+          {
+           "type": "trait",
+           "name": "Demonic Attunement",
+           "addLevels": true,
+           "min": 1,
+           "max": 4,
+           "per": 80
+          }
+         ],
+         "abilities": "demonologist",
+         "spellList": "demonologist"
+        }
+       ]
+      },
+      {
+       "type": "bundle",
+       "label": "Elementalist (generalist)",
+       "items": [
+        {
+         "type": "trait",
+         "name": "Elemental Influence (All Elements)",
+         "levels": 2,
+         "addLevels": true,
+         "cost": 200
+        },
+        {
+         "type": "group",
+         "kind": "points",
+         "n": 150,
+         "section": "advantages",
+         "open": "any combo of Elemental Influence 3 [10], Elemental abilities and elementalist spells (Summoners, pp. 10-11)",
+         "options": [
+          {
+           "type": "trait",
+           "name": "Elemental Influence (All Elements)",
+           "addLevels": true,
+           "min": 1,
+           "max": 4,
+           "per": 100
+          }
+         ],
+         "abilities": "elementalist",
+         "spellList": "elementalist"
+        }
+       ]
+      },
+      {
+       "type": "bundle",
+       "label": "Elementalist (specialist)",
+       "items": [
+        {
+         "type": "trait",
+         "name": "Elemental Influence (One Element)",
+         "levels": 2,
+         "addLevels": true,
+         "cost": 160,
+         "notes": "Fire",
+         "noteChoices": [
+          "Air",
+          "Earth",
+          "Fire",
+          "Water"
+         ]
+        },
+        {
+         "type": "group",
+         "kind": "points",
+         "n": 190,
+         "section": "advantages",
+         "open": "any combo of Elemental Influence 3 [8], Elemental abilities and elementalist spells for your element",
+         "options": [
+          {
+           "type": "trait",
+           "name": "Elemental Influence (One Element)",
+           "addLevels": true,
+           "min": 1,
+           "max": 4,
+           "per": 80,
+           "notes": "Fire",
+           "noteChoices": [
+            "Air",
+            "Earth",
+            "Fire",
+            "Water"
+           ]
+          }
+         ],
+         "abilities": "elementalist",
+         "spellList": "elementalist"
+        }
+       ]
+      },
+      {
+       "type": "bundle",
+       "label": "Necromancer",
+       "items": [
+        {
+         "type": "trait",
+         "name": "Deathliness",
+         "levels": 2,
+         "addLevels": true,
+         "cost": 160
+        },
+        {
+         "type": "group",
+         "kind": "points",
+         "n": 190,
+         "section": "advantages",
+         "open": "any combo of Deathliness 3 [8], Necromantic abilities and deathly spells (Summoners, p. 15)",
+         "options": [
+          {
+           "type": "trait",
+           "name": "Deathliness",
+           "addLevels": true,
+           "min": 1,
+           "max": 4,
+           "per": 80
+          }
+         ],
+         "abilities": "necromancer",
+         "spellList": "necromancer"
+        }
+       ]
+      },
+      {
+       "type": "bundle",
+       "label": "Wizard",
+       "items": [
+        {
+         "type": "trait",
+         "name": "Magery",
+         "levels": 2,
+         "addLevels": true,
+         "cost": 250
+        },
+        {
+         "type": "group",
+         "kind": "points",
+         "n": 100,
+         "section": "advantages",
+         "open": "either Magery 3 [10] or 10 wizardly spells",
+         "options": [
+          {
+           "type": "trait",
+           "name": "Magery",
+           "addLevels": true,
+           "min": 1,
+           "max": 4,
+           "per": 100
+          }
+         ],
+         "spellList": "wizardly"
+        }
+       ]
+      }
+     ]
     }
    ],
-   "points": 125,
-   "incomplete": {
-    "parsed": 90,
-    "missing": 35
-   }
+   "points": 125
   },
   {
    "name": "Burglar",
@@ -98322,11 +98606,15 @@
      "kind": "points",
      "n": 200,
      "prev": 0,
+     "open": "your template's advantage options",
      "options": [
       {
-       "type": "note",
-       "name": "your template's advantage options or DX +1",
-       "cost": 200
+       "type": "attr",
+       "key": "DX",
+       "name": "DX +1",
+       "min": 1,
+       "max": 1,
+       "per": 200
       },
       {
        "type": "attr",
@@ -98850,11 +99138,15 @@
      "kind": "points",
      "n": 300,
      "prev": 0,
+     "open": "your template's advantage options",
      "options": [
       {
-       "type": "note",
-       "name": "your template's advantage options or IQ +1",
-       "cost": 200
+       "type": "attr",
+       "key": "IQ",
+       "name": "IQ +1",
+       "min": 1,
+       "max": 1,
+       "per": 200
       },
       {
        "type": "attr",
@@ -99367,11 +99659,15 @@
      "kind": "points",
      "n": 300,
      "prev": 0,
+     "open": "your template's advantage options",
      "options": [
       {
-       "type": "note",
-       "name": "your template's advantage options or ST +1",
-       "cost": 100
+       "type": "attr",
+       "key": "ST",
+       "name": "ST +1",
+       "min": 1,
+       "max": 1,
+       "per": 100
       },
       {
        "type": "attr",
@@ -99474,9 +99770,14 @@
        "per": 20
       },
       {
-       "type": "note",
-       "name": "Licensed Exorcist (Summoners)",
-       "cost": 10
+       "type": "trait",
+       "name": "Licensed Exorcist",
+       "notes": "Summoners",
+       "cost": 10,
+       "noteChoices": [
+        "Summoners",
+        "p. 5"
+       ]
       },
       {
        "type": "trait",
@@ -99510,14 +99811,18 @@
        "per": 100
       },
       {
-       "type": "note",
-       "name": "Resistant to Evil Supernatural Powers (+3)",
-       "cost": 50
+       "type": "trait",
+       "name": "Resistant to Evil Supernatural Powers",
+       "notes": "+3",
+       "cost": 50,
+       "declare": true
       },
       {
-       "type": "note",
-       "name": "Resistant to Evil Supernatural Powers (+8)",
-       "cost": 70
+       "type": "trait",
+       "name": "Resistant to Evil Supernatural Powers",
+       "notes": "+8",
+       "cost": 70,
+       "declare": true
       },
       {
        "type": "trait",
@@ -99526,9 +99831,14 @@
        "variable": true
       },
       {
-       "type": "note",
-       "name": "Spirit Badge (Summoners)",
-       "cost": 10
+       "type": "trait",
+       "name": "Spirit Badge",
+       "notes": "Summoners",
+       "cost": 10,
+       "noteChoices": [
+        "Summoners",
+        "p. 5"
+       ]
       },
       {
        "type": "trait",
@@ -99543,7 +99853,8 @@
        "noteChoices": [
         "Summoners",
         "p. 5"
-       ]
+       ],
+       "ref": "DF9:5"
       },
       {
        "type": "trait",
@@ -99749,19 +100060,139 @@
     },
     {
      "id": "g3",
-     "section": "remainder",
-     "kind": "points",
-     "n": 450,
-     "open": "45 points this app couldn't read from the lens (see DF15:38)",
-     "incomplete": true,
-     "options": []
+     "section": "advantages",
+     "kind": "count",
+     "n": 1,
+     "label": "Special abilities and spells (one 45-point package, matching your disadvantages)",
+     "options": [
+      {
+       "type": "bundle",
+       "label": "Druid",
+       "items": [
+        {
+         "type": "trait",
+         "name": "Power Investiture (Druidic)",
+         "levels": 2,
+         "addLevels": true,
+         "cost": 200
+        },
+        {
+         "type": "group",
+         "kind": "points",
+         "n": 250,
+         "section": "advantages",
+         "open": "any combo of Power Investiture 3 (Druidic) [10], druidic abilities and druidic spells",
+         "options": [
+          {
+           "type": "trait",
+           "name": "Power Investiture (Druidic)",
+           "addLevels": true,
+           "min": 1,
+           "max": 4,
+           "per": 100
+          }
+         ],
+         "spellList": "druidic"
+        }
+       ]
+      },
+      {
+       "type": "bundle",
+       "label": "Evil cleric",
+       "items": [
+        {
+         "type": "trait",
+         "name": "Power Investiture (Unholy)",
+         "levels": 2,
+         "addLevels": true,
+         "cost": 200
+        },
+        {
+         "type": "group",
+         "kind": "points",
+         "n": 250,
+         "section": "advantages",
+         "open": "any combo of Power Investiture 3 (Unholy) [10], Unholy abilities (The Next Level, p. 41) and evil clerical spells (The Next Level, p. 24)",
+         "options": [
+          {
+           "type": "trait",
+           "name": "Power Investiture (Unholy)",
+           "addLevels": true,
+           "min": 1,
+           "max": 4,
+           "per": 100
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "type": "bundle",
+       "label": "Good cleric",
+       "items": [
+        {
+         "type": "trait",
+         "name": "Power Investiture",
+         "levels": 2,
+         "addLevels": true,
+         "cost": 200
+        },
+        {
+         "type": "group",
+         "kind": "points",
+         "n": 250,
+         "section": "advantages",
+         "open": "any combo of Power Investiture 3 [10], Holy abilities and clerical spells",
+         "options": [
+          {
+           "type": "trait",
+           "name": "Power Investiture",
+           "addLevels": true,
+           "min": 1,
+           "max": 4,
+           "per": 100
+          }
+         ],
+         "spellList": "clerical"
+        }
+       ]
+      },
+      {
+       "type": "bundle",
+       "label": "Shaman",
+       "items": [
+        {
+         "type": "trait",
+         "name": "Power Investiture (Shamanic)",
+         "levels": 2,
+         "addLevels": true,
+         "cost": 200
+        },
+        {
+         "type": "group",
+         "kind": "points",
+         "n": 250,
+         "section": "advantages",
+         "open": "any combo of Power Investiture 3 (Shamanic) [10], Shamanic abilities and shamanic spells",
+         "options": [
+          {
+           "type": "trait",
+           "name": "Power Investiture (Shamanic)",
+           "addLevels": true,
+           "min": 1,
+           "max": 4,
+           "per": 100
+          }
+         ],
+         "abilities": "shaman",
+         "spellList": "shamanic"
+        }
+       ]
+      }
+     ]
     }
    ],
-   "points": 125,
-   "incomplete": {
-    "parsed": 80,
-    "missing": 45
-   }
+   "points": 125
   },
   {
    "name": "Psi",
@@ -99801,11 +100232,15 @@
      "kind": "points",
      "n": 250,
      "prev": 0,
+     "open": "your template's advantage options",
      "options": [
       {
-       "type": "note",
-       "name": "your template's advantage options or IQ +1",
-       "cost": 200
+       "type": "attr",
+       "key": "IQ",
+       "name": "IQ +1",
+       "min": 1,
+       "max": 1,
+       "per": 200
       },
       {
        "type": "attr",
@@ -99905,13 +100340,13 @@
        "cost": 100
       },
       {
-       "type": "note",
-       "name": "or, Wealth (Comfortable)",
+       "type": "trait",
+       "name": "Comfortable Wealth",
        "cost": 100
       },
       {
-       "type": "note",
-       "name": "or, Wealth (Wealthy)",
+       "type": "trait",
+       "name": "Wealthy",
        "cost": 200
       }
      ]
@@ -100080,19 +100515,25 @@
     },
     {
      "id": "g5",
-     "section": "remainder",
+     "section": "advantages",
      "kind": "points",
      "n": 400,
-     "open": "40 points this app couldn't read from the lens (see DF15:40)",
-     "incomplete": true,
-     "options": []
+     "label": "Special abilities",
+     "open": "any combo of Psi Talent 3 or 4 [5 or 10], psionics abilities and psi perks",
+     "options": [
+      {
+       "type": "trait",
+       "name": "Psi Talent",
+       "min": 3,
+       "max": 4,
+       "from": 2,
+       "per": 50,
+       "upgrade": true
+      }
+     ]
     }
    ],
-   "points": 125,
-   "incomplete": {
-    "parsed": 85,
-    "missing": 40
-   }
+   "points": 125
   },
   {
    "name": "Treasure-Hunter",
@@ -100111,13 +100552,14 @@
      "kind": "points",
      "n": 300,
      "prev": 0,
+     "open": "your template's advantage options",
      "options": [
       {
-       "type": "note",
-       "name": "your template's advantage options or ST +1 to +3",
-       "cost": 100,
+       "type": "attr",
+       "key": "ST",
+       "name": "ST +1 to +3",
        "min": 1,
-       "max": null,
+       "max": 3,
        "per": 100
       },
       {

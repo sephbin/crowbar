@@ -546,7 +546,7 @@ const spellEnergy = (cost, level) => {
 function profOptCost(o, pick = {}) {
   if (o.variable) return pick.cost ?? 0;
   // an upgrade over a fixed level ("High Manual Dexterity 2-4" after level 1) pays only for the added levels
-  if (o.per != null && (o.min != null || o.type === "attr")) return o.per * ((pick.levels ?? o.min ?? 1) - (o.from || 0));
+  if (o.per != null && (o.min != null || o.type === "attr")) { const n = (pick.levels ?? o.min ?? 1) - (o.from || 0); return o.roundUp ? roundUp10(o.per * n) : o.per * n; }
   return o.cost ?? 0;
 }
 // A lens (lib.lenses: Action 1, Monster Hunters, DF15) is a smaller template laid over a profession. A lens of the
@@ -576,7 +576,7 @@ function profWalk(prof, picks, fn) {
   const choose = (g, path) => {
     for (const p of picks?.[path] || []) {
       if (p.spell) fn({ type: "spell", name: p.spell, cost: p.cost ?? g.cost ?? 10, power: g.spellList && g.spellList !== "wizardly" ? g.spellList : null }, p, path);
-      else if (p.trait) fn({ type: "trait", name: p.trait, notes: p.notes, levels: p.levels, cost: p.cost ?? 0 }, p, path);   // chosen from the library for an open pool
+      else if (p.trait) fn({ type: "trait", name: p.trait, notes: p.notes, levels: p.levels, cost: p.cost ?? 0, ...(p.bookPrice ? { bookPrice: true } : {}) }, p, path);   // chosen from the library for an open pool
       else if (p.text != null) fn({ type: "note", name: p.text, cost: p.cost ?? 0 }, p, path);
       else if (p.skill) fn({ type: "skill", name: p.skill, spec: p.spec, cost: p.cost ?? 0, raise: true }, p, path);
       else { const o = profGroupOf(prof, g, p)?.options?.[p.o]; if (o) take(o, p, `${path}.${p.o}`); }
@@ -626,13 +626,14 @@ function profStamp(prof, picks) {
       const notes = p.notes ?? o.notes, lv = p.levels ?? o.levels ?? o.min ?? null;
       // "Magery 4, 5, or 6 [10, 20, or 30]": raises the template's Magery 3 rather than adding a second Magery
       const same = st.traits.find(t => t.name === o.name && (t.notes || "") === (notes || ""));
-      if (same && lv != null) { same.levels = Math.max(same.levels || 0, lv); return; }
+      if (same && lv != null) { same.levels = o.addLevels ? (same.levels || 0) + lv : Math.max(same.levels || 0, lv); return; }   // addLevels: "increase any existing levels" (DF15 lenses)
       const t = { name: o.name };
       if (notes) t.notes = notes;
       if (lv != null) t.levels = lv;
       if (o.cr) t.cr = o.cr;
       if (o.modifiers) t.modifiers = structuredClone(o.modifiers);
       if (o.declare) t.points = cost;
+      if (o.bookPrice) { t.points = cost; t.bookPrice = true; }   // an ability the book prices (DF9)
       if (o.ref) t.ref = o.ref;   // which of two same-named records (DF4's Equipment Bond, not Power-Ups')   // a trait the library can't price (Unusual Background): the book's cost
       st.traits.push(t);
     } else if (o.type === "skill") {
@@ -642,6 +643,42 @@ function profStamp(prof, picks) {
     else st.notes.push({ text: o.name, points: cost });
   });
   return st;
+}
+
+// DF9 summoner spell lists. Demonologists and necromancers use a table (a talent level, named spells, "any N other"
+// class spells, IQ or Will); elementalists use the elemental colleges (their talent stands for Magery) and a short list.
+const SUMMONER_POWER = { demonologist: "Demonic Attunement", necromancer: "Deathliness", elementalist: "Elemental Influence" };
+function summonerPrereq(s, lib, pstate, traits, spellRows) {
+  const cls = lib.summoners?.[s.power], tname = SUMMONER_POWER[s.power], miss = [];
+  if (!cls) return { ok: false, missing: [`${s.power} spells are not in the library`], talent: 0, ref: "DF9" };
+  const talents = traits.filter(t => lc(t.name).startsWith(lc(tname)));
+  const known = spellRows.filter(x => x.points >= 10 && x !== s && x.power === s.power);
+  const has = n => spellRows.some(x => x.points >= 10 && lc(x.name) === lc(n));
+  if (s.power === "elementalist") {
+    const all = talents.find(t => /all elements/i.test(t.name)), one = talents.find(t => /one element/i.test(t.name));
+    const lvl = (all || one)?.levels || 0, inList = (cls.general || []).includes(s.rec.name);
+    const el = cls.colleges.find(c => (s.rec.college || []).includes(c));
+    if (!lvl) miss.push("needs Elemental Influence");
+    else if (!inList && !(all ? el : one && el && lc(one.notes || "") === lc(el))) miss.push(`not on the ${one ? one.notes || "chosen element's" : "elemental"} list`);
+    else {
+      const r = checkPrereq(s.rec.prereqs, { ...pstate, traits: [...pstate.traits, { name: "Magery", levels: lvl, notes: "" }] });
+      if (!r.ok) miss.push(...r.missing);
+    }
+    return { ok: !miss.length, missing: miss, talent: lvl, ref: "DF9:11" };
+  }
+  const lvl = talents.reduce((a, t) => Math.max(a, t.levels || 0), 0);
+  const row = (cls.spells || []).find(x => x.name === s.rec.name);
+  if (!row) return { ok: false, missing: [`not on the ${s.power} list`], talent: lvl, ref: cls.ref };
+  const q = row.req || {};
+  if (q.talent && lvl < q.talent) miss.push(`${tname} ${q.talent} (has ${lvl})`);
+  if (q.iq && pstate.attrs.IQ < q.iq) miss.push(`IQ ${q.iq}+`);
+  if (q.will && pstate.attrs.Will < q.will) miss.push(`Will ${q.will}+`);
+  for (const n of q.spells || []) if (!has(n)) miss.push(n);
+  for (const alt of q.any || []) if (!alt.some(a => { const m = /^(.*?)\s+(\d)$/.exec(a); return m && lc(m[1]) === lc(tname) ? lvl >= +m[2] : has(a) || traits.some(t => lc(t.name) === lc(a)); })) miss.push(alt.join(" or "));
+  const named = new Set((q.spells || []).map(lc));
+  if (q.other && known.filter(x => !named.has(lc(x.name))).length < q.other) miss.push(`${q.other} other ${s.power} spells`);
+  if (q.otherAny && spellRows.filter(x => x.points >= 10 && x !== s && !named.has(lc(x.name))).length < q.otherAny) miss.push(`${q.otherAny} other spells`);
+  return { ok: !miss.length, missing: miss.map(x => `needs ${x}`), talent: lvl, ref: cls.ref };
 }
 
 // ---------------------------------------------------------------- compute
@@ -692,13 +729,15 @@ function compute(ch, lib, opts = {}) {
     }
     const c = traitCost(rec, inst, lib.modifiers || []);
     row.cost = c.cost; row.mods = c.mods; row.kind = rec.kind; row.house = !!rec.house; row.ref = rec.ref;
-    row.features = (rec.features || []).map(f => ({ ...f, amount: f.per_level ? f.amount * (row.levels || 0) : f.amount, source: fullName(inst.name, inst.notes) }));
+    row.features = (rec.features || []).filter(f => !f.notes_is || lc(f.notes_is) === lc(inst.notes || "")).map(f => ({ ...f, amount: f.per_level ? f.amount * (row.levels || 0) : f.amount, source: fullName(inst.name, inst.notes) }));
     for (const e of c.errors) add("ERROR", `${inst.name}: ${e}`, rec.ref, path);
     for (const w of c.warns) add("WARN", `${inst.name}: ${w}`, rec.ref, path);
     // a trait with no cost in the library (Unusual Background, Book-Learned Wisdom) is priced by the GM or a formula:
     // the declared points are used
     const noCost = !rec.base && !rec.perLevel && !(rec.mods || []).some(m => m.adj && m.adj !== "0") && !rec.house;
-    if (noCost && inst.points != null) { row.cost = inst.points; add("ok", `${fullName(inst.name, inst.notes)}: ${inst.points} pts as declared (${rec.variable || "priced by the GM"})`, rec.ref, path); }
+    // an ability the book prices itself (DF9's "Ally (Bound demon; ...; PM, -10%) [19]"): its price stands, whatever the rules compute
+    if (inst.bookPrice && inst.points != null) { row.cost = inst.points; if (inst.points !== c.cost) add("ok", `${fullName(inst.name, inst.notes)}: ${inst.points} pts as the book prices it`, rec.ref, path); }
+    else if (noCost && inst.points != null) { row.cost = inst.points; add("ok", `${fullName(inst.name, inst.notes)}: ${inst.points} pts as declared (${rec.variable || "priced by the GM"})`, rec.ref, path); }
     else if (inst.points != null && inst.points !== c.cost) add("ERROR", `${fullName(inst.name, inst.notes)}: declared ${inst.points} pts, rules give ${c.cost}`, rec.ref, path);
     if (inst.levels != null && !rec.canLevel) add("WARN", `${inst.name}: has no levels; "levels" ignored`, rec.ref, path);
     if (rec.canLevel && rec.maxLevels && (inst.levels ?? 1) > rec.maxLevels) add("ERROR", `${inst.name}: level ${inst.levels} above the maximum ${rec.maxLevels}`, rec.ref, path);
@@ -814,7 +853,7 @@ function compute(ch, lib, opts = {}) {
     && strCmp(f.name, name) && strCmp(f.specialization, spec || "") && (!f.tags || (tags || []).some(t => strCmp(f.tags, t)))).reduce((a, f) => a + f.amount, 0);
   const spellBonus = (rec) => features.filter(f => f.type === "spell_bonus" && (
     f.match === "all_colleges" || (f.match === "college_name" && (rec.college || []).some(c => strCmp(f.name, c))) ||
-    (f.match === "spell_name" && strCmp(f.name, rec.name)) || (f.match === "power_source_name" && strCmp(f.name, rec.power || "")))).reduce((a, f) => a + f.amount, 0);
+    (f.match === "spell_name" && strCmp(f.name, rec.name)) || (f.match === "spell_names" && (f.names || []).includes(rec.name)) || (f.match === "power_source_name" && strCmp(f.name, rec.power || "")))).reduce((a, f) => a + f.amount, 0);
   const baseOf = k => A[k] ?? 10;
 
   // ---- skills
@@ -903,13 +942,15 @@ function compute(ch, lib, opts = {}) {
     row.bonus = spellBonus(rec);
     // clerical and druidic spells (DF1 p.19): Power Investiture replaces Magery, and the only prerequisite is the
     // minimum Power Investiture level on the god's list
-    if (inst.power === "clerical" || inst.power === "druidic") {
-      const need = lib.piSpells?.[inst.power]?.[rec.name];
-      const pi = traits.find(t => (inst.power === "druidic" ? /^power investiture \(druidic\)$/i : /^power investiture$/i).test(t.name));
+    if (inst.power === "clerical" || inst.power === "druidic" || inst.power === "shamanic") {
+      const need = lib.piSpells?.[inst.power]?.[rec.name], ref = inst.power === "shamanic" ? "DF9:19" : "DF1:19", sfx = inst.power === "shamanic" ? " (Shamanic)" : inst.power === "druidic" ? " (Druidic)" : "";
+      const pi = traits.find(t => (inst.power === "druidic" ? /^power investiture \(druidic\)$/i : inst.power === "shamanic" ? /^power investiture \(shamanic\)$/i : /^power investiture$/i).test(t.name));
       row.power = inst.power; row.pi = pi ? (pi.levels || 0) : 0; row.piNeed = need ?? null; row.bonus = row.pi;
-      if (need == null) add("ERROR", `spell ${inst.name}: not on the ${inst.power} list`, "DF1:19", path);
-      else if (row.pi < need) add("ERROR", `spell ${inst.name}: needs Power Investiture${inst.power === "druidic" ? " (Druidic)" : ""} ${need}, has ${row.pi}`, "DF1:19", path);
+      if (need == null) add("ERROR", `spell ${inst.name}: not on the ${inst.power} list`, ref, path);
+      else if (row.pi < need) add("ERROR", `spell ${inst.name}: needs Power Investiture${sfx} ${need}, has ${row.pi}`, ref, path);
     }
+    // DF9 summoners: a talent (Demonic Attunement, Elemental Influence, Deathliness) stands for Magery on the class's own spells
+    if (SUMMONER_POWER[inst.power]) row.power = inst.power;
     row.level = r == null ? null : baseOf(rec.attr) + r + row.bonus;
     row.energy = spellEnergy(rec.cost, row.level);
     // any point total from 10 up: levels interpolate between the steps, as for skills
@@ -928,6 +969,13 @@ function compute(ch, lib, opts = {}) {
     if (!r.ok) add("ERROR", `${fullName(s.name, s.spec)}: prerequisites missing: ${r.missing.join("; ")}`, s.ref, s.path);
   }
   for (const s of spellRows) if (s.rec) {
+    if (SUMMONER_POWER[s.power]) {
+      const r = summonerPrereq(s, lib, pstate, traits, spellRows);
+      s.prereqOk = r.ok; s.missing = r.missing; s.bonus = r.talent;
+      s.level = s.level == null ? null : baseOf(s.rec.attr) + relLevel(s.points, s.rec.diff) + s.bonus; s.energy = spellEnergy(s.rec.cost, s.level);
+      if (!r.ok) add("ERROR", `spell ${s.name}: ${r.missing.join("; ")}`, r.ref, s.path);
+      continue;
+    }
     if (s.power) { s.prereqOk = s.piNeed != null && s.pi >= s.piNeed; s.missing = s.prereqOk ? [] : [`Power Investiture ${s.piNeed ?? "?"}`]; continue; }
     const r = checkPrereq(s.rec.prereqs, pstate);
     s.prereqOk = r.ok; s.missing = r.missing;

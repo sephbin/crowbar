@@ -915,6 +915,7 @@ function profExtra(path, kind, label, opts) {
 // An open pool ("25 points in Holy abilities", "a 20-point lens"): the book names a kind of ability, not a list. The choices
 // come from the library list for the section (advantages, disadvantages, skills, spells); a library trait is priced by the
 // rules, with a level where it has levels. Anything the library lacks goes in by hand, marked as such.
+const abilityOf = ab => { const SC = LIB.summoners?.[ab[0]], a = SC && (Array.isArray(SC.abilities) ? SC.abilities : SC.abilities[ab[1]]); return a?.[ab[2]]; };
 function profPool(path, g) {
   const list = P.picks[path] || [], sec = g.section;
   const TYPES = { advantages: ["Advantage", "Perk"], disadvantages: ["Disadvantage", "Quirk"] };
@@ -926,14 +927,33 @@ function profPool(path, g) {
   if (list.length) box.append(el("table", { class: "ptable" },
     el("thead", {}, el("tr", {}, el("th", {}, "Chosen"), el("th", {}, "Level or points"), el("th", { class: "r" }, "Cost"), el("th", {}))),
     el("tbody", {}, list.map(p => {
-      const rec = p.trait ? LIB.traits.find(t => t.name === p.trait) : null;
+      const rec = p.trait ? LIB.traits.find(t => t.name === p.trait) : null, ab = p.ab ? abilityOf(p.ab) : null;
       const name = p.trait ? BC.fullName(p.trait, p.notes) : p.skill ? BC.fullName(p.skill, p.spec) : p.spell || p.text;
-      const ctl = rec?.canLevel
+      const ctl = ab ? (ab.per != null && ab.max !== ab.min ? el("input", { type: "number", min: ab.min ?? 1, max: ab.max ?? 99, value: p.levels ?? ab.min ?? 1, style: "width:4em", inputmode: "numeric", "aria-label": `${name} level`, onchange: e => { p.levels = Math.max(ab.min ?? 1, Math.min(ab.max ?? 99, Math.round(+e.target.value) || 1)); p.cost = BC.profOptCost(ab, p); renderProfModal(); } })
+          : ab.variable ? el("input", { type: "number", step: 10, value: p.cost ?? "", placeholder: "points", style: "width:5em", inputmode: "numeric", "aria-label": `${name} points`, onchange: e => { p.cost = Math.round(+e.target.value) || 0; renderProfModal(); } }) : "")
+        : rec?.canLevel
         ? el("input", { type: "number", min: 1, value: p.levels ?? 1, style: "width:4em", inputmode: "numeric", "aria-label": `${name} level`, onchange: e => { p.levels = Math.max(1, Math.round(+e.target.value) || 1); p.cost = priceOf(rec, p); renderProfModal(); } })
-        : p.trait ? "" : el("input", { type: "number", step: 10, min: 10, value: p.cost ?? "", style: "width:5em", inputmode: "numeric", "aria-label": `${name} points`, onchange: e => { p.cost = Math.round(+e.target.value) || 0; renderProfModal(); } });
+        : p.trait || p.spell ? "" : el("input", { type: "number", step: 10, min: 10, value: p.cost ?? "", style: "width:5em", inputmode: "numeric", "aria-label": `${name} points`, onchange: e => { p.cost = Math.round(+e.target.value) || 0; renderProfModal(); } });
       return el("tr", {}, el("td", {}, name, p.text != null ? el("small", { class: "muted" }, " (by hand)") : ""), el("td", {}, ctl), el("td", { class: "r" }, sgn(p.cost ?? 0)),
         el("td", { class: "r" }, el("button", { type: "button", "aria-label": `remove ${name}`, onclick: () => drop(p) }, "×")));
     }))));
+  if (g.abilities && LIB.summoners?.[g.abilities]) {
+    const SC = LIB.summoners[g.abilities], groups = Array.isArray(SC.abilities) ? { [SC.label]: SC.abilities } : SC.abilities;
+    const items = () => Object.entries(groups).flatMap(([sec2, arr]) => arr.map((o, i) => ({ value: `${sec2}|${i}`, label: BC.fullName(o.name, o.notes), sub: o.variable ? "varies" : o.per != null ? `${o.per / 10}${o.roundUp ? "*" : ""}/level` : `${o.cost / 10}`, facets: { Group: [sec2.replace(/^Attuned \((.*)\)$/, "$1")] },
+      chosen: list.some(p => p.ab?.[0] === g.abilities && p.ab?.[1] === sec2 && p.ab?.[2] === i) })));
+    box.append(el("div", { class: "popt" }, el("button", { type: "button", class: "pick", onclick: () => chooser({ kind: "abilities", title: SC.label, sub: `${SC.ref}: priced as the book gives them, power modifier included`, placeholder: "search abilities", items,
+      onPick: it => { const [sec2, i] = it.value.split("|"), o = groups[sec2][+i], p = { trait: o.name, ...(o.notes ? { notes: o.notes } : {}), ...(o.levels ? { levels: o.levels } : {}), bookPrice: true, ab: [g.abilities, sec2, +i] }; p.cost = o.variable ? 0 : BC.profOptCost(o, p); add(p); } }) }, `choose from the ${SC.label.toLowerCase()}…`)));
+  }
+  // a pool that may be spent on spells too ("any combo of ... and demonologist spells"): 1 point each, from the class's list
+  if (g.spellList) {
+    const SC2 = LIB.summoners?.[g.spellList];
+    const names = g.spellList === "wizardly" ? LIB.spells.map(x => x.name)
+      : SC2 ? (SC2.spells ? SC2.spells.map(x => x.name) : LIB.spells.filter(x => SC2.general.includes(x.name) || (x.college || []).some(c => SC2.colleges.includes(c))).map(x => x.name))
+      : Object.keys(LIB.piSpells?.[g.spellList] || {});
+    const spItems = () => [...new Set(names)].sort().map(n => { const sp = LIB.spells.find(x => x.name === n), pi = LIB.piSpells?.[g.spellList]?.[n];
+      return { value: n, label: n, sub: pi != null ? `PI ${pi}` : "", chosen: list.some(p => p.spell === n), off: list.some(p => p.spell === n) ? "already chosen" : null, facets: { College: sp?.college?.length ? sp.college : ["Other"] } }; });
+    box.append(el("div", { class: "popt" }, el("button", { type: "button", class: "pick", onclick: () => chooser({ kind: "pool-spells", title: `${g.spellList} spells`, sub: "1 point each", placeholder: "search spells", items: spItems, onPick: it => add({ spell: it.value, cost: 10 }) }) }, `add ${g.spellList} spells (1 point each)…`)));
+  }
   const mixed = !TYPES[sec] && sec !== "skills" && sec !== "spells";
   // "skills covered by Occultist": the skills the Talent adds its bonus to
   const cov = /covered by ([^;(]+?)\s*(?:\(|;|$)/i.exec(g.open || "");
@@ -952,7 +972,7 @@ function profPool(path, g) {
     if (rec.sub) chooser({ title: `${rec.name}: ${rec.sub}`, placeholder: "type it", custom: true, items: () => [], onPick: x => done(x.value) }); else done();
   };
   box.append(el("div", { class: "popt" }, el("button", { type: "button", class: "pick", onclick: () => chooser({ kind: mixed ? "traits" : sec === "skills" ? "skills" : sec === "spells" ? "spells" : "traits",
-    title: `Choose ${noun === "advantage or skill" ? "an ability" : "a " + noun}`, sub: g.open, placeholder: `search ${noun}s`, items, onPick: pick }) }, `choose ${noun === "advantage or skill" ? "an ability" : "a " + noun} from the library…`)));
+    title: `Choose ${noun === "advantage or skill" ? "an ability" : (/^[aeiou]/.test(noun) ? "an " : "a ") + noun}`, sub: g.open, placeholder: `search ${noun}s`, items, onPick: pick }) }, `choose ${noun === "advantage or skill" ? "an ability" : (/^[aeiou]/.test(noun) ? "an " : "a ") + noun} from the library…`)));
   // something the library doesn't have
   let hand = "", pts = null;
   box.append(el("details", { class: "byhand" }, el("summary", {}, "something not in the library"),
@@ -986,18 +1006,26 @@ function ptable(head, rows) {
 }
 // "Choose 20 clerical spells": a searchable list; clerical and druidic spells show their Power Investiture level
 function profSpells(g, path) {
-  const power = g.spellList === "wizardly" ? null : g.spellList;
-  const st = BC.profStamp(P.prof, P.picks), piT = st.traits.find(t => (power === "druidic" ? /^Power Investiture \(Druidic\)$/ : /^Power Investiture$/).test(t.name));
-  const pi = piT?.levels || 0, W = LIB.dfWizardly;
-  const pool = power ? Object.entries(LIB.piSpells?.[power] || {}).sort((a, b) => a[1] - b[1] || a[0].localeCompare(b[0])) : LIB.spells.map(s => [s.name, null]);
+  // DF9 summoner lists (demonologist, necromancer, elementalist) work from a talent that stands for Magery; the others are Power Investiture lists
+  const SUMM = ["demonologist", "necromancer", "elementalist"].includes(g.spellList) ? g.spellList : null, SC = SUMM && LIB.summoners?.[SUMM];
+  const power = g.spellList === "wizardly" || SUMM ? null : g.spellList;
+  const st = BC.profStamp(P.prof, P.picks), piT = st.traits.find(t => (power === "druidic" ? /^Power Investiture \(Druidic\)$/ : power === "shamanic" ? /^Power Investiture \(Shamanic\)$/ : /^Power Investiture$/).test(t.name));
+  const talentT = SUMM && st.traits.find(t => t.name.toLowerCase().startsWith(SC.talent.toLowerCase()));
+  const pi = SUMM ? talentT?.levels || 0 : piT?.levels || 0, W = LIB.dfWizardly;
+  const elName = SUMM === "elementalist" && talentT ? (/all/i.test(talentT.name) ? "all" : talentT.notes || "") : "";
+  const spellRow = n => SC?.spells?.find(x => x.name === n);
+  const inEl = n => { const s = LIB.spells.find(x => x.name === n); return !!s && (SC.general.includes(n) || (s.college || []).some(c => SC.colleges.includes(c) && (elName === "all" || c.toLowerCase() === elName.toLowerCase()))); };
+  const pool = SUMM ? (SUMM === "elementalist" ? LIB.spells.filter(s => inEl(s.name)).map(s => [s.name, null]) : SC.spells.map(s => [s.name, null])).sort((a, b) => a[0].localeCompare(b[0]))
+    : power ? Object.entries(LIB.piSpells?.[power] || {}).sort((a, b) => a[1] - b[1] || a[0].localeCompare(b[0])) : LIB.spells.map(s => [s.name, null]);
   const offLimits = n => { if (power || !W) return false; const s = LIB.spells.find(x => x.name === n); return W.spells.includes(n) || (s && !W.allowed.includes(n) && s.college.length && s.college.every(c => W.colleges.includes(c))); };
   const box = el("div", {});
   const list = P.picks[path] || [];
-  if (power) box.append(el("div", { class: "rule" }, `Power Investiture ${pi}: spells up to PI ${pi} (DF1 p.19)`));
+  if (power) box.append(el("div", { class: "rule" }, `Power Investiture ${pi}: spells up to PI ${pi} (${power === "shamanic" ? "DF9 p.19" : "DF1 p.19"})`));
+  if (SUMM) box.append(el("div", { class: "rule" }, pi ? `${SC.talent}${SUMM === "elementalist" && elName ? ` (${elName === "all" ? "all elements" : elName})` : ""} ${pi}: ${SUMM === "elementalist" ? "the spells of your element or elements" : `the ${SUMM} list (${SC.ref})`}` : `Choose ${SC.talent} first: it opens this list`));
   const cost = g.cost ?? 10;
   // the prerequisite tree among what is chosen: spells nothing else needs come first (safe to remove), what they need sits under them
   const names = list.map(p => p.spell), haveNames = new Set((P.have?.spells || []).filter(x => x.points >= 10).map(x => x.name));
-  const needs = n => power ? [] : directNeeds(n), neededBy = n => names.filter(m => m !== n && needs(m).includes(n));
+  const needs = n => SUMM ? (spellRow(n)?.req?.spells || []).filter(m => names.includes(m)) : power ? [] : directNeeds(n), neededBy = n => names.filter(m => m !== n && needs(m).includes(n));
   // height: how many levels of chosen prerequisites sit beneath a spell, so the top spell carries the most dots and a base spell none
   const hMemo = new Map(), height = (n, stack = []) => { if (hMemo.has(n)) return hMemo.get(n); if (stack.includes(n)) return 0; const below = needs(n).filter(m => names.includes(m)); const h = below.length ? 1 + Math.max(...below.map(m => height(m, [...stack, n]))) : 0; hMemo.set(n, h); return h; };
   const order = [], seen = new Set();
@@ -1005,10 +1033,10 @@ function profSpells(g, path) {
   if (power) names.forEach(n => order.push({ n, depth: 0 }));
   else { names.filter(n => !neededBy(n).length).sort().forEach(n => visit(n, 0)); names.forEach(n => visit(n, 0)); }
   const rows = order.map(({ n, depth }) => { const p = list.find(x => x.spell === n), lv = power ? LIB.piSpells[power][n] : null, s0 = LIB.spells.find(x => x.name === n);
-    const why = lv != null && lv > pi ? `needs PI ${lv}` : offLimits(n) ? "off-limits to dungeon fantasy wizards (DF1 p.20)" : "";
+    const sr = SUMM && spellRow(n)?.req, why = lv != null && lv > pi ? `needs PI ${lv}` : sr?.talent > pi ? `needs ${SC.talent} ${sr.talent}` : offLimits(n) ? "off-limits to dungeon fantasy wizards (DF1 p.20)" : "";
     const by = neededBy(n), nd = needs(n);
-    const gap = nd.length && s0 ? BC.spellPaths(s0, [...names, ...haveNames], LIB).paths : [[]], met = gap.some(x => !x.length);
-    const needCell = nd.length ? el("span", { class: met ? null : "bad" }, needsText(n), met ? null : el("small", {}, `missing ${gap[0].join(", ")}`)) : "";
+    const gap = nd.length && s0 && !SUMM ? BC.spellPaths(s0, [...names, ...haveNames], LIB).paths : [[]], met = gap.some(x => !x.length);
+    const needCell = SUMM ? (spellRow(n)?.pre || "") : nd.length ? el("span", { class: met ? null : "bad" }, needsText(n), met ? null : el("small", {}, `missing ${gap[0].join(", ")}`)) : "";
     const byCell = by.length ? by.join(", ") : el("span", { class: "ok" }, nd.length || names.length > 1 ? "top: nothing needs it" : "nothing needs it");
     const cols = power ? [`PI ${lv ?? "?"}`] : [needCell, byCell];
     return { bad: !!why, cells: [el("span", { class: "tree" }, height(n) ? el("span", { class: "dots", "aria-hidden": "true" }, "·".repeat(height(n))) : null, height(n) ? " " : null, n, why ? el("small", {}, why) : null), ...cols, (s0?.college || []).join(", "), sgn(cost)], label: `remove ${n}`,
@@ -1017,20 +1045,20 @@ function profSpells(g, path) {
   const knownNow = () => [...(P.have?.spells || []).filter(x => x.points >= 10).map(x => x.name), ...BC.profStamp(P.prof, P.picks).spells.map(x => x.name)];
   const items = () => pool.map(([n, lv]) => {
     const s = LIB.spells.find(x => x.name === n), picked = (P.picks[path] || []).some(p => p.spell === n), elsewhere = (P.taken.get(`sp:${lcs(n)}`) || 0) > (picked ? 1 : 0);
-    const off = picked ? null : lv != null && lv > pi ? `needs PI ${lv}` : offLimits(n) ? "off-limits to wizards" : elsewhere ? "already taken" : null;
+    const sq = SUMM && spellRow(n)?.req, off = picked ? null : lv != null && lv > pi ? `needs PI ${lv}` : sq?.talent > pi ? `needs ${SC.talent} ${sq.talent}` : offLimits(n) ? "off-limits to wizards" : elsewhere ? "already taken" : null;
     return { value: n, label: n, off, chosen: picked, sub: off ? "" : P.have?.spells.some(y => y.name === n) ? "you know it" : lv != null ? `PI ${lv}` : "",
       facets: { ...(lv != null ? { "Power Investiture": [`PI ${lv}`] } : {}), College: s?.college?.length ? s.college : ["Other"], Class: [s?.class || "Other"] },
       detail: () => spellDetail(n, knownNow(), lv != null ? [["power investiture", `PI ${lv}`]] : []) };
   });
   const listOpts = state => ({
-    state, kind: power ? "pi-spells" : "wizard-spells", title: `Choose ${g.spellList} spells`, sub: `${(P.picks[path] || []).length} of ${g.n} chosen`, placeholder: "search spells", stay: true, toggle: true, items,
+    state, kind: power ? "pi-spells" : SUMM ? "summoner-spells" : "wizard-spells", title: `Choose ${g.spellList} spells`, sub: `${(P.picks[path] || []).length} of ${g.n} chosen`, placeholder: "search spells", stay: true, toggle: true, items,
     onPick: (it, on) => {
       const take = names => { for (const n of names) if (!(P.picks[path] ||= []).some(p => p.spell === n)) P.picks[path].push({ spell: n }); renderProfModal(); };
       const sub = () => { if (K?.stay) $("ksub").textContent = `${(P.picks[path] || []).length} of ${g.n} chosen`; };
       if (on === false) { const l = (P.picks[path] || []).filter(p => p.spell !== it.value); if (l.length) P.picks[path] = l; else delete P.picks[path]; renderProfModal(); sub(); return; }
       const rec = LIB.spells.find(x => x.name === it.value);
       // wizardly spells need their prerequisite spells (clerical and druidic ones need only Power Investiture)
-      const res = power || !rec ? { paths: [[]], unmet: [] } : BC.spellPaths(rec, knownNow(), LIB);
+      const res = power || SUMM || !rec ? { paths: [[]], unmet: [] } : BC.spellPaths(rec, knownNow(), LIB);
       if (res.paths.some(x => !x.length) || res.paths.every(x => !x.length)) { take([it.value]); sub(); return; }
       const snap = snapshotK();
       prereqChoice(it.value, res, names => { if (names) take(names); openList(snap); }, `${cost} points each, from this list`);

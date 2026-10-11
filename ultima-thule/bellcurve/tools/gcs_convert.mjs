@@ -263,6 +263,24 @@ const house = read(path.join(SRC, "house-rules.json"));
 for (const t of house.traits) out.traits.unshift({ ...t, house: true });
 // book traits GCS lacks, with their page (Code of Honor (Bushido) at -15 is DF1's price)
 for (const t of read(path.join(SRC, "book-traits.json")).traits) out.traits.push(t);
+// DF9 summoners (data/src/summoners.json): ability lists and spell lists with prerequisites. Each class's talent counts as
+// Magery for its own spells and adds its level to them; the shamanic list joins the Power Investiture lists.
+{
+  const sf = path.join(ROOT, "data", "src", "summoners.json");
+  if (fs.existsSync(sf)) {
+    const sm = read(sf); out.summoners = sm.classes; out.piSpells = { ...out.piSpells, shamanic: sm.classes.shaman.piSpells };
+    const C = sm.classes, gen = C.elementalist.general;
+    for (const t of out.traits) {
+      if (!t.talentOf) continue;
+      const cls = C[t.talentOf], names = cls.spells ? cls.spells.map(x => x.name) : null;
+      if (t.talentOf === "elementalist") {
+        t.features = [{ type: "spell_bonus", match: "spell_names", names: gen, amount: 1, per_level: true },
+          ...(t.name.includes("All") ? C.elementalist.colleges.map(c => ({ type: "spell_bonus", match: "college_name", name: c, amount: 1, per_level: true }))
+            : C.elementalist.colleges.map(c => ({ type: "spell_bonus", match: "college_name", name: c, amount: 1, per_level: true, notes_is: c })))];
+      } else if (names) t.features = [{ type: "spell_bonus", match: "spell_names", names, amount: 1, per_level: true }];
+    }
+  }
+}
 // where a name has both a full trait and GCS's one-point quirk version (Vow, Obsession, Code of Honor), the full trait
 // comes first, so a plain name finds it; "ref" on an instance picks the quirk (B165)
 {
