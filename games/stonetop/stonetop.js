@@ -46,41 +46,59 @@ const uid = () => Math.random().toString(36).slice(2, 8) + Date.now().toString(3
 
 // ---------- playbook text: blocks -> DOM ----------
 // html is only <b>, <i> and the tokens {box} {boxc} {circ} {pip} {dia}; anything else is text, never markup.
-function mark(kind, ctx, c) {
+function mark(kind, ctx, c, group) {
   if (kind === 'pip') return h('span', { class: 'pip', 'aria-hidden': 'true', text: '✔' });
   if (/^n\d$/.test(kind)) return h('span', { class: 'nb', 'aria-hidden': 'true', text: kind.slice(1) });
   const key = ctx.prefix + '.' + ctx.n++;
   const on = c.checks[key] ?? (kind === 'boxc');
   const cls = kind === 'boxc' ? 'box' : kind;
-  const e = h('input', { type: 'checkbox', class: 'mk ' + cls, data: { key } });
+  const e = h('input', { type: 'checkbox', class: 'mk ' + cls, data: group ? { key, group } : { key } });
   e.checked = on;
   return e;
 }
-function markup(html, ctx, c) {
+// "Choose 1" groups: ticking one box in a group clears the others. A group is opened by a "(Choose 1)" / "Pick 1" heading
+// or lead-in line and holds the boxes that follow it; "Choose 1 on each line" makes every line its own group.
+const ONE = /\b(?:choose|pick) 1\b(?! (?:or|per|on each))/i, ROW = /choose 1 on each line/i;
+const plainText = html => String(html).replace(/<[^>]+>|\{\w+\}/g, '');
+const newGroup = ctx => `${ctx.prefix}g${ctx.g = (ctx.g || 0) + 1}`;
+// group: { id, all } puts the first marker (or every marker, when all) of this text in that group
+function markup(html, ctx, c, group) {
   const frag = document.createDocumentFragment();
-  let cur = frag; const stack = [];
+  let cur = frag; const stack = []; let first = true;
   for (const part of String(html).split(/(<\/?[bi]>|\{(?:box|boxc|circ|pip|dia|n\d)\})/)) {
     if (!part) continue;
     let m;
     if ((m = /^<([bi])>$/.exec(part))) { const n = document.createElement(m[1]); cur.appendChild(n); stack.push(cur); cur = n; }
     else if (/^<\/[bi]>$/.test(part)) { if (stack.length) cur = stack.pop(); }
-    else if ((m = /^\{(\w+)\}$/.exec(part))) cur.appendChild(mark(m[1], ctx, c));
-    else cur.appendChild(document.createTextNode(part));
+    else if ((m = /^\{(\w+)\}$/.exec(part))) {
+      const isBox = /^(box|boxc|circ|dia)$/.test(m[1]);
+      cur.appendChild(mark(m[1], ctx, c, group && isBox && (first || group.all) ? group.id : null));
+      if (isBox) first = false;
+    } else cur.appendChild(document.createTextNode(part));
   }
   return frag;
 }
 function blocks(list, ctx, c, opts = {}) {
   const out = [];
+  let grp = null;                       // the open "choose 1" group id, 'row' for one group per line, or null
   for (const b of list) {
-    if (b.t === 'sec') out.push(h('h3', { class: 'sec' }, b.title, b.note ? [' ', h('small', null, markup(b.note, ctx, c))] : null));
-    else if (b.t === 'step') out.push(h('div', { class: 'step' }, h('b', { class: 'n', text: b.n }), h('div', null, markup(b.html, ctx, c))));
+    if (b.t === 'sec') {
+      grp = b.note && ONE.test(plainText(b.note)) ? newGroup(ctx) : null;
+      out.push(h('h3', { class: 'sec' }, b.title, b.note ? [' ', h('small', null, markup(b.note, ctx, c))] : null));
+    } else if (b.t === 'step') { grp = null; out.push(h('div', { class: 'step' }, h('b', { class: 'n', text: b.n }), h('div', null, markup(b.html, ctx, c)))); }
     else if (b.t === 'item') {
       const head = h('h4', { class: 'ih' });
-      for (const k of b.mk) head.append(mark(k, ctx, c));
+      b.mk.forEach((k, i) => head.append(mark(k, ctx, c, grp && grp !== 'row' && i === 0 ? grp : null)));
       head.append(b.head);
       if (b.tail) head.append(h('span', { class: 'tail' }, b.tail.map(k => mark(k, ctx, c))));
       out.push(h('div', { class: 'item', data: opts.filter ? { move: '1' } : {} }, head, h('div', { class: 'ibody' }, blocks(b.body, ctx, c, opts))));
-    } else out.push(h('p', null, markup(b.html, ctx, c)));
+    } else {
+      const lead = /^\{(?:box|boxc)\}/.test(b.html);
+      let g = null;
+      if (lead && grp) g = grp === 'row' ? { id: newGroup(ctx), all: true } : { id: grp };
+      else if (!lead) { const t = plainText(b.html); grp = ROW.test(t) ? 'row' : ONE.test(t) ? newGroup(ctx) : null; }
+      out.push(h('p', null, markup(b.html, ctx, c, g)));
+    }
   }
   return out;
 }
@@ -159,6 +177,28 @@ function header(c, pb, tab) {
     h('label', { class: 'field', style: 'flex:1 1 200px' }, h('span', null, 'I am called…'), h('input', { class: 'in', data: { bind: 'name' }, value: c.name, placeholder: 'name' })),
     h('label', { class: 'field', style: 'flex:0 1 150px' }, h('span', null, 'Pronouns'), h('input', { class: 'in', data: { bind: 'pronouns' }, value: c.pronouns || '' })));
 }
+// Stat cards: the playbook's scores ("+2, +1, +1, +0, +0, -1") as cards to drag onto the six stats, each used once.
+// Touch has no drag, so a card can also be tapped, then the stat. c.assign maps stat -> card number.
+let picked = null;
+const scoreCards = pb => ((/scores?:\s*([^.]*)\./i.exec(pb.statsNote || '') || [])[1] || '').replace(/−/g, '-').match(/[+-]\d/g) || [];
+function setStat(c, k, v) { c.stats[k] = v; const i = app.querySelector(`[data-bind="stats.${k}"]`); if (i) i.value = v; touch(c); }
+function assignCard(c, k, idx) {
+  for (const o of Object.keys(c.assign)) if (c.assign[o] === idx) { delete c.assign[o]; setStat(c, o, 0); }
+  c.assign[k] = idx;
+  setStat(c, k, Number(scoreCards(pbOf(c))[idx]));
+  picked = null; drawCards(c);
+}
+function unassign(c, k) { if (c.assign[k] == null) return; delete c.assign[k]; drawCards(c); }
+function drawCards(c) {
+  const tray = app.querySelector('.cards'); if (!tray) return;
+  const cards = scoreCards(pbOf(c)), used = new Set(Object.values(c.assign));
+  tray.replaceChildren(...[h('span', { class: 'lbl' }, 'Stat cards'),
+    ...cards.map((v, i) => h('button', { type: 'button', class: 'card' + (used.has(i) ? ' used' : '') + (picked === i ? ' sel' : ''), draggable: used.has(i) ? null : 'true',
+      'aria-pressed': String(picked === i), 'aria-label': `Score ${v}${used.has(i) ? ' (placed)' : ''}`, data: { i }, text: v })),
+    h('span', { class: 'note' }, used.size >= cards.length ? 'all placed' : picked != null ? 'now tap a stat' : 'drag onto a stat, or tap a card then a stat'),
+    used.size ? h('button', { type: 'button', class: 'btn small', data: { resetcards: '1' }, text: 'Reset' }) : null].filter(Boolean));
+  app.querySelectorAll('.stat').forEach(s => { s.classList.toggle('has', c.assign[s.dataset.stat] != null); s.classList.toggle('target', picked != null); });
+}
 function statBlock(c, pb) {
   const grid = h('div', { class: 'statgrid' }, STATS.map(([k, full, ab]) => h('div', { class: 'stat', data: { stat: k } },
     h('button', { type: 'button', class: 'nm', title: `Roll ${ab}`, data: { roll: k }, text: full }),
@@ -166,7 +206,7 @@ function statBlock(c, pb) {
       h('button', { type: 'button', 'aria-label': `${full} down`, data: { step: k, d: '-1' }, text: '−' }),
       h('input', { type: 'number', min: '-3', max: '4', inputmode: 'numeric', 'aria-label': full, data: { bind: 'stats.' + k, num: '1' }, value: c.stats[k] }),
       h('button', { type: 'button', 'aria-label': `${full} up`, data: { step: k, d: '1' }, text: '+' })),
-    h('div', { class: 'ab', text: `(${ab})` }))));
+    h('div', { class: 'ab' }, `(${ab})`, h('button', { type: 'button', class: 'ret', title: 'Return the card', 'aria-label': `Return ${full} card`, data: { ret: k }, text: '↩' })))));
   const debs = h('div', { class: 'debs' }, DEBS.map(([name, ks]) => h('label', { title: ks.join(' & ').toUpperCase() },
     h('input', { type: 'checkbox', class: 'mk box', data: { bind: 'deb.' + name } }), name)));
   debs.querySelectorAll('input').forEach(i => { i.checked = !!getPath(c, i.dataset.bind); });
@@ -180,7 +220,8 @@ function statBlock(c, pb) {
       h('button', { type: 'button', class: 'step2', 'aria-label': 'HP up', data: { hp: '1' }, text: '+' }))),
     vit('Armor', num('armor')), vit('XP', num('xp')), vit('Level', num('level')));
   const sec = h('h3', { class: 'sec' }, 'Stats ', h('small', null, pb.statsNote));
-  return h('div', null, sec, grid, debs, vitals);
+  const tray = scoreCards(pb).length ? h('div', { class: 'cards noprint' }) : null;
+  return h('div', null, sec, tray, grid, debs, vitals);
 }
 function playPage(c, pb) {
   const page = h('div', { class: 'page' }, header(c, pb));
@@ -242,12 +283,12 @@ const slug = s => (s || 'character').toLowerCase().replace(/[^a-z0-9]+/g, '-').r
 
 function newChar(pb) {
   return { format: 'stonetop-character', version: 1, id: uid(), playbook: pb.id, name: '', pronouns: '',
-    stats: { str: 0, dex: 0, int: 0, wis: 0, con: 0, cha: 0 }, deb: {}, hp: pb.hpMax, hpMax: pb.hpMax, armor: 0, xp: 0, level: 1,
+    stats: { str: 0, dex: 0, int: 0, wis: 0, con: 0, cha: 0 }, assign: {}, deb: {}, hp: pb.hpMax, hpMax: pb.hpMax, armor: 0, xp: 0, level: 1,
     checks: {}, gear: [], followers: [], notes: '', createNotes: '', ui: {}, updated: Date.now() };
 }
 function normalise(c) {
   c.stats ??= {}; for (const [k] of STATS) c.stats[k] ??= 0;
-  c.deb ??= {}; c.checks ??= {}; c.gear ??= []; c.followers ??= []; c.ui ??= {};
+  c.deb ??= {}; c.assign ??= {}; c.checks ??= {}; c.gear ??= []; c.followers ??= []; c.ui ??= {};
   return c;
 }
 
@@ -337,7 +378,7 @@ function sheet(id, tab) {
 }
 function refresh(c) {
   app.querySelectorAll('.stat').forEach(s => s.classList.toggle('dis', !!debilityFor(c, s.dataset.stat)));
-  applyTaken(app, c);
+  applyTaken(app, c); drawCards(c);
 }
 
 // ---------- events (one set, delegated) ----------
@@ -347,22 +388,45 @@ app.addEventListener('input', e => {
   const c = chars[currentId()]; if (!c) return;
   setPath(c, path, t.dataset.num ? (t.value === '' ? 0 : Number(t.value)) : t.value);
   touch(c);
+  if (path.startsWith('stats.')) unassign(c, path.slice(6));       // a hand-typed score is no longer a card's
 });
 app.addEventListener('change', e => {
   const t = e.target, c = chars[currentId()]; if (!c) return;
   if (t.dataset.bind && t.type === 'checkbox') { setPath(c, t.dataset.bind, t.checked); touch(c); refresh(c); }
-  else if (t.classList.contains('mk') && t.dataset.key) { c.checks[t.dataset.key] = t.checked; touch(c); applyTaken(app, c); }
+  else if (t.classList.contains('mk') && t.dataset.key) {
+    c.checks[t.dataset.key] = t.checked;
+    if (t.checked && t.dataset.group) {           // "choose 1": clear the rest of the group
+      app.querySelectorAll('.mk[data-group]').forEach(o => { if (o !== t && o.dataset.group === t.dataset.group && o.checked) { o.checked = false; c.checks[o.dataset.key] = false; } });
+    }
+    touch(c); applyTaken(app, c);
+  }
 });
 app.addEventListener('click', e => {
-  const b = e.target.closest('button'); if (!b) return;
   const c = chars[currentId()]; if (!c) return;
+  const card = e.target.closest('.card');
+  if (card) { const i = Number(card.dataset.i); picked = picked === i ? null : i; drawCards(c); return; }
+  const slot = e.target.closest('.stat');
+  if (picked != null && slot) { assignCard(c, slot.dataset.stat, picked); return; }
+  const b = e.target.closest('button'); if (!b) return;
   const pb = pbOf(c), ds = b.dataset;
   const setNum = (path, v) => { setPath(c, path, v); const i = app.querySelector(`[data-bind="${path}"]`); if (i) i.value = v; touch(c); };
-  if (ds.roll) rollMove(c, ds.roll);
+  if (ds.resetcards) { for (const k of Object.keys(c.assign)) setStat(c, k, 0); c.assign = {}; picked = null; drawCards(c); }
+  else if (ds.ret) { setStat(c, ds.ret, 0); unassign(c, ds.ret); }
+  else if (ds.roll) rollMove(c, ds.roll);
   else if (ds.dmg) rollDamage(c, pb);
-  else if (ds.step) setNum('stats.' + ds.step, Math.max(-3, Math.min(4, (Number(c.stats[ds.step]) || 0) + Number(ds.d))));
+  else if (ds.step) { setNum('stats.' + ds.step, Math.max(-3, Math.min(4, (Number(c.stats[ds.step]) || 0) + Number(ds.d)))); unassign(c, ds.step); }
   else if (ds.hp) setNum('hp', Math.max(0, Math.min(Number(c.hpMax) || 99, (Number(c.hp) || 0) + Number(ds.hp))));
   else if (ds.show) { c.ui.takenOnly = ds.show === 'taken'; touch(c); b.parentElement.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); applyTaken(app, c); }
+});
+
+app.addEventListener('dragstart', e => { const k = e.target.closest && e.target.closest('.card'); if (k) { e.dataTransfer.setData('text/plain', k.dataset.i); e.dataTransfer.effectAllowed = 'move'; } });
+app.addEventListener('dragover', e => { if (e.target.closest && e.target.closest('.stat')) e.preventDefault(); });
+app.addEventListener('drop', e => {
+  const slot = e.target.closest && e.target.closest('.stat'), c = chars[currentId()];
+  if (!slot || !c) return;
+  e.preventDefault();
+  const i = Number(e.dataTransfer.getData('text/plain'));
+  if (!Number.isNaN(i)) assignCard(c, slot.dataset.stat, i);
 });
 
 // ---------- routing ----------
