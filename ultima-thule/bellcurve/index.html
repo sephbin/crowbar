@@ -507,7 +507,7 @@ function buildChooser() {
   const list = el("div", { class: "klist", role: "list" }), chips = el("div", { class: "kcats", role: "group", "aria-label": "Categories" });
   const hit = it => { const q = lcs(K.q).split(/\s+/).filter(Boolean), hay = lcs(`${it.label} ${it.sub || ""} ${(it.cats || []).join(" ")}`);
     return (!K.cat || (it.cats || []).includes(K.cat)) && q.every(w => hay.includes(w)); };
-  const pickIt = it => { if (it.off) return; const cb = K.onPick, stay = K.stay; if (stay) { cb(it); buildChooser(); } else { closeK(false); cb(it); } };
+  const pickIt = it => { if (it.off) return; const cb = K.onPick, stay = K.stay; if (stay) { cb(it); if (K?.stay) buildChooser(); } else { closeK(false); cb(it); } };
   const fill = () => {
     const q = lcs(K.q), found = items.filter(hit).sort((a, b) => (lcs(b.label).startsWith(q) - lcs(a.label).startsWith(q)) || 0);
     list.replaceChildren();
@@ -581,19 +581,24 @@ function chooseSkill(it, done) {
     items: () => specItems(v.name, v.ask).map(x => ({ ...x, off: C().skills.some(s => sameSkill(s, { name: v.name, spec: x.value })) ? "already on the sheet" : null })), onPick: x => done(v.name, x.value) });
 }
 // a spell with prerequisite spells: offer to learn them too (several ways in = a choice of path)
+// the dialog for a spell whose prerequisite spells are missing: apply(names) gets the spells to take (prerequisites first), or null for cancel
+function prereqChoice(name, res, apply, each = "10 points each") {
+  let at = 0;
+  const opts = res.paths.map((path, k) => el("label", { class: "kopt" }, res.paths.length > 1 ? el("input", { type: "radio", name: "spellpath", checked: k === 0, onchange: () => { at = k; } }) : null,
+    el("span", {}, path.length ? path.join(" → ") : "no prerequisite spells needed", el("small", {}, path.length ? `${path.length} spell${path.length === 1 ? "" : "s"} at ${each}, then ${name}` : ""))));
+  kdialog({ title: `${name}: prerequisites`, sub: res.paths.length > 1 ? "There is more than one way to meet its prerequisites. Choose a path." : "You do not know the spells it needs.",
+    body: [...opts, res.unmet.length ? el("p", { class: "hint" }, `Also needs ${res.unmet.join(", ")}; add those by hand.`) : null],
+    buttons: [{ label: "cancel", run: () => apply(null) }, { label: `add ${name} only`, run: () => apply([name]) }, { label: "add with prerequisites", primary: true, run: () => apply([...res.paths[at], name]) }] });
+}
+// a spell with prerequisite spells: offer to learn them too (several ways in = a choice of path)
 function addSpell(name) {
   const ch = C(), rec = LIB.spells.find(s => s.name === name);
-  const push = names => { for (const n of names) if (!ch.spells.some(x => x.name === n)) ch.spells.push({ name: n, points: 10 }); change(); };
+  const push = names => { if (!names) return; for (const n of names) if (!ch.spells.some(x => x.name === n)) ch.spells.push({ name: n, points: 10 }); change(); };
   if (!rec) { push([name]); return; }
   const res = BC.spellPaths(rec, ch.spells.filter(s => s.points >= 10).map(s => s.name), LIB);
   if (res.paths.some(p => !p.length) && !res.unmet.length) { push([name]); return; }
   if (res.paths.every(p => !p.length)) { toast(`${name} also needs ${res.unmet.join(", ")}`); push([name]); return; }
-  let at = 0;
-  const opts = res.paths.map((path, k) => el("label", { class: "kopt" }, res.paths.length > 1 ? el("input", { type: "radio", name: "spellpath", checked: k === 0, onchange: () => { at = k; } }) : null,
-    el("span", {}, path.length ? path.join(" → ") : "no prerequisite spells needed", el("small", {}, path.length ? `${path.length} spell${path.length === 1 ? "" : "s"} at 10 points each, then ${name}` : ""))));
-  kdialog({ title: `${name}: prerequisites`, sub: res.paths.length > 1 ? "There is more than one way to meet its prerequisites. Choose a path." : "You do not know the spells it needs.",
-    body: [...opts, res.unmet.length ? el("p", { class: "hint" }, `Also needs ${res.unmet.join(", ")}; add those by hand.`) : null],
-    buttons: [{ label: "cancel" }, { label: `add ${name} only`, run: () => push([name]) }, { label: "add with prerequisites", primary: true, run: () => push([...res.paths[at], name]) }] });
+  prereqChoice(name, res, push);
 }
 
 // ---------- render ----------
@@ -641,7 +646,7 @@ const profSec = g => g.label || { advantages: "Advantages", disadvantages: "Disa
 function profLabel(o, p = {}) {
   if (o.type === "bundle") return o.items.map(it => profLabel(it)).join(" + ");
   if (o.type === "group") return `${NUMWORD[o.n] || o.n} of ${o.options.map(x => profLabel(x)).join(", ")}`;
-  if (o.type === "skill") return BC.fullName(o.name, p.spec ?? o.spec ?? (o.choices ? o.choices.join(" / ") : o.ask || ""));
+  if (o.type === "skill") return BC.fullName(o.name, p.spec ?? o.spec ?? (o.choices ? (o.choices.length > 3 ? "various" : o.choices.join(" / ")) : o.ask || ""));
   if (o.type === "trait") { const lv = p.levels ?? o.levels; return `${BC.fullName(o.name.replace(/:\s*@[^@]+@$/, ""), p.notes ?? o.notes)}${lv != null ? " " + lv : ""}${o.upgrade ? " (raises the one above)" : ""}`; }
   return o.name;
 }
@@ -691,6 +696,9 @@ function specControl(o, pick, upd) {
   // another pick (or a fixed item) already has this specialty
   const used = sp => (P.taken.get(`s:${lcs(o.name)}|${lcs(sp)}`) || 0) - (lcs(cur) === lcs(sp) ? 1 : 0) > 0;
   const onSheet = sp => P.have?.skills.some(y => sameSkill(y, { name: o.name, spec: sp }));
+  if (o.choices && o.choices.length > 3) return [el("button", { type: "button", class: "pick", "aria-label": `${o.name} specialty`, onclick: () => chooser({
+    title: `${o.name}: specialty`, placeholder: "search", items: () => o.choices.map(c => ({ value: c, label: c, chosen: lcs(c) === lcs(cur), off: used(c) && lcs(c) !== lcs(cur) ? "already taken" : null, sub: onSheet(c) ? "you have it" : "" })),
+    onPick: it => upd("spec", it.value) }) }, cur || "choose…")];
   if (o.choices) {
     return [el("select", { "aria-label": `${o.name} specialty`, onchange: e => upd("spec", e.target.value || null) },
       el("option", { value: "" }, "specialty…"),
@@ -785,9 +793,19 @@ function profSpells(g, path) {
     const off = picked ? "chosen" : lv != null && lv > pi ? `needs PI ${lv}` : offLimits(n) ? "off-limits to wizards" : elsewhere ? "already taken" : null;
     return { value: n, label: n, off, chosen: picked, cats: s?.college?.length ? s.college : lv != null ? [`PI ${lv}`] : [], sub: off ? "" : P.have?.spells.some(y => y.name === n) ? "you know it" : lv != null ? `PI ${lv}` : "" };
   });
-  box.append(el("div", { class: "popt" }, el("button", { type: "button", class: "pick", onclick: () => chooser({
-    title: `Choose ${g.spellList} spells`, sub: `${list.length} of ${g.n} chosen`, placeholder: "search spells", stay: true, items,
-    onPick: it => { (P.picks[path] ||= []).push({ spell: it.value }); profTaken(); renderProfModal(); $("ksub").textContent = `${(P.picks[path] || []).length} of ${g.n} chosen`; } }) }, `add a ${g.spellList} spell…`)));
+  const listOpts = () => ({
+    title: `Choose ${g.spellList} spells`, sub: `${(P.picks[path] || []).length} of ${g.n} chosen`, placeholder: "search spells", stay: true, items,
+    onPick: it => {
+      const take = names => { for (const n of names) if (!(P.picks[path] ||= []).some(p => p.spell === n)) P.picks[path].push({ spell: n }); renderProfModal(); };
+      const rec = LIB.spells.find(x => x.name === it.value);
+      // wizardly spells need their prerequisite spells (clerical and druidic ones need only Power Investiture)
+      const known = [...(P.have?.spells || []).filter(x => x.points >= 10).map(x => x.name), ...BC.profStamp(P.prof, P.picks).spells.map(x => x.name)];
+      const res = power || !rec ? { paths: [[]], unmet: [] } : BC.spellPaths(rec, known, LIB);
+      if (res.paths.some(x => !x.length) || res.paths.every(x => !x.length)) { take([it.value]); if (K?.stay) $("ksub").textContent = `${(P.picks[path] || []).length} of ${g.n} chosen`; return; }
+      prereqChoice(it.value, res, names => { if (names) take(names); openList(); }, `${g.cost ?? 10} points each, from this list`);
+    } });
+  const openList = () => chooser(listOpts());
+  box.append(el("div", { class: "popt" }, el("button", { type: "button", class: "pick", onclick: openList }, `add a ${g.spellList} spell…`)));
   return box;
 }
 function profGroup(g, path, byPath, title, nested) {
