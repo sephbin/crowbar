@@ -55,7 +55,7 @@ app.put('/api/review-marks', (req, res) => {
 });
 
 // Book text for the Bell Curve builder's rules tab: rules/library-with-text.json (gitignored, this machine only),
-// indexed once and again whenever the file changes. GET /api/booktext?kind=skill|spell|trait|modifier&name=&spec=&ref=
+// indexed once and again whenever the file changes. GET /api/booktext?kind=skill|spell|trait|modifier|equipment&name=&spec=&ref=
 // (spec is a skill's specialization or a modifier's notes). 404 when the file or the entry is missing.
 const BOOKTEXT = join(__dirname, 'ultima-thule', 'bellcurve', 'rules', 'library-with-text.json');
 let bookIx = null, bookStamp = 0;
@@ -72,6 +72,7 @@ function bookIndex() {
   for (const r of L.spells) add('spell', r, '');
   for (const r of L.traits) add('trait', r, '');
   for (const r of L.modifiers || []) add('modifier', r, r.notes || '');
+  for (const r of L.equipment || []) add('equipment', r, '');
   bookIx = ix; bookStamp = st.mtimeMs;
   return ix;
 }

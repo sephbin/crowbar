@@ -40,7 +40,9 @@ Basic Set skills, techniques and traits; Magic skills and spells (not Ritual Mag
               { "name": "Ally", "notes": "who", "frequency": 15, "modifiers": ["100% of your starting points", "Summonable"], "points": 300, "character": { ...ally sheet... } } ],
   "skills": [ { "name": "Thrown Weapon", "spec": "Knife", "points": 40 } ],
   "spells": [ { "name": "Death Vision", "points": 10 } ],
-  "equipment": [ { "name": "Large Knife", "qty": 2 }, { "name": "Crossbow", "st": 9, "label": "Light crossbow (ST 9)" }, { "name": "Leather Armor", "worn": true } ]
+  "tl": 3, "settled": false,
+  "equipment": [ { "name": "Large Knife", "qty": 2 }, { "name": "Crossbow", "st": 9, "label": "Light crossbow (ST 9)" }, { "name": "Leather Armor", "worn": true },
+                 { "name": "Broadsword", "quality": "fine" }, { "name": "Medium Shield" }, { "name": "Tent, 2-Man", "carried": false }, { "name": "5 pt Powerstone", "free": true } ]
 }
 ```
 - Attribute values are points spent (×10), not levels. Skill, spell and trait `points` are ×10.
@@ -51,6 +53,14 @@ Basic Set skills, techniques and traits; Magic skills and spells (not Ritual Mag
 - General enhancements and limitations (`node tools/bc_find.mjs <name> modifiers`) go in the same list, as a name or an object: `{ "name": "Area Effect", "levels": 2 }` (4 yd), `{ "name": "Limited Use", "notes": "Once per day" }` (notes pick a variant, matched from the start), `{ "name": "Sense-Based", "adj": "+150%" }` (a value picks the variant with that value). An `adj` that matches no variant sets the value by hand (Cone width, Cyclic cycles) and the validator reports it. The validator warns on combinations the book forbids or requires (Aura needs Melee Attack (Reach C), Drifting needs Delay or Persistent, one penetration modifier, and so on), and on Contact Agent or Blood Agent with Area Effect or Cone, which become +150% and +100% enhancements (B110-B111). GCS lists only the limitation value for Contact Agent, so set `"adj": "+150%"` there.
 - Techniques take their parent skill as the specialization: `{ "name": "Arm Lock", "spec": "Judo" }`.
 - An ally's sheet is built on its share of the owner's budget, taken from the point-total modifier.
+- Equipment (Andrew's ruling: money is not scaled by ×10; B27 wealth as written):
+  - `tl` is the campaign TL. Starting wealth is the B27 amount for it times the Wealth trait's multiplier (B25; Multimillionaire N is 100×10^N). Item costs over it are an ERROR; with no `tl` the validator warns and skips the check. Allies use the owner's `tl`. Items above the campaign TL double in price per TL (B27).
+  - `"settled": true` limits gear to 20% of starting wealth (B26). The default treats the character as a wanderer who can spend all of it.
+  - `quality`: cheap, good, fine or very fine for melee and thrown weapons, arrows and bolts (B274; prices depend on whether the campaign TL is 6 or less, and blades below TL3 get no damage bonus, B275); good or fine for bows (B277); good, fine or very fine for firearms (B280); basic, good or fine for other gear (B345, approximate prices). Armour, shields and Magic items have none.
+  - `"carried": false` keeps an item owned (it still costs money) but at home: no weight, DR, DB or attacks. `"free": true` means it wasn't bought from starting wealth (loot, Signature Gear). `"worn": false` takes armour off or puts a shield away.
+  - Carried weight against Basic Lift (Lifting ST counts) sets encumbrance (B17): Move and Dodge drop, Climbing, Stealth, Judo and Karate take the level, Swimming twice it, and fencing weapons take it on attacks and parries (B208).
+  - Parry and Block are 3 + half the skill, fractions dropped (B375-B376), plus the weapon's modifier and trait bonuses. A ready shield's DB is a roller chip on Dodge, Parry and Block (front or shield side). Boots add to kicks; carried kits are roller chips on their skill.
+  - Spell energy is the cost after high skill (M8). The validator warns when it is more than FP plus the largest carried Powerstone (only one at a time, M69).
 
 ## AI build workflow
 1. Read the description. List every trait, skill, spell, item and template it implies.
@@ -67,12 +77,14 @@ Basic Set skills, techniques and traits; Magic skills and spells (not Ritual Mag
 
 ## Known gaps
 - Damage types outside imp, pi−, pi, cut, cr use ×1 at every location; the roller says so.
-- Not modelled: buying a skill up from a skill default (the defaulted level is used as a floor), wildcard skill cost (costed as very hard, with a warning), attribute cost reductions, ST bonuses limited to lifting or striking (listed as warnings), Brawling's damage bonus, encumbrance.
+- Not modelled: buying a skill up from a skill default (the defaulted level is used as a floor), wildcard skill cost (costed as very hard, with a warning), attribute cost reductions, ST bonuses for striking only (listed as warnings), Brawling's damage bonus, armour layering (the highest DR per location is used), DR on the feet (no foot hit location in the roller), item damage and breakage, Signature Gear points.
+- Item book text (local only): 316 of 404 Basic Set items have their table row with its numbered notes or their gear paragraph; every Magic item has its elixir entry or the Powerstone Costs box. The rest (some sidebar weapons, grenades, helmets, coins, clothing) show the library data only. Tables with merged cells come through as one line.
 - `script_prereq` prerequisites (4 in the library) are not evaluated.
 - Trait weapons (Strikers, Claws, Teeth, Hooves, Innate Attacks) are listed as natural attacks with GCS's damage, including +1 per die and per-level dice; a trait's punch or kick replaces the plain one. Afflictions and Binding are not listed (no injury). Quadrupeds still show the plain punch.
 
 ## Open issues for Andrew
-- Brock's ghost goat (resolved): built per Ally's Familiars rules as a custom "Ghost goat" template (homebrew goat stats scaled from B457-B459; Spirit's traits without Affects Substantial and Resistant, so it cannot touch the physical world) with Quadruped and Domestic Animal: 1250 of a 1500 share. Ally is Summonable, Minion, Sympathy (340). The goat spends its spare points on ST 11, FP 16 and Brawling 13 so it is dangerous when it materializes (Usually On: 1 FP per second); Brock's Lend Energy refuels it. Brock is at 1500 exactly, with Magery 3 (spells at 84%) paid for by five quirks and Callous. Open: Brock has FP 11, but Summon Spirit and Skull-Spirit cost 20 energy; he needs an energy source (Extra FP, a powerstone from Magic's equipment, or the goat as a familiar with Special Abilities giving FP).
+- Brock's ghost goat (resolved): built per Ally's Familiars rules as a custom "Ghost goat" template (homebrew goat stats scaled from B457-B459; Spirit's traits without Affects Substantial and Resistant, so it cannot touch the physical world) with Quadruped and Domestic Animal: 1250 of a 1500 share. Ally is Summonable, Minion, Sympathy (340). The goat spends its spare points on ST 11, FP 16 and Brawling 13 so it is dangerous when it materializes (Usually On: 1 FP per second); Brock's Lend Energy refuels it. Brock is at 1500 exactly, with Magery 3 (spells at 84%) paid for by five quirks and Callous. Open: Brock has FP 11, but Summon Spirit and Skull-Spirit cost 20 energy; he needs an energy source (Extra FP, a powerstone from Magic's equipment, or the goat as a familiar with Special Abilities giving FP). The validator now warns about this. A 10-point Powerstone covers it, but it costs more than Average TL3 wealth ($1,000).
+- Oskar and Brock have no campaign TL set (`tl`), so starting wealth isn't checked for them.
 - Oskar has no Crossbow skill: his ST 9 crossbow rolls at DX−4 = 11 (63%), and at ST 7 he cannot cock it by hand.
 
 ## Writing style for anything shown to Andrew
