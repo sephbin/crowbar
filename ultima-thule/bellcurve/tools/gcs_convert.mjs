@@ -56,7 +56,7 @@ const convWeapon = w => ({
   usage: w.usage || "",
   dmg: { st: w.damage?.st || null, base: w.damage?.base || "", type: w.damage?.type || "",
     ...(w.damage?.modifier_per_die ? { perDie: w.damage.modifier_per_die } : {}), ...(w.damage?.base_leveled ? { leveled: w.damage.base_leveled } : {}) },
-  dmgText: w.calc?.damage || "", strength: w.strength || "", reach: w.reach, parry: w.parry, acc: w.accuracy, range: w.range,
+  dmgText: w.calc?.damage || "", strength: w.strength || "", reach: w.reach, parry: w.parry, ...(w.block != null ? { block: w.block } : {}), acc: w.accuracy, range: w.range,
   rof: w.rate_of_fire, shots: w.shots, bulk: w.bulk, defaults: clean(w.defaults || []),
 });
 
@@ -125,6 +125,8 @@ for (const f of SOURCES.skills) for (const r of walk(read(L(f)).rows)) {
   if (r.defaults?.length) rec.defaults = clean(r.defaults);
   if (r.prereqs?.prereqs?.length) rec.prereqs = clean(r.prereqs);
   if (r.features?.length) rec.features = clean(r.features);
+  // encumbrance level times this is a penalty to the skill (B17: Climbing, Stealth; Swimming x2; Judo, Karate)
+  if (r.encumbrance_penalty_multiplier) rec.enc = r.encumbrance_penalty_multiplier;
   rec.tags = r.tags || []; rec.ref = r.reference || "";
   push("skills", `${r.name.toLowerCase()}|${(r.specialization || "").toLowerCase()}`, rec, f);
 }
@@ -156,6 +158,18 @@ for (const f of SOURCES.equipment) for (const r of walk(read(L(f)).rows)) {
   if (r.weapons?.length) rec.weapons = r.weapons.map(convWeapon);
   const dr = (r.features || []).filter(x => x.type === "dr_bonus").map(x => ({ locations: x.locations || [x.location], amount: x.amount }));
   if (dr.length) rec.dr = dr;
+  // a shield's or cloak's Defense Bonus (B287) is a conditional bonus to all three active defences; other conditional
+  // bonuses (the large shield's -2 off-hand attacks, a suit's Diagnosis modifier) are kept as situational notes
+  const conds = (r.features || []).filter(x => x.type === "conditional_modifier");
+  const db = conds.find(x => /dodge, parry (&|and) block/i.test(x.situation || ""));
+  if (db) rec.db = db.amount;
+  const other = conds.filter(x => x !== db).map(x => ({ situation: String(x.situation).trim(), amount: x.amount }));
+  if (other.length) rec.conds = other;
+  // tool kits add to a skill when used (B345); boots add to kicks
+  const bon = (r.features || []).filter(x => x.type === "skill_bonus" || x.type === "weapon_bonus").map(clean);
+  if (bon.length) rec.bonuses = bon;
+  if (r.local_notes) rec.notes = r.local_notes;
+  if (r.legality_class) rec.lc = r.legality_class;
   rec.tags = r.tags || []; rec.ref = r.reference || "";
   push("equipment", rec.name.toLowerCase(), rec, f);
 }
