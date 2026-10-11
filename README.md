@@ -22,6 +22,10 @@ GURPS 4e with costs ×10 and every roll shown as a d100 percentage on the 3d6 cu
 - Characters: [Oskar Penn](games/bellcurve/characters/oskar-penn.json) · [Brock Underhill](games/bellcurve/characters/brock-underhill.json)
 - [Rules, tools and character format](games/bellcurve/CLAUDE.md)
 
+## Stonetop
+
+Player sheets for all nine playbooks, laid out like the paper ones: [`games/stonetop/`](games/stonetop/CLAUDE.md). The playbook text is not in the repo; build `pack/stonetop-pack.json` with `tools/extract_playbooks.py` and send that file to players.
+
 ## Features
 
 - **Live preview** — markdown renders inline as you type (Obsidian-style)

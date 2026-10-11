@@ -1,0 +1,146 @@
+:root{
+  --desk:#cfc8b8;--paper:#f6f1e4;--ink:#1d1a16;--muted:#6b6458;--rule:#b9b09d;--accent:#9b2d1f;--wash:#ebe4d2;--ok:#2f6b3a;--warn:#a5681a;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --desk:#12110f;--paper:#1f1d19;--ink:#ece6d8;--muted:#a39b8a;--rule:#4a453b;--accent:#e0705c;--wash:#2a2722;--ok:#7fc58b;--warn:#e0a85a;color-scheme:dark}}
+:root[data-theme="dark"]{--desk:#12110f;--paper:#1f1d19;--ink:#ece6d8;--muted:#a39b8a;--rule:#4a453b;--accent:#e0705c;--wash:#2a2722;--ok:#7fc58b;--warn:#e0a85a;color-scheme:dark}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--desk);color:var(--ink);font:17px/1.35 "EB Garamond","Adobe Caslon Pro",Georgia,serif;padding-bottom:84px}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--accent)}
+.hd,h1,h2,h3,h4,.tab,.chip,.btn,.lbl{font-family:"Alegreya Sans","Avenir Next",Avenir,"Segoe UI",sans-serif}
+
+/* ---------- top bar ---------- */
+.bar{position:sticky;top:0;z-index:5;background:var(--paper);border-bottom:2px solid var(--ink);display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:8px 16px}
+.bar .brand{font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:14px;margin-right:auto;text-decoration:none;color:var(--ink)}
+.tab,.btn{appearance:none;background:transparent;border:1.5px solid var(--ink);border-radius:999px;padding:5px 14px;cursor:pointer;font-size:14px;font-weight:700;text-decoration:none;color:var(--ink);display:inline-block}
+.tab[aria-current="page"],.btn.primary{background:var(--ink);color:var(--paper)}
+.btn.danger{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.small{padding:2px 10px;font-size:13px}
+.tab:focus-visible,.btn:focus-visible,.mk:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---------- home ---------- */
+.wrap{max-width:760px;margin:0 auto;padding:24px 16px}
+h1{font-size:clamp(32px,8vw,52px);line-height:1;margin:6px 0 4px;font-weight:800}
+.sub{color:var(--muted);margin:0 0 18px}
+.card{display:block;background:var(--paper);box-shadow:0 0 0 1px var(--rule) inset;border-radius:10px;padding:12px 16px;margin:8px 0;color:var(--ink);text-decoration:none}
+a.card:hover{box-shadow:0 0 0 2px var(--accent) inset}
+.card b{font-size:22px;display:block;line-height:1.15}
+.card span{color:var(--muted);font-size:15px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.drop{border:2px dashed var(--rule);border-radius:12px;padding:22px;text-align:center;background:var(--paper)}
+.drop.over{border-color:var(--accent)}
+.note{color:var(--muted);font-size:15px}
+.err{color:var(--accent);font-weight:600}
+h2.lbl{font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin:24px 0 6px;color:var(--muted)}
+
+/* ---------- the paper ---------- */
+.page{max-width:1180px;margin:14px auto;background:var(--paper);box-shadow:0 1px 0 var(--rule),0 6px 24px rgba(0,0,0,.18);padding:18px 18px 22px;position:relative}
+.hdrow{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;border-bottom:2px solid var(--ink);padding-bottom:8px;margin-bottom:10px}
+.hdrow h2{margin:0;font-size:clamp(28px,5vw,40px);font-weight:800;line-height:1}
+.hdrow .tag{font-style:italic;color:var(--muted);flex:1 1 280px;font-size:15px}
+.field{display:flex;flex-direction:column;gap:2px;min-width:0}
+.field>span{font:700 11px/1 "Alegreya Sans",sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.in{background:transparent;border:0;border-bottom:1.5px solid var(--ink);padding:3px 2px;min-width:0;width:100%;border-radius:0}
+textarea.in{border:1.5px solid var(--rule);border-radius:6px;padding:8px;width:100%;resize:vertical;min-height:90px;line-height:1.35}
+input.in[type=number]{text-align:center;-moz-appearance:textfield}
+.cols{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0 22px}
+.col{min-width:0}
+.col+.col{border-left:1px solid var(--rule);padding-left:22px}
+@media (max-width:1100px){.cols{grid-template-columns:repeat(2,minmax(0,1fr))}.col:nth-child(3){border-left:0;padding-left:0}}
+@media (max-width:640px){.cols{grid-template-columns:minmax(0,1fr)}.col+.col{border-left:0;padding-left:0}.page{padding:14px 14px 18px;margin:8px 0}}
+h3.sec{font-size:19px;font-weight:800;margin:14px 0 4px;line-height:1.1;border-bottom:1px solid var(--rule);padding-bottom:2px}
+h3.sec:first-child{margin-top:0}
+h3.sec small{font-weight:500;font-size:14px;color:var(--muted)}
+.col p{margin:5px 0}
+.col p:has(>.mk:first-child){padding-left:1.45em;text-indent:-1.45em}
+.step{display:flex;gap:8px;margin:9px 0 3px;align-items:flex-start}
+.step .n{flex:none;background:var(--ink);color:var(--paper);font:800 12px/1 "Alegreya Sans",sans-serif;width:1.55em;height:1.55em;border-radius:3px;display:grid;place-items:center;margin-top:2px}
+.item{margin:11px 0 4px}
+.item.untaken.hide{display:none}
+h4.ih{margin:0;font-size:14px;letter-spacing:.05em;text-transform:uppercase;font-weight:800;display:flex;gap:4px;align-items:center}
+.ibody p{margin-top:3px}
+.item.on>h4.ih{color:var(--accent)}
+.ibody{padding-left:0}
+.tail{margin-left:auto;display:inline-flex;align-items:center;white-space:nowrap}
+.tail .mk{margin:0 0 0 .3em}
+
+/* checkbox / circle / diamond marks */
+.mk{appearance:none;-webkit-appearance:none;display:inline-block;flex:none;width:.82em;height:.82em;margin:0 .32em 0 0;border:1.5px solid var(--ink);background:transparent;vertical-align:-.08em;cursor:pointer;position:relative;text-indent:0}
+.mk.box{border-radius:2px}
+.mk.circ{border-radius:50%}
+.mk.dia{transform:rotate(45deg) scale(.82);border-radius:1px}
+.mk:checked{background:var(--ink)}
+.mk.box:checked::after{content:"";position:absolute;left:22%;top:2%;width:28%;height:55%;border:solid var(--paper);border-width:0 2px 2px 0;transform:rotate(40deg)}
+.pip{display:inline-grid;place-items:center;width:1.15em;height:1.15em;border:1.5px solid var(--ink);border-radius:50%;font-size:.7em;line-height:1;vertical-align:.05em;margin:0 .12em}
+@media (pointer:coarse){.mk{width:1.15em;height:1.15em;margin-right:.4em}}
+
+/* ---------- page 2: stats ---------- */
+.band{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 22px;margin-bottom:6px}
+@media (max-width:900px){.band{grid-template-columns:minmax(0,1fr)}}
+.statgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 10px;margin:8px 0 6px}
+.stat{border:2px solid var(--ink);border-radius:12px;padding:3px 6px 6px;text-align:center;position:relative;background:var(--paper)}
+.stat .nm{font:800 12px/1.1 "Alegreya Sans",sans-serif;letter-spacing:.03em;display:block;cursor:pointer;background:none;border:0;padding:4px 0 0;width:100%}
+.stat .nm:hover{color:var(--accent)}
+.stat .v{display:flex;justify-content:center;align-items:center;gap:2px}
+.stat .v input{width:3.2ch;font-size:30px;font-weight:700;border:0;background:transparent;text-align:center;padding:0}
+.stat .v button{appearance:none;border:0;background:transparent;font-size:20px;line-height:1;cursor:pointer;padding:4px 6px;color:var(--muted)}
+.stat .ab{font:700 11px/1 "Alegreya Sans",sans-serif;color:var(--muted)}
+.stat.dis{border-style:dashed;border-color:var(--accent)}
+.debs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 10px;margin-bottom:8px;font-style:italic;font-size:15px}
+.debs label{display:flex;gap:4px;align-items:center;justify-content:center}
+.vitals{display:grid;grid-template-columns:1fr 2fr 1fr 1fr 1fr;gap:8px 8px;margin:6px 0}
+@media (max-width:560px){.vitals{grid-template-columns:repeat(3,minmax(0,1fr))}.vit:nth-child(2){grid-column:span 2}}
+.vit{border:2px solid var(--ink);border-radius:12px;text-align:center;padding:3px 4px 6px;background:var(--paper)}
+.vit .nm{font:800 11px/1.2 "Alegreya Sans",sans-serif;letter-spacing:.04em;text-transform:uppercase;display:block;padding-top:3px}
+.vit .nm small{font-weight:500;text-transform:none;letter-spacing:0}
+.vit input{width:100%;font-size:26px;font-weight:700;border:0;background:transparent;text-align:center;padding:0;-moz-appearance:textfield}
+.vit .hp{display:flex;align-items:center;justify-content:center;gap:1px}
+.vit .hp input{width:2.7ch;font-size:24px;padding:0}
+.vit .hp .sl{color:var(--muted);font-size:20px}
+.vit button.step2{appearance:none;border:0;background:transparent;font-size:22px;cursor:pointer;color:var(--muted);padding:2px 6px;line-height:1}
+.vit button.die{appearance:none;border:0;background:transparent;font-size:26px;font-weight:700;cursor:pointer;padding:0;width:100%}
+.vit button.die:hover{color:var(--accent)}
+.poss{columns:1}
+.poss .grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 18px}
+@media (max-width:640px){.poss .grid2{grid-template-columns:minmax(0,1fr)}}
+.seg{display:inline-flex;border:1.5px solid var(--ink);border-radius:999px;overflow:hidden}
+.seg button{appearance:none;border:0;background:transparent;padding:3px 12px;cursor:pointer;font:700 13px "Alegreya Sans",sans-serif}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.moves-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0 0;border-top:2px solid var(--ink);padding-top:6px}
+.moves-head h3{margin:0;border:0;padding:0}
+
+/* ---------- gear / notes ---------- */
+.list{display:grid;gap:6px;margin:8px 0}
+.li{display:grid;grid-template-columns:1fr 5ch auto;gap:6px;align-items:center}
+.li.fol{grid-template-columns:1fr 5ch 5ch auto}
+.li input[type=number]{text-align:center}
+.x{appearance:none;border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:20px;padding:2px 8px}
+
+/* ---------- roll bar ---------- */
+.roll{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--paper);border-top:2px solid var(--ink);padding:8px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center}
+.roll .res{display:flex;align-items:center;gap:8px;min-height:2.2em;flex-wrap:wrap}
+.die6{display:inline-grid;place-items:center;width:1.9em;height:1.9em;border:2px solid var(--ink);border-radius:6px;font:800 16px "Alegreya Sans",sans-serif;background:var(--paper)}
+.die6.drop{opacity:.35;text-decoration:line-through;border-style:dashed}
+.tot{font:800 24px "Alegreya Sans",sans-serif}
+.out{font:700 14px "Alegreya Sans",sans-serif;padding:2px 10px;border-radius:999px;border:1.5px solid currentColor}
+.out.full{color:var(--ok)}.out.part{color:var(--warn)}.out.miss{color:var(--accent)}
+.hist{font-size:13px;color:var(--muted);max-width:30ch;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+@media print{
+  @page{size:letter landscape;margin:8mm}
+  body{background:#fff;padding:0;font-size:9.5pt}
+  .bar,.roll,.moves-head .seg,.noprint,.x,.btn{display:none!important}
+  .page{box-shadow:none;margin:0;padding:0;max-width:none;break-after:page}
+  .cols{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .band{grid-template-columns:1fr 1fr}
+  .item.untaken.hide{display:block}
+  :root{--paper:#fff;--ink:#000;--rule:#999;--muted:#444}
+}
+
+.nb{display:inline-grid;place-items:center;width:1.25em;height:1.25em;border-radius:50%;background:var(--ink);color:var(--paper);font:800 .72em/1 "Alegreya Sans",sans-serif;margin-right:.45em;vertical-align:.08em}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
