@@ -200,6 +200,13 @@ function assignCard(c, k, idx) {
   setStat(c, k, Number(scoreCards(pbOf(c))[idx]));
   picked = null; drawCards(c);
 }
+// move a placed card to another stat; a card already there swaps back to where this one came from
+function moveCard(c, from, to) {
+  const cards = scoreCards(pbOf(c)), a = c.assign[from], b = c.assign[to];
+  delete c.assign[from]; c.assign[to] = a; setStat(c, to, Number(cards[a]));
+  if (b != null) { c.assign[from] = b; setStat(c, from, Number(cards[b])); } else setStat(c, from, 0);
+  drawCards(c);
+}
 function unassign(c, k) { if (c.assign[k] == null) return; delete c.assign[k]; drawCards(c); }
 function drawCards(c) {
   const tray = app.querySelector('.cards'); if (!tray) return;
@@ -456,15 +463,18 @@ app.addEventListener('click', e => {
 let drag = null, swallow = false;
 const slotAt = e => { const el = document.elementFromPoint(e.clientX, e.clientY); return el && el.closest('.stat'); };
 app.addEventListener('pointerdown', e => {
-  const card = e.target.closest && e.target.closest('.card');
-  if (!card || card.classList.contains('used') || e.button) return;
-  drag = { card, x: e.clientX, y: e.clientY, ghost: null };
+  if (e.button || !e.target.closest) return;
+  const c = chars[currentId()];
+  const card = e.target.closest('.card');
+  if (card && !card.classList.contains('used')) { drag = { idx: Number(card.dataset.i), from: null, label: card.textContent, x: e.clientX, y: e.clientY, ghost: null }; return; }
+  const stat = c && c.mode === 'create' && !e.target.closest('button') && e.target.closest('.stat.has');   // a placed card can be picked up again
+  if (stat) { const idx = c.assign[stat.dataset.stat]; drag = { idx, from: stat.dataset.stat, label: scoreCards(pbOf(c))[idx], x: e.clientX, y: e.clientY, ghost: null }; }
 });
 addEventListener('pointermove', e => {
   if (!drag) return;
   if (!drag.ghost) {
     if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 8) return;
-    drag.ghost = drag.card.cloneNode(true); drag.ghost.classList.add('ghost'); document.body.append(drag.ghost); picked = null;
+    drag.ghost = h('div', { class: 'card ghost', text: drag.label }); document.body.append(drag.ghost); picked = null;
   }
   drag.ghost.style.left = e.clientX + 'px'; drag.ghost.style.top = e.clientY + 'px';
   const over = slotAt(e);
@@ -478,7 +488,9 @@ function endDrag(e, drop) {
   d.ghost.remove(); swallow = true; setTimeout(() => { swallow = false; }, 120);
   const slot = drop && slotAt(e), c = chars[currentId()];
   app.querySelectorAll('.stat.over').forEach(s => s.classList.remove('over'));
-  if (slot && c) assignCard(c, slot.dataset.stat, Number(d.card.dataset.i));
+  if (!slot || !c) return;
+  if (d.from === null) assignCard(c, slot.dataset.stat, d.idx);
+  else if (slot.dataset.stat !== d.from) moveCard(c, d.from, slot.dataset.stat);
 }
 addEventListener('pointerup', e => endDrag(e, true));
 addEventListener('pointercancel', e => endDrag(e, false));

@@ -181,3 +181,5 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .card{touch-action:none;user-select:none;-webkit-user-select:none}
 .card.ghost{position:fixed;transform:translate(-50%,-50%) rotate(-4deg);pointer-events:none;z-index:50;opacity:.92;box-shadow:0 8px 20px rgba(0,0,0,.3)}
 .stat input[readonly]{pointer-events:none}
+
+.mode-create .stat.has{cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
