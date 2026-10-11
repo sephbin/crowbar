@@ -1011,7 +1011,8 @@ function itemRules(g) {
     ["cost", [`${usd(g.cost)}`, g.qty > 1 ? ` for ${g.qty}` : "", ` (list ${usd(rec.cost)}${g.qual.mult !== 1 ? `, ×${g.qual.mult} ${g.item.quality}` : ""}${up > 1 ? `, ×${up} above campaign TL` : ""})`, g.item.free ? " · not bought" : ""]],
     ["weight", `${lbTxt(g.weight)}${g.qty > 1 ? ` for ${g.qty}` : ""}${g.carried ? "" : " · left at home"}`],
     ["quality", g.item.quality ? [String(g.item.quality).toLowerCase(), g.qual.notes.length ? `: ${g.qual.notes.join("; ")}` : "", g.qual.error ? el("span", { class: "bad" }, ` (${g.qual.error})`) : ""] : null],
-    ["DR", rec.dr ? rec.dr.map(d => `${d.amount} ${d.locations.join("/")}`).join(", ") : null],
+    ["DR", rec.dr ? rec.dr.map(d => `${d.amount} ${d.locations.join("/")}`).join(", ") + (rec.flexible || rec.concealable ? ` · ${[rec.flexible && "flexible", rec.concealable && "concealable"].filter(Boolean).join(", ")}` : "")
+      + (rec.flexible && rec.concealable ? " (can be worn under other armour)" : "") : null],
     ["defense bonus", rec.db ? `+${rec.db} to Dodge, Parry and Block against attacks from the front or shield side` : null],
     ["situational", (rec.conds || []).map(c => `${c.amount > 0 ? "+" : ""}${c.amount} ${c.situation}`).join("; ")],
     ["bonus", (rec.bonuses || []).filter(b => b.type === "skill_bonus").map(b => `${b.amount > 0 ? "+" : ""}${b.amount} to ${b.name?.qualifier}`).join("; ")],

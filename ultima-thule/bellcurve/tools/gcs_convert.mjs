@@ -158,6 +158,9 @@ for (const f of SOURCES.equipment) for (const r of walk(read(L(f)).rows)) {
   if (r.weapons?.length) rec.weapons = r.weapons.map(convWeapon);
   const dr = (r.features || []).filter(x => x.type === "dr_bonus").map(x => ({ locations: x.locations || [x.location], amount: x.amount }));
   if (dr.length) rec.dr = dr;
+  // layering (B286) needs the inner layer flexible and concealable; GCS records both in the notes, as the book's tables do
+  if (dr.length && /flexible/i.test(r.local_notes || "")) rec.flexible = true;
+  if (dr.length && /concealable/i.test(r.local_notes || "")) rec.concealable = true;
   // a shield's or cloak's Defense Bonus (B287) is a conditional bonus to all three active defences; other conditional
   // bonuses (the large shield's -2 off-hand attacks, a suit's Diagnosis modifier) are kept as situational notes
   const conds = (r.features || []).filter(x => x.type === "conditional_modifier");

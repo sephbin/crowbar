@@ -135,5 +135,13 @@ eq("Summon Spirit (20) warns at FP 11 without a Powerstone", BC.compute(brock, l
 eq("a 10-point Powerstone covers it", BC.compute({ ...brock, equipment: [{ name: "10 pt Powerstone" }] }, lib).issues.some(x => /Summon Spirit: costs/.test(x.msg)), false);
 eq("spell cost: -1 at skill 15, -2 at 20, -3 at 25", [BC.spellEnergy("20", 14.9), BC.spellEnergy("20", 15), BC.spellEnergy("20", 20), BC.spellEnergy("20", 25)], [20, 19, 18, 17]);
 
+// armour layering (B286) and the foot (B399)
+const lay = ch({ equipment: [{ name: "Mail Shirt" }, { name: "Steel Breastplate" }], skills: [{ name: "Broadsword", points: 20 }] });
+eq("mail shirt under a breastplate: torso DR 4 + 5 = 9", lay.dr.torso, 9);
+eq("layered armour: -1 to DX and DX-based skills, Speed unchanged", [lay.attrs.DX, lay.skills[0].level, lay.attrs.Speed], [9, 9, 5]);
+eq("leather armour can't go under a breastplate", ch({ equipment: [{ name: "Leather Armor" }, { name: "Steel Breastplate" }] }).issues.some(x => x.sev === "ERROR" && /B286/.test(x.ref)), true);
+eq("boots: DR 2 on the foot", ch({ equipment: [{ name: "Boots" }] }).dr.foot, 2);
+eq("foot: -4, as for a hand", BC.LOCS.find(l => l.name === "foot").pen, -4);
+
 console.log(fail ? `${fail} failure(s)` : "all passed");
 process.exit(fail ? 1 : 0);

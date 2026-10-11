@@ -102,7 +102,11 @@ const LOCS = [
   { name: "eye", pen: -9, mult: { imp: 4, "pi-": 4, pi: 4, cut: null, cr: null }, dr: 0 },
   { name: "arm/leg", pen: -2, mult: { imp: 1, "pi-": 0.5, pi: 1, cut: 1.5, cr: 1 }, dr: 0 },
   { name: "hand", pen: -4, mult: { imp: 1, "pi-": 0.5, pi: 1, cut: 1.5, cr: 1 }, dr: 0 },
+  { name: "foot", pen: -4, mult: { imp: 1, "pi-": 0.5, pi: 1, cut: 1.5, cr: 1 }, dr: 0 },   // B399: as for a hand
 ];
+// armour locations (GCS) to the roller's hit locations; face and groin have no roller location
+const DR_LOC = { torso: ["torso", "vitals"], vitals: ["vitals"], skull: ["skull"], neck: ["neck"], eye: ["eye"], arm: ["arm/leg"], leg: ["arm/leg"], hand: ["hand"], foot: ["foot"], all: LOCS.map(l => l.name) };
+const HEAD_LOCS = new Set(["skull", "eye"]);
 const TYPE_NAME = { imp: "impaling", "pi-": "small piercing", pi: "piercing", cut: "cutting", cr: "crushing" };
 // Damage types outside the five in the table use x1 and are flagged in the roller.
 const locMult = (loc, type) => (type in loc.mult) ? loc.mult[type] : 1;
@@ -586,6 +590,37 @@ function compute(ch, lib, opts = {}) {
     const qual = rec ? itemQuality(rec, item.quality, ctl) : null;
     return { item, rec, path, qty, qual, carried: item.carried !== false, weight: rec ? lbs(rec.weight) * qty : 0 };
   });
+  // ---- armour worn (B286): pieces on different locations combine freely. Layers on one location add their DR, but
+  // every layer under the outermost must be flexible and concealable. An extra layer anywhere but the head gives -1 to
+  // DX and DX-based skills (applied to DX after Basic Speed, so Speed, Move and Dodge are unchanged).
+  const dr = {}; LOCS.forEach(l => dr[l.name] = 0);
+  const layers = {};
+  gear.forEach((g, gi) => {
+    if (!g.rec?.dr || !g.carried || g.item.worn === false) return;
+    const at = {};
+    for (const d of g.rec.dr) for (const loc of d.locations) for (const L of DR_LOC[loc] || []) at[L] = Math.max(at[L] || 0, d.amount);
+    for (const L in at) (layers[L] ||= []).push({ g, amount: at[L], inner: !!(g.rec.flexible && g.rec.concealable) });
+  });
+  let layered = false;
+  const badLayer = new Set();
+  for (const L in layers) {
+    const ps = layers[L];
+    if (ps.length === 1) { dr[L] = ps[0].amount; continue; }
+    const rigid = ps.filter(p => !p.inner);
+    if (rigid.length > 1) {
+      dr[L] = Math.max(...ps.map(p => p.amount));
+      const k = rigid.map(p => p.g.rec.name).sort().join(" and ");
+      if (!badLayer.has(k)) { badLayer.add(k); add("ERROR", `${k} can't be layered: only flexible, concealable armour goes underneath (${L} uses the higher DR)`, "B286", rigid[1].g.path); }
+      continue;
+    }
+    dr[L] = ps.reduce((a, p) => a + p.amount, 0);
+    if (!HEAD_LOCS.has(L)) layered = true;
+  }
+  const layerPen = layered ? -1 : 0;
+  if (layered) {
+    A.DX += layerPen;
+    add("WARN", `layered armour: -1 to DX and DX-based skills (DX ${f1(A.DX)})`, "B286");
+  }
   const BL = basicLift(liftST);
   const carriedLbs = Math.round(gear.filter(g => g.carried).reduce((a, g) => a + g.weight, 0) * 1000) / 1000;
   let encLevel = ENC.findIndex(e => carriedLbs <= e.bl * BL);
@@ -716,8 +751,6 @@ function compute(ch, lib, opts = {}) {
   }
 
   // ---- equipment, weapons, armour
-  const dr = {}; LOCS.forEach(l => dr[l.name] = 0);
-  const DR_LOC = { torso: ["torso", "vitals"], vitals: ["vitals"], skull: ["skull"], neck: ["neck"], eye: ["eye"], arm: ["arm/leg"], leg: ["arm/leg"], hand: ["hand"], all: LOCS.map(l => l.name) };
   const weaponOf = [];
   const addWeapon = (label, rec, item, path, natural) => {
     const modes = weaponModes(item, rec, A).map(m => {
@@ -767,7 +800,6 @@ function compute(ch, lib, opts = {}) {
     if (qual.error) add("ERROR", `${item.name}: ${qual.error}`, qual.ref, path);
     else if (item.quality) add("ok", `${item.name}: ${lc(item.quality)} (cost x${qual.mult}${qual.notes.length ? "; " + qual.notes.join("; ") : ""})`, qual.ref, path);
     if (!g.carried) continue;
-    if (item.worn !== false) for (const d of rec.dr || []) for (const loc of d.locations) for (const L of DR_LOC[loc] || []) dr[L] = Math.max(dr[L], d.amount);
     // a shield or cloak in hand: its Defense Bonus goes on every active defence against attacks from the front or shield side (B287)
     if (rec.db && item.worn !== false && rec.db > db) { db = rec.db; dbFrom = rec.name; }
     addWeapon(item.label || item.name + (item.st ? ` (ST ${item.st})` : ""), rec, { ...item, qual }, path);
@@ -853,7 +885,7 @@ function compute(ch, lib, opts = {}) {
   for (const s of spellRows) if (s.rec && s.level != null && s.prereqOk) add("ok", `spell ${s.name} ${s.attr}/${s.diff} ${s.points} pts: level ${f1(s.level)}, ${succPct(s.level)}%`, s.ref, s.path);
 
   return {
-    name: ch.name, budget, spent, breakdown, attrs: A, attrPoints: pts, attrBonus, extra, dodge, dodgeBase, db, dbFrom, enc, gear, money, energy, gearMods, thr, sw,
+    name: ch.name, budget, spent, breakdown, attrs: A, layerPen, attrPoints: pts, attrBonus, extra, dodge, dodgeBase, db, dbFrom, enc, gear, money, energy, gearMods, thr, sw,
     traits, templateRemoved: removed, skills: skillRows, spells: spellRows, weapons: weaponOf, dr, natDR, conditionals, reactions, allies, templates: tpl, issues,
     houseBackstab: traits.some(t => /^backstabber$/i.test(t.name)),
     sneakDice: traits.filter(t => /^sneak attack$/i.test(t.name)).reduce((a, t) => a + (t.levels || 1), 0),
