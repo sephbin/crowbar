@@ -618,8 +618,8 @@ function spellNeeds(rec, known) {
 function spellDetail(name, known = knownSpells(), extra = []) {
   const r = LIB.spells.find(s => s.name === name); if (!r) return "";
   const needs = spellNeeds(r, known);
-  return el("div", {}, descBlock("spells", [name], r.ref), dl([...extra, ["college", r.college.join(", ")], ["class", r.class], ["based on", `${r.attr}, ${DIFFW[r.diff] || r.diff}`], ["cost", r.cost], ["maintain", r.maint], ["time", r.time], ["duration", r.duration],
-    ["needs first", needs], ["page", refTxt(r.ref)]]), bookBlock({ kind: "spell", name: r.name, ref: r.ref }));
+  return el("div", {}, describeBlock("spells", [name], r.ref, { kind: "spell", name: r.name, ref: r.ref }), dl([...extra, ["college", r.college.join(", ")], ["class", r.class], ["based on", `${r.attr}, ${DIFFW[r.diff] || r.diff}`], ["cost", r.cost], ["maintain", r.maint], ["time", r.time], ["duration", r.duration],
+    ["needs first", needs], ["page", refTxt(r.ref)]]));
 }
 const skillItems = () => once("skills", () => {
   const seen = new Set(), out = [];
@@ -628,7 +628,7 @@ const skillItems = () => once("skills", () => {
     if (seen.has(label)) continue; seen.add(label);
     out.push({ value: ask ? { name: s.name, ask: s.spec.slice(1, -1) } : { name: s.name, spec: s.spec || "" }, label, sub: ask ? "you name the specialty" : s.diff ? `${s.attr}/${s.diff}` : "", key: ask ? "" : lcs(BC.fullName(s.name, s.spec)),
       facets: { Category: (s.tags || []).slice(0, 4), "Based on": s.attr ? [`${s.attr} ${DIFFW[s.diff] || s.diff}`] : [], Kind: [s.technique ? "Technique" : "Skill"] },
-      detail: () => el("div", {}, descBlock("skills", [BC.fullName(s.name, s.spec), s.name], s.ref), dl([["based on", s.attr ? `${s.attr}, ${DIFFW[s.diff] || s.diff}` : ""], ["categories", (s.tags || []).join(", ")], ["page", refTxt(s.ref)]]), bookBlock({ kind: "skill", name: s.name, spec: s.spec || "", ref: s.ref })) });
+      detail: () => el("div", {}, describeBlock("skills", [BC.fullName(s.name, s.spec), s.name], s.ref, { kind: "skill", name: s.name, spec: s.spec || "", ref: s.ref }), dl([["based on", s.attr ? `${s.attr}, ${DIFFW[s.diff] || s.diff}` : ""], ["categories", (s.tags || []).join(", ")], ["page", refTxt(s.ref)]])) });
   }
   return out;
 });
@@ -639,7 +639,7 @@ const traitItems = () => once("traits", () => {
     const kind = t.kind[0].toUpperCase() + t.kind.slice(1);
     out.push({ value: t.name, label: t.name, sub: t.house ? "house rule" : t.sub || "",
       facets: { Type: [kind], Category: (t.tags || []).filter(x => !/^(advantage|disadvantage|perk|quirk)$/i.test(x)).slice(0, 3) },
-      detail: () => el("div", {}, t.summary ? el("p", { class: "desc" }, t.summary) : null, dl([["type", kind], ["categories", (t.tags || []).join(", ")], ["levels", t.canLevel ? `up to ${t.maxLevels ?? "?"}` : ""], ["page", t.house ? "house rule" : refTxt(t.ref)]]), t.house ? null : bookBlock({ kind: "trait", name: t.name, ref: t.ref })) });
+      detail: () => el("div", {}, t.house ? (t.summary ? el("p", { class: "desc" }, t.summary) : null) : describeBlock("traits", [t.name], t.ref, { kind: "trait", name: t.name, ref: t.ref }), dl([["type", kind], ["categories", (t.tags || []).join(", ")], ["levels", t.canLevel ? `up to ${t.maxLevels ?? "?"}` : ""], ["page", t.house ? "house rule" : refTxt(t.ref)]])) });
   }
   return out;
 });
@@ -1532,15 +1532,22 @@ function bookSection(title) {
   det.addEventListener("toggle", () => { UI.bookOpen = det.open; saveUI(); });
   return det;
 }
+const bookNodes = d => [d.text ? [el("p", { class: "src" }, bookPage(d.textRef)), bookText(d.text)] : null,
+  ...d.supplements.map(s => [el("p", { class: "src" }, `from ${s.book}, p.${String(s.textRef || "").replace(/^[A-Z]+(?:\d+:)?0*/, "")}`), bookText(s.text)])].filter(Boolean).flat();
 function bookBlock(q) {
   const det = bookSection("book text");
   bookFetch(q).then(d => {
     if (!d || (!d.text && !d.supplements.length)) return;
-    if (d.text) det.append(el("p", { class: "src" }, bookPage(d.textRef)), bookText(d.text));
-    for (const s of d.supplements) det.append(el("p", { class: "src" }, `from ${s.book}, p.${String(s.textRef || "").replace(/^[A-Z]+(?:\d+:)?0*/, "")}`), bookText(s.text));
+    det.append(...bookNodes(d));
     det.hidden = false;
   });
   return det;
+}
+// the description in a picker's details: the local book text when there is some, else the written paraphrase (or its placeholder)
+function describeBlock(kind, keys, ref, q) {
+  const box = el("div", {}, descBlock(kind, keys, ref));
+  bookFetch(q).then(d => { if (d && (d.text || d.supplements.length)) box.replaceChildren(el("div", { class: "booktext" }, ...bookNodes(d))); });
+  return box;
 }
 // the text of each modifier a trait has on: its own from the trait's entry, general ones from B101-B117
 function modsBlock(t) {
