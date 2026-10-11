@@ -1052,7 +1052,8 @@ function profGroup(g, path, byPath, title, nested) {
     if (!rows.length) continue;
     opts.append(el("div", { class: "rule", style: "margin-top:4px" }, `or from ${profSec(x).toLowerCase()} above:`));
     rows.forEach(({ o, i }) => opts.append(profChoice(g, path, o, i, x.id, byPath))); } }
-  if (g.open) opts.append(profPool(path, g));
+  if (g.lens) opts.append(el("p", { class: "hint" }, `Choose the lens in the Lens box at the top; its choices replace this pool (${g.open}).`));
+  else if (g.open) opts.append(profPool(path, g));
   if (g.prevSkills) opts.append(profExtra(path, "raise", "or points raising a skill above", BC.profStamp(P.prof, P.picks).skills.map(s => ({ name: s.name, spec: s.spec }))));
   return box;
 }
@@ -1063,19 +1064,37 @@ function renderProfModal() {
   $("psub").textContent = `${refTxt(prof.ref)} · ${prof.points * 10} points · ${Object.entries(prof.attributes).map(([k, v]) => `${k} ${sgn(v)}`).join(", ")}${prof.incomplete ? ` · incomplete: ${prof.incomplete.missing * 10} of ${prof.points * 10} points weren't read from the book` : ""}`;
   const checks = BC.profCheck(prof, picks), byPath = new Map(checks.filter(c => c.kind !== "spec").map(c => [c.path, c]));
   const body = $("pbody"), top = body.parentElement.scrollTop; body.innerHTML = "";
+  if ((LIB.lenses || []).length) body.append(lensBar());
   for (const g of prof.groups) if (g.kind !== "note") body.append(profGroup(g, g.id, byPath, profSec(g)));
   const open = checks.filter(c => !c.ok);
   $("ptotal").textContent = open.length ? `${open.length} still open: ${open.slice(0, 3).map(c => c.kind === "spec" ? c.label.replace(/: choose a specialty$/, " specialty") : c.label).join(", ")}${open.length > 3 ? "…" : ""}` : "every choice made";
   $("papply").hidden = !editing; $("pcancel").textContent = editing ? "cancel" : "close";
   body.parentElement.scrollTop = top;
 }
+// A lens is a smaller template laid over the profession (Action 1, Monster Hunters, DF15). Choosing one replaces the
+// profession's lens pool, or is added on top for a "+125 point" lens; changing it drops the old lens's own choices.
+function lensBar() {
+  const L = LIB.lenses || [], cur = P.lensRef, books = [...new Set(L.map(l => l.book))];
+  const s = el("select", { "aria-label": "Lens" }, el("option", { value: "" }, "no lens"),
+    ...books.map(b => el("optgroup", { label: BOOKS[b] || b }, ...L.map((l, k) => l.book === b ? el("option", { value: k, selected: cur && cur.name === l.name && cur.book === l.book }, `${l.name} · ${l.plus ? "+" : ""}${l.template * 10} pts${l.incomplete ? " · incomplete" : ""}`) : null).filter(Boolean))));
+  s.addEventListener("change", () => {
+    for (const k of Object.keys(P.picks)) if (k.startsWith("L")) delete P.picks[k];
+    const l = s.value === "" ? null : L[+s.value];
+    P.lensRef = l ? { name: l.name, book: l.book } : null; P.prof = BC.profEffective(P.base, l); renderProfModal();
+  });
+  const l = BC.findLens(LIB, cur), pool = P.base.groups.find(g => g.lens);
+  return el("div", { class: "pgrp" }, el("div", { class: "rule" }, "Lens"), el("div", { class: "popt" }, s),
+    el("p", { class: "hint" }, l ? `${l.name} (${refTxt(l.ref)}) ${l.plus ? "is added to the profession" : "takes the place of the profession's lens points"}.${l.incomplete ? ` Incomplete: ${l.incomplete.missing * 10} of its points weren't read from the book.` : ""}`
+      : pool ? `This profession has ${pool.n} points for a lens: ${pool.open}.` : "Optional. A lens adds a background to the profession."));
+}
 let profFrom = null;
-function openProf(prof, picks) {
-  P = { prof, picks: structuredClone(picks || {}), taken: new Map(), det: new Set() };
+const baseOf = cp => cp && (LIB.professions || []).find(p => p.name === cp.name && (!cp.book || p.book === cp.book));
+function openProf(base, picks, lensRef) {
+  P = { base, lensRef: lensRef || null, prof: BC.profEffective(base, BC.findLens(LIB, lensRef)), picks: structuredClone(picks || {}), taken: new Map(), det: new Set() };
   // what the sheet has apart from this profession: its traits (and its templates' traits), skills and spells
   const ch = C(), sheet = { attributes: { ...ch.attributes }, traits: structuredClone(ch.traits), skills: structuredClone(ch.skills), spells: structuredClone(ch.spells) };
-  const old = ch.profession && (LIB.professions || []).find(p => p.name === ch.profession.name && (!ch.profession.book || p.book === ch.profession.book));
-  if (old) unstampFrom(sheet, BC.profStamp(old, ch.profession.picks || {}));
+  const old = baseOf(ch.profession);
+  if (old) unstampFrom(sheet, BC.profStamp(BC.profEffective(old, BC.findLens(LIB, ch.profession.lens)), ch.profession.picks || {}));
   P.have = { traits: [...sheet.traits, ...R.traits.filter(t => t.from).map(t => t.inst)], skills: sheet.skills, spells: sheet.spells };
   profFrom = document.activeElement;
   renderProfModal();
@@ -1104,8 +1123,8 @@ function unstampFrom(ch, st) {
   for (const s of st.spells) { const i = ch.spells.findIndex(y => y.name === s.name); if (i < 0) continue; ch.spells[i].points -= s.points; if (ch.spells[i].points < 10) ch.spells.splice(i, 1); }
 }
 function takeOffProfession(ch) {
-  const prof = (LIB.professions || []).find(p => p.name === ch.profession?.name && (!ch.profession.book || p.book === ch.profession.book));
-  if (prof) unstampFrom(ch, BC.profStamp(prof, ch.profession.picks || {}));
+  const prof = baseOf(ch.profession);
+  if (prof) unstampFrom(ch, BC.profStamp(BC.profEffective(prof, BC.findLens(LIB, ch.profession.lens)), ch.profession.picks || {}));
   delete ch.profession;
 }
 $("papply").addEventListener("click", () => {
@@ -1114,7 +1133,7 @@ $("papply").addEventListener("click", () => {
   for (const k of Object.keys(picks)) if (!picks[k]?.length) delete picks[k];
   if (ch.profession) takeOffProfession(ch);
   stampInto(ch, BC.profStamp(prof, picks));
-  ch.profession = { name: prof.name, book: prof.book, picks };
+  ch.profession = { name: prof.name, book: prof.book, ...(P.lensRef ? { lens: P.lensRef } : {}), picks };
   closeProf(); change(); toast(`${prof.name} applied`);
 });
 $("pcancel").addEventListener("click", closeProf);
@@ -1135,7 +1154,7 @@ function renderProfession() {
   if (!pr) { box.append(el("div", { class: "bad" }, `${ch.profession.name}: not in the library`), el("div", { class: "ed" }, remove)); return; }
   const done = pr.checks.filter(c => c.ok).length;
   box.append(el("div", { class: "row" },
-    el("span", { class: "nm roll", role: "button", tabindex: "0", onclick: () => openProf(pr.rec, ch.profession.picks), onkeydown: e => e.key === "Enter" && e.currentTarget.click() }, pr.rec.name),
+    el("span", { class: "nm roll", role: "button", tabindex: "0", onclick: () => openProf(baseOf(ch.profession), ch.profession.picks, ch.profession.lens), onkeydown: e => e.key === "Enter" && e.currentTarget.click() }, pr.rec.name, pr.rec.lensOf ? ` + ${pr.rec.lensOf.name} lens` : ""),
     el("span", { class: "meta" }, `${refTxt(pr.rec.ref)} · ${done} of ${pr.checks.length} choices made`),
     el("span", { class: "val" }, el("b", {}, String(pr.rec.points * 10)), el("span", {}, "template")), el("span")));
   const stat = el("div", { class: "pstat" });
@@ -1144,7 +1163,7 @@ function renderProfession() {
   if (stat.childNodes.length) box.append(stat);
   if (pr.rec.incomplete) box.append(el("p", { class: "hint" }, `Incomplete: ${pr.rec.incomplete.missing * 10} of ${pr.rec.points * 10} points of this template weren't read from the book, so they are one open pool of points. Follow ${refTxt(pr.rec.ref)}${pr.rec.incomplete.unread.length ? `; not read: ${pr.rec.incomplete.unread.join("; ")}` : ""}.`));
   if (R.budget < pr.rec.points * 10) box.append(el("p", { class: "hint" }, `${pr.rec.name} is a ${pr.rec.points}-point template (${pr.rec.points * 10} here); this sheet's budget is ${R.budget}.`));
-  box.append(el("div", { class: "ed", style: "display:flex;gap:8px;margin-top:6px" }, el("button", { type: "button", onclick: () => openProf(pr.rec, ch.profession.picks) }, "edit choices"), remove));
+  box.append(el("div", { class: "ed", style: "display:flex;gap:8px;margin-top:6px" }, el("button", { type: "button", onclick: () => openProf(baseOf(ch.profession), ch.profession.picks, ch.profession.lens) }, "edit choices"), remove));
 }
 
 function renderTemplates() {

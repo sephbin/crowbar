@@ -146,6 +146,14 @@ eq("foot: -4, as for a hand", BC.LOCS.find(l => l.name === "foot").pen, -4);
 
 // Dungeon Fantasy professions (DF1 pp.4-13), parsed from the book
 eq("every 250-point profession totals 250 points", lib.professions.filter(p => p.template === 250).every(p => p.points === 250), true);
+{ // a lens takes the place of the profession's lens pool (same size) or is added on top (+125)
+  const ass = lib.professions.find(p => p.name === "Assassin" && p.book === "ACT1"), le = lib.lenses.find(l => l.name === "Law Enforcement" && l.book === "ACT1");
+  const eff = BC.profEffective(ass, le);
+  eq("lens replaces its pool", [eff.groups.some(g => g.lens), eff.groups.some(g => g.id.startsWith("L")), eff.points], [false, true, ass.points]);
+  const thief = lib.professions.find(p => p.name === "Thief" && p.book === "DF1"), bur = lib.lenses.find(l => l.name === "Burglar");
+  eq("a +125 lens is added", BC.profEffective(thief, bur).points, thief.points + bur.template);
+  eq("every shipped lens totals its book points", lib.lenses.every(l => l.points === l.template), true);
+}
 const knight = lib.professions.find(p => p.name === "Knight");
 const kst = BC.profStamp(knight, { g7: [{ o: 1 }], "g7.1.0": [{ o: 1 }, { o: 3 }], "g5.0": [{ o: 0 }], "g8.3": [{ spec: "Land" }] });
 eq("Knight: two weapons from package 2 at 12 points each, Brawling, Strategy (Land)", ["Broadsword", "Shortsword", "Brawling"].map(n => kst.skills.find(s => s.name === n)?.points).concat(kst.skills.find(s => s.name === "Strategy")?.spec), [120, 120, 20, "Land"]);

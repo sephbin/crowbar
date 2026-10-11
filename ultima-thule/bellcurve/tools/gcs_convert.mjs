@@ -239,7 +239,7 @@ for (const dir of SOURCES.templates) {
 // as names, costs and choice rules, in data/src/professions.json.
 {
   const pf = read(path.join(ROOT, "data", "src", "professions.json"));
-  out.professions = pf.professions; out.piSpells = pf.piSpells; out.dfWizardly = pf.wizardly;
+  out.professions = pf.professions; out.lenses = pf.lenses || []; out.piSpells = pf.piSpells; out.dfWizardly = pf.wizardly;
 }
 
 // general enhancements and limitations (B101-B117): reference list only. Traits still take modifiers from their own
@@ -280,7 +280,7 @@ out.meta = {
   source: "GCS master library, https://github.com/richardwilkes/gcs_master_library",
   license: "Mozilla Public License 2.0 (library data). Converted for personal use; costs are GURPS x10.",
   commit, books: SOURCES,
-  counts: Object.fromEntries(["skills", "traits", "spells", "equipment", "templates", "modifiers", "natural", "circumstances", "professions"].map(k => [k, out[k].length])),
+  counts: Object.fromEntries(["skills", "traits", "spells", "equipment", "templates", "modifiers", "natural", "circumstances", "professions", "lenses"].map(k => [k, out[k].length])),
 };
 
 fs.writeFileSync(path.join(ROOT, "data", "library.json"), JSON.stringify(out));

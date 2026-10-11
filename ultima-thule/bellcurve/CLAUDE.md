@@ -38,6 +38,8 @@ Basic Set skills, techniques and traits; Magic skills and spells (not Ritual Mag
 - Not parsed yet: DF9's summoner powers and spell tables (the four summoners are incomplete), lenses as selectable templates (a lens is an open pool), Supers' 500-point power templates, Reign of Steel's robots, and about 60 older-layout professions with unusual wording (Space, Mysteries, Infinite Worlds, Lands Out of Time, parts of Banestorm and Fantasy).
 - `lib.templates` (racial and meta-trait templates, no choices): Basic Set, Fantasy, Magic, Dungeon Fantasy races, Banestorm, Bio-Tech, Ultra-Tech, Horror, Lands Out of Time, Reign of Steel, Fantasy Folk elves, goblins and kobolds. A container's own percentage modifier (Power Modifier -10%) applies to every trait in it (`container: true` on the instance's modifier); a modifier with `perTrait` is charged per level of the trait (GCS `use_level_from_trait`).
 
+**Lenses.** `lib.lenses` (20: Action 1, Monster Hunters 1, DF15) come from `rules/df_professions.mjs` (pages by `rules/tpl_extract.py`, into `rules/lens/`). A lens has the template shape plus `plus` (a "+125" lens is added to the profession, a plain one takes the place of the profession's `lens: true` pool). A character records `profession.lens = {name, book}`; `profEffective(prof, lens)` lays its groups over the profession (ids get an `L` prefix so picks share one map). Burglar, Monk and other DF15 lenses are incomplete (an open pool for unread points). Not shipped: DF15 Priest, Treasure-Hunter, Monster Hunters Accidental Hero, Operative, Philanthropist (the parse overshoots or goes negative), and Monster Hunters 4 and Martial Arts cinematic lenses (not surveyed yet).
+
 ## Character JSON
 ```
 {

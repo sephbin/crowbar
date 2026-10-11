@@ -549,6 +549,21 @@ function profOptCost(o, pick = {}) {
   if (o.per != null && (o.min != null || o.type === "attr")) return o.per * ((pick.levels ?? o.min ?? 1) - (o.from || 0));
   return o.cost ?? 0;
 }
+// A lens (lib.lenses: Action 1, Monster Hunters, DF15) is a smaller template laid over a profession. A lens of the
+// profession's own size (a "20-point lens" pool) takes that pool's place; a "+125 point" lens is added to the profession.
+// The lens's groups get an "L" in front of their ids so their picks sit beside the profession's in the same picks map.
+// A character records it as "profession": { name, book, lens: { name, book }, picks }.
+const findLens = (lib, ref) => ref ? (lib.lenses || []).find(l => lc(l.name) === lc(ref.name) && (!ref.book || l.book === ref.book)) : null;
+function profEffective(prof, lens) {
+  if (!lens) return prof;
+  const mine = lens.groups.map(g => ({ ...g, id: "L" + g.id }));
+  const i = lens.plus ? -1 : prof.groups.findIndex(g => g.lens);
+  const groups = prof.groups.filter(g => lens.plus || !g.lens);
+  groups.splice(i < 0 ? groups.length : Math.min(i, groups.length), 0, ...mine);
+  const attributes = { ...prof.attributes };
+  for (const [k, v] of Object.entries(lens.attributes || {})) attributes[k] = (attributes[k] || 0) + v;
+  return { ...prof, groups, attributes, points: prof.points + (lens.plus ? lens.template : 0), lensOf: { name: lens.name, book: lens.book, ref: lens.ref } };
+}
 const profGroupOf = (prof, g, p) => p.g ? prof.groups.find(x => x.id === p.g) : g;
 // everything taken: fixed items and picked options, through bundles and nested groups. fn(option, pick, path)
 function profWalk(prof, picks, fn) {
@@ -922,7 +937,10 @@ function compute(ch, lib, opts = {}) {
   let profession = null;
   if (ch.profession?.name) {
     // names repeat across books (Assassin: Fantasy, Martial Arts, Banestorm), so the book is matched when recorded
-    const prof = (lib.professions || []).find(p => lc(p.name) === lc(ch.profession.name) && (!ch.profession.book || p.book === ch.profession.book));
+    const base = (lib.professions || []).find(p => lc(p.name) === lc(ch.profession.name) && (!ch.profession.book || p.book === ch.profession.book));
+    const lens = findLens(lib, ch.profession.lens);
+    if (ch.profession.lens && !lens) add("ERROR", `lens "${ch.profession.lens.name}" not in library`, "", "profession");
+    const prof = base && profEffective(base, lens);
     if (!prof) add("ERROR", `profession "${ch.profession.name}" not in library`, "", "profession");
     else {
       const picks = ch.profession.picks || {}, checks = profCheck(prof, picks), stamp = profStamp(prof, picks);
@@ -1093,7 +1111,7 @@ G.BC = {
   LOCS, TYPE_NAME, locMult, typeKnown, GRADES, injuryDist, rollInjury,
   CR_MULT, FR_MULT, parseAdj, traitCost, selectMods, modLabel, generalLabel, modRules, strCmp, numCmp, splitSpec, fullName,
   ENC, TL_WEALTH, WEALTH_MULT, lbs, basicLift, itemClass, itemQuality, spellEnergy,
-  profOptCost, profWalk, profChoices, profCheck, profStamp,
+  profOptCost, profWalk, profChoices, profCheck, profStamp, profEffective, findLens,
   indexLibrary, findSkill, checkPrereq, spellPaths, compute,
 };
 })(typeof globalThis !== "undefined" ? globalThis : window);
