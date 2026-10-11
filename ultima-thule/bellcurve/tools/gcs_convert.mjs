@@ -19,7 +19,8 @@ const L = p => path.join(libRoot, "Library", p);
 // Which books to take. Order matters: the first record with a given name wins.
 const SOURCES = {
   skills: ["Basic Set/Basic Set Skills.skl", "Magic/Magic Skills.skl"],
-  traits: ["Basic Set/Basic Set Traits.adq"],
+  traits: ["Basic Set/Basic Set Traits.adq", "Dungeon Fantasy/Dungeon Fantasy 1/Dungeon Fantasy 1 Traits.adq",
+    "Dungeon Fantasy/Dungeon Fantasy 3/Dungeon Fantasy 3 Traits.adq", "Dungeon Fantasy/Dungeon Fantasy 4/Dungeon Fantasy 4 Traits.adq"],
   spells: ["Magic/Magic Spells.spl"],
   equipment: ["Basic Set/Basic Set Equipment.eqp", "Magic/Magic Equipment.eqp"],
   templates: ["Basic Set/Races", "Basic Set/Meta-Traits", "Fantasy/Races"],
@@ -204,6 +205,14 @@ for (const dir of SOURCES.templates) {
   }
 }
 
+// ---- Dungeon Fantasy professions and spell lists (DF1 pp.4-20). GCS's DF profession files have errors (Barbarian's
+// weapon packages and Basic Speed), so these are parsed from the book by rules/df_professions.mjs (local only) and kept,
+// as names, costs and choice rules, in data/src/professions.json.
+{
+  const pf = read(path.join(ROOT, "data", "src", "professions.json"));
+  out.professions = pf.professions; out.piSpells = pf.piSpells; out.dfWizardly = pf.wizardly;
+}
+
 // general enhancements and limitations (B101-B117): reference list only. Traits still take modifiers from their own
 // mods; several entries share a name and differ by notes ("Limited Use", "Once per day")
 for (const f of SOURCES.modifiers) for (const r of walk(read(L(f)).rows.map(function tag(p) { for (const c of p.children || []) { c._parent = p; tag(c); } return p; }))) {
@@ -233,7 +242,7 @@ out.meta = {
   source: "GCS master library, https://github.com/richardwilkes/gcs_master_library",
   license: "Mozilla Public License 2.0 (library data). Converted for personal use; costs are GURPS x10.",
   commit, books: SOURCES,
-  counts: Object.fromEntries(["skills", "traits", "spells", "equipment", "templates", "modifiers", "natural", "circumstances"].map(k => [k, out[k].length])),
+  counts: Object.fromEntries(["skills", "traits", "spells", "equipment", "templates", "modifiers", "natural", "circumstances", "professions"].map(k => [k, out[k].length])),
 };
 
 fs.writeFileSync(path.join(ROOT, "data", "library.json"), JSON.stringify(out));
