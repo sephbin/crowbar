@@ -108,7 +108,7 @@ function columns(cols, region, c, opts) {
   const only = (opts && opts.only) || cols.map((_, i) => i);
   return h('div', { class: 'cols' + (opts && opts.two ? ' two' : '') }, only.map(i => h('div', { class: 'col' }, blocks(cols[i], { prefix: region + i, n: 0 }, c, opts))));
 }
-// Create and level-up show every option; play shows only what the character has: taken moves, chosen lines.
+// Create and progress show every option; play shows only what the character has: taken moves, chosen lines.
 // A move that needs a level the character has not reached is dimmed ("locked") until it is.
 function applyTaken(root, c) {
   const play = c.mode === 'play';
@@ -261,7 +261,7 @@ function playPage(c, pb) {
     // taken moves only, as cards that pack down the page; the keys are the same as in the other modes
     const cards = pb.moves.flatMap((col, i) => blocks(col, { prefix: 'mv' + i, n: 0 }, c).filter(e => e.classList.contains('item')));
     page.append(h('div', { class: 'movegrid' }, cards),
-      h('p', { class: 'note empty-moves', hidden: true }, 'No moves taken yet. Switch to Create or Level up to choose some.'));
+      h('p', { class: 'note empty-moves', hidden: true }, 'No moves taken yet. Switch to Create or Progress to choose some.'));
   } else page.append(columns(pb.moves, 'mv', c));
   return page;
 }
@@ -403,7 +403,7 @@ function sheet(id, tab) {
     at > 0 ? h('a', { class: 'btn', href: `#/c/${id}/${order[at - 1]}`, text: `← ${label[order[at - 1]]}` }) : h('span'),
     at < order.length - 1 ? h('a', { class: 'btn primary', href: `#/c/${id}/${order[at + 1]}`, text: `${label[order[at + 1]]} →` }) : null));
   app.replaceChildren(
-    bar(h('div', { class: 'seg modeseg', role: 'group', 'aria-label': 'Mode' }, [['create', 'Create'], ['play', 'Play'], ['levelup', 'Level up']].map(([m, t]) =>
+    bar(h('div', { class: 'seg modeseg', role: 'group', 'aria-label': 'Mode' }, [['create', 'Create'], ['play', 'Play'], ['levelup', 'Progress']].map(([m, t]) =>
         h('button', { type: 'button', 'aria-pressed': String(c.mode === m), data: { setmode: m }, text: t }))),
       ...tabs, h('button', { type: 'button', class: 'btn', text: 'Print', onclick: () => print() }),
       h('button', { type: 'button', class: 'btn', text: 'Export', onclick: () => download(`stonetop-${slug(c.name)}.json`, c) })),
