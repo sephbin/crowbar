@@ -1691,6 +1691,6 @@ $("manual").addEventListener("change", e => { const r = Math.round(+e.target.val
 if (!LIB) document.body.prepend(el("p", { class: "box" }, "data/library.js is missing. Run node tools/gcs_convert.mjs <gcs_master_library>."));
 else { applyDebug(); norm(ROOT); render(); }
 </script>
-<script src="../../annotate/annotate.js" data-project="Bell Curve"></script>
+<script src="../../annotate/annotate.js" data-project="Bell Curve" data-endpoint="/api/annotations"></script>
 </body>
 </html>
