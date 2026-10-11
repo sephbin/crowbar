@@ -170,11 +170,16 @@ button.danger{border-color:var(--bad);color:var(--bad)}
 .pgrp .rule.ok{color:var(--good)} .pgrp .rule.bad{color:var(--bad)}
 .popts{display:flex;flex-direction:column;gap:2px;margin-top:6px}
 .popt{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:14px;padding:2px 0}
-.popt > span:nth-child(2){flex:1 1 10em;min-width:0}
+.popt .pname{flex:1 1 10em;min-width:0;text-align:left;border:0;background:none;padding:4px 0;min-height:0;border-radius:0;font:inherit;letter-spacing:0;text-transform:none;font-weight:400;cursor:pointer}
+.popt .pname[aria-expanded="true"]{font-weight:700}
+.popt .psel{width:22px;height:22px;margin:0 2px 0 4px;accent-color:var(--accent);flex:0 0 auto}
+.pdet{margin:2px 0 8px 22px;padding:2px 10px;border-left:2px solid var(--rule);font-size:13px}
+.pdet dl{margin:6px 0 0;display:grid;grid-template-columns:auto 1fr;gap:2px 10px}.pdet dt{color:var(--muted)}.pdet dd{margin:0}
+.pdet .desc{margin:4px 0}
 .popt .pc{margin-left:auto;color:var(--muted);font-size:12px;white-space:nowrap}
 .popt.fixed{color:var(--ink)}
 .popt.off{color:var(--muted)}
-.popt.off > span:nth-child(2){text-decoration:line-through}
+.popt.off .pname{text-decoration:line-through}
 .pmark{font-size:12px;color:var(--warn);white-space:nowrap}
 .popt button.pick{font-size:13px;min-height:32px;padding:6px 10px;max-width:14em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .popt.note{font-style:italic;color:var(--muted)}
@@ -804,12 +809,40 @@ function specControl(o, pick, upd) {
     onPick: it => upd("spec", it.value) }) }, cur || `${o.ask}…`)];
   return [];
 }
+// what an option is, for the description under its name: a trait, skill or spell from the library (with the local book text where there is some)
+function profDetail(o, p = {}) {
+  if (o.type === "bundle") return el("div", {}, o.items.map(it => el("div", {}, el("b", {}, profLabel(it)), profDetail(it))));
+  if (o.type === "trait") {
+    const nm = o.name.replace(/:\s*@[^@]+@$/, ""), recs = LIB.traits.filter(t => lcs(t.name) === lcs(nm));
+    const rec = recs.find(t => o.ref && String(t.ref || "").split(",").map(x => x.trim()).includes(o.ref)) || recs[0];
+    if (!rec) return el("p", { class: "muted" }, "Not in the library: the book's cost is used as it is.");
+    const mods = (o.modifiers || []).map(m => typeof m === "string" ? m : m.name).join(", ");
+    return el("div", {}, rec.house ? el("p", { class: "desc" }, rec.summary || "House rule.") : describeBlock("traits", [rec.name], rec.ref, { kind: "trait", name: rec.name, ref: rec.ref }),
+      dl([["type", rec.kind], ["notes", p.notes ?? o.notes], ["modifiers", mods], ["page", rec.house ? "house rule" : refTxt(rec.ref)]]));
+  }
+  if (o.type === "skill") {
+    const sp = p.spec ?? o.spec ?? (o.choices?.includes(o.name) ? o.name : ""), recs = LIB.skills.filter(x => x.name === o.name);
+    const rec = recs.find(x => (x.spec || "") === (sp || "")) || recs[0];
+    return el("div", {}, describeBlock("skills", [BC.fullName(o.name, sp), o.name], rec?.ref, { kind: "skill", name: o.name, spec: rec?.spec || "", ref: rec?.ref || "" }),
+      dl([["based on", rec?.attr ? `${rec.attr}, ${DIFFW[rec.diff] || rec.diff}` : ""], ["categories", (rec?.tags || []).join(", ")], ["page", rec ? refTxt(rec.ref) : ""]]));
+  }
+  if (o.type === "spell") return spellDetail(o.name);
+  if (o.type === "attr") return el("p", {}, `Raises ${o.key}.`);
+  return el("p", { class: "muted" }, o.name);
+}
+// the name of an option: tap it to open or close its description
+function pname(o, label, key) {
+  const open = P.det.has(key);
+  return [el("button", { type: "button", class: "pname", "aria-expanded": String(open), onclick: () => { if (open) P.det.delete(key); else P.det.add(key); renderProfModal(); } }, label), open ? key : null];
+}
 // a fixed item: taken; a skill that needs a specialty records it as a pick at its own place
 function profItem(o, path, byPath) {
   if (o.type === "group") return profGroup(o, path, byPath, null, true);
   const d = (P.picks[path] || [])[0] || {};
   const upd = (k, v) => { const x = { ...d, [k]: v }; if (v == null) delete x[k]; if (Object.keys(x).length) P.picks[path] = [x]; else delete P.picks[path]; renderProfModal(); };
-  return el("div", { class: "popt fixed" + (o.type === "note" ? " note" : "") }, el("span", { "aria-hidden": "true" }, "•"), el("span", {}, profLabel(o, d)), ...specControl(o, d, upd), profMark(o, d), el("span", { class: "pc" }, profCost(o, d)));
+  const [nameBtn] = pname(o, profLabel(o, d), `fixed:${path}`);
+  const row = el("div", { class: "popt fixed" + (o.type === "note" ? " note" : "") }, el("span", { "aria-hidden": "true" }, "•"), nameBtn, ...specControl(o, d, upd), profMark(o, d), el("span", { class: "pc" }, profCost(o, d)));
+  return o.type === "note" || !P.det.has(`fixed:${path}`) ? row : el("div", {}, row, el("div", { class: "pdet" }, profDetail(o, d)));
 }
 function profChoice(g, path, o, i, gid, byPath) {
   const list = P.picks[path] || [], mine = list.filter(p => p.o === i && (p.g || null) === gid);
@@ -826,10 +859,11 @@ function profChoice(g, path, o, i, gid, byPath) {
   const rowFor = (pick, another) => {
     const k = profKey(o, {}), have = profHave(o, pick || {});
     const dup = !pick && !another && ((k && P.taken.get(k) > 0) || have?.kind === "dup");
-    const row = el("label", { class: "popt" + (o.type === "note" ? " note" : "") + (dup ? " off" : "") },
-      el("input", { type: single ? "radio" : "checkbox", name: `p-${path}`, checked: !!pick, disabled: dup, onchange: e => toggle(e.target.checked, pick) }),
-      el("span", {}, (another ? "another: " : "") + profLabel(o, pick || {})));
+    const dkey = `${path}:${i}:${gid || ""}:${pick ? mine.indexOf(pick) : another ? mine.length : 0}`;
+    const [nameBtn] = pname(o, (another ? "another: " : "") + profLabel(o, pick || {}), dkey);
+    const row = el("div", { class: "popt" + (o.type === "note" ? " note" : "") + (dup ? " off" : "") }, nameBtn);
     const wrap = el("div", {}, row);
+    if (P.det.has(dkey) && o.type !== "note") wrap.append(el("div", { class: "pdet" }, profDetail(o, pick || {})));
     if (pick) {
       const upd = (kk, v) => { if (v == null) delete pick[kk]; else pick[kk] = v; renderProfModal(); };
       if (o.per != null && o.max !== o.min) row.append(el("input", { type: "number", min: o.min ?? 1, max: o.max ?? 99, value: pick.levels ?? o.min ?? 1, "aria-label": `${o.name} level`, onchange: e => upd("levels", Math.max(o.min ?? 1, Math.min(o.max ?? 99, Math.round(+e.target.value) || 1))) }));
@@ -839,7 +873,8 @@ function profChoice(g, path, o, i, gid, byPath) {
       if (o.type === "bundle") { const nest = el("div", { class: "pnest" }); o.items.forEach((it, kk) => nest.append(profItem(it, `${path}.${i}.${kk}`, byPath))); wrap.append(nest); }
       if (o.type === "group") wrap.append(profGroup(o, `${path}.${i}`, byPath, null, true));
     }
-    row.append(...[dup ? el("span", { class: "pmark" }, have?.kind === "dup" ? have.text : "already taken") : profMark(o, pick || {}), el("span", { class: "pc" }, profCost(o, pick || {}))].filter(Boolean));
+    row.append(...[dup ? el("span", { class: "pmark" }, have?.kind === "dup" ? have.text : "already taken") : profMark(o, pick || {}), el("span", { class: "pc" }, profCost(o, pick || {})),
+      el("input", { type: single ? "radio" : "checkbox", class: "psel", name: `p-${path}`, checked: !!pick, disabled: dup, "aria-label": `${another ? "another " : ""}${profLabel(o, pick || {})}`, onchange: e => toggle(e.target.checked, pick) })].filter(Boolean));
     return wrap;
   };
   const box = el("div", {});
@@ -986,7 +1021,7 @@ function renderProfModal() {
 }
 let profFrom = null;
 function openProf(prof, picks) {
-  P = { prof, picks: structuredClone(picks || {}), taken: new Map() };
+  P = { prof, picks: structuredClone(picks || {}), taken: new Map(), det: new Set() };
   // what the sheet has apart from this profession: its traits (and its templates' traits), skills and spells
   const ch = C(), sheet = { attributes: { ...ch.attributes }, traits: structuredClone(ch.traits), skills: structuredClone(ch.skills), spells: structuredClone(ch.spells) };
   const old = ch.profession && (LIB.professions || []).find(p => p.name === ch.profession.name && (!ch.profession.book || p.book === ch.profession.book));
