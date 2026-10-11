@@ -14,6 +14,7 @@ export default defineConfig({
       '^/$': 'http://localhost:3002',
       '/api': 'http://localhost:3002',
       '/pages': 'http://localhost:3002',
+      '/annotate': 'http://localhost:3002',
       '/ws': { target: 'ws://localhost:3002', ws: true },
     },
   },

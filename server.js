@@ -9,6 +9,7 @@ import cors from 'cors';
 import vaultRoutes from './server/routes/vault.js';
 import claudeRoutes from './server/routes/claude.js';
 import projectRoutes from './server/routes/projects.js';
+import { handle as annotations } from './annotate/store.mjs';
 import { initVault, ensureWatcher, getProjectRoot, DEFAULT_PROJECT_ID } from './server/lib/vaultManager.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -16,6 +17,10 @@ const PORT = process.env.PORT || 3002;
 const isProd = process.env.NODE_ENV === 'production';
 
 const app = express();
+// Page comments from annotate/annotate.js (any page, any origin). First, so its preflight answer (it adds the
+// private-network header that browsers want from public pages calling localhost) wins over cors() below.
+app.use('/api/annotations', (req, res, next) => annotations(req, res).then(done => { if (!done) next(); }, next));
+app.use('/annotate', express.static(join(__dirname, 'annotate'), { setHeaders: res => res.set('Access-Control-Allow-Origin', '*') }));
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
