@@ -322,6 +322,12 @@ function sheet(id, tab) {
   const tabs = [['start', 'Playbook'], ['play', 'Sheet'], ['story', 'Story'], ['gear', 'Gear & notes']].map(([t, n]) =>
     h('a', { class: 'tab', href: `#/c/${id}/${t}`, 'aria-current': t === tab ? 'page' : null, text: n }));
   const page = { start: startPage, play: playPage, story: storyPage, gear: gearPage }[tab](c, pb);
+  // turn the page: the tabs in order, with a button at the foot of the page like the corner of a physical sheet
+  const order = ['start', 'play', 'story', 'gear'], at = order.indexOf(tab);
+  const label = Object.fromEntries([['start', 'Playbook'], ['play', 'Sheet'], ['story', 'Story'], ['gear', 'Gear & notes']]);
+  page.append(h('div', { class: 'turn noprint' },
+    at > 0 ? h('a', { class: 'btn', href: `#/c/${id}/${order[at - 1]}`, text: `← ${label[order[at - 1]]}` }) : h('span'),
+    at < order.length - 1 ? h('a', { class: 'btn primary', href: `#/c/${id}/${order[at + 1]}`, text: `${label[order[at + 1]]} →` }) : null));
   app.replaceChildren(
     bar(...tabs, h('button', { type: 'button', class: 'btn', text: 'Print', onclick: () => print() }),
       h('button', { type: 'button', class: 'btn', text: 'Export', onclick: () => download(`stonetop-${slug(c.name)}.json`, c) })),

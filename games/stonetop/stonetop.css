@@ -119,6 +119,9 @@ h4.ih{margin:0;font-size:14px;letter-spacing:.05em;text-transform:uppercase;font
 .moves-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0 0;border-top:2px solid var(--ink);padding-top:6px}
 .moves-head h3{margin:0;border:0;padding:0}
 
+/* ---------- turning the page ---------- */
+.turn{display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-top:10px;border-top:1px solid var(--rule)}
+
 /* ---------- gear / notes ---------- */
 .list{display:grid;gap:6px;margin:8px 0}
 .li{display:grid;grid-template-columns:1fr 5ch auto;gap:6px;align-items:center}
