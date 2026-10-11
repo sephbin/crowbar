@@ -91,7 +91,8 @@ function blocks(list, ctx, c, opts = {}) {
       b.mk.forEach((k, i) => head.append(mark(k, ctx, c, grp && grp !== 'row' && i === 0 ? grp : null)));
       head.append(b.head);
       if (b.tail) head.append(h('span', { class: 'tail' }, b.tail.map(k => mark(k, ctx, c))));
-      out.push(h('div', { class: 'item', data: opts.filter ? { move: '1' } : {} }, head, h('div', { class: 'ibody' }, blocks(b.body, ctx, c, opts))));
+      const need = /Requires level ([0-9]+)/i.exec(plainText((b.body[0] || {}).html || ''));
+      out.push(h('div', { class: 'item', data: need ? { lvl: need[1] } : {} }, head, h('div', { class: 'ibody' }, blocks(b.body, ctx, c, opts))));
     } else {
       const lead = /^\{(?:box|boxc)\}/.test(b.html);
       let g = null;
@@ -107,15 +108,26 @@ function columns(cols, region, c, opts) {
   const only = (opts && opts.only) || cols.map((_, i) => i);
   return h('div', { class: 'cols' + (opts && opts.two ? ' two' : '') }, only.map(i => h('div', { class: 'col' }, blocks(cols[i], { prefix: region + i, n: 0 }, c, opts))));
 }
+// Create and level-up show every option; play shows only what the character has: taken moves, chosen lines.
+// A move that needs a level the character has not reached is dimmed ("locked") until it is.
 function applyTaken(root, c) {
-  const only = !!c.ui.takenOnly;
-  root.querySelectorAll('.item[data-move]').forEach(it => {
+  const play = c.mode === 'play';
+  const eff = (Number(c.level) || 1) + (c.mode === 'levelup' ? 1 : 0);
+  root.querySelectorAll('.item').forEach(it => {
     const heads = [...it.querySelectorAll(':scope > .ih .mk')];
     const taken = !heads.length || heads.some(m => m.checked);
     it.classList.toggle('on', taken && heads.length > 0);
     it.classList.toggle('untaken', !taken);
-    it.classList.toggle('hide', only && !taken);
+    it.classList.toggle('hide', play && !taken);
+    it.classList.toggle('locked', !taken && (Number(it.dataset.lvl) || 0) > eff);
   });
+  root.querySelectorAll('.col p, .poss p').forEach(p => {
+    if (p.closest('.item')) return;
+    const mks = p.querySelectorAll('.mk');
+    if (mks.length) p.classList.toggle('hide', play && ![...mks].some(m => m.checked));
+  });
+  const grid = root.querySelector('.movegrid');
+  if (grid) root.querySelector('.empty-moves').hidden = !!grid.querySelector('.item:not(.hide)');
 }
 
 // ---------- dice ----------
@@ -193,45 +205,57 @@ function drawCards(c) {
   const tray = app.querySelector('.cards'); if (!tray) return;
   const cards = scoreCards(pbOf(c)), used = new Set(Object.values(c.assign));
   tray.replaceChildren(...[h('span', { class: 'lbl' }, 'Stat cards'),
-    ...cards.map((v, i) => h('button', { type: 'button', class: 'card' + (used.has(i) ? ' used' : '') + (picked === i ? ' sel' : ''), draggable: used.has(i) ? null : 'true',
-      'aria-pressed': String(picked === i), 'aria-label': `Score ${v}${used.has(i) ? ' (placed)' : ''}`, data: { i }, text: v })),
-    h('span', { class: 'note' }, used.size >= cards.length ? 'all placed' : picked != null ? 'now tap a stat' : 'drag onto a stat, or tap a card then a stat'),
+    ...cards.map((v, i) => h('button', { type: 'button', class: 'card' + (used.has(i) ? ' used' : '') + (picked === i ? ' sel' : ''),       'aria-pressed': String(picked === i), 'aria-label': `Score ${v}${used.has(i) ? ' (placed)' : ''}`, data: { i }, text: v })),
+    h('span', { class: 'note' }, used.size >= cards.length ? 'all placed' : picked != null ? 'now tap a stat' : 'drag a card onto a stat, or tap a card then a stat'),
     used.size ? h('button', { type: 'button', class: 'btn small', data: { resetcards: '1' }, text: 'Reset' }) : null].filter(Boolean));
   app.querySelectorAll('.stat').forEach(s => { s.classList.toggle('has', c.assign[s.dataset.stat] != null); s.classList.toggle('target', picked != null); });
 }
 function statBlock(c, pb) {
+  const M = c.mode, edit = M === 'levelup';
   const grid = h('div', { class: 'statgrid' }, STATS.map(([k, full, ab]) => h('div', { class: 'stat', data: { stat: k } },
-    h('button', { type: 'button', class: 'nm', title: `Roll ${ab}`, data: { roll: k }, text: full }),
+    M === 'play' ? h('button', { type: 'button', class: 'nm', title: `Roll ${ab}`, data: { roll: k }, text: full }) : h('span', { class: 'nm', text: full }),
     h('div', { class: 'v' },
-      h('button', { type: 'button', 'aria-label': `${full} down`, data: { step: k, d: '-1' }, text: '−' }),
-      h('input', { type: 'number', min: '-3', max: '4', inputmode: 'numeric', 'aria-label': full, data: { bind: 'stats.' + k, num: '1' }, value: c.stats[k] }),
-      h('button', { type: 'button', 'aria-label': `${full} up`, data: { step: k, d: '1' }, text: '+' })),
-    h('div', { class: 'ab' }, `(${ab})`, h('button', { type: 'button', class: 'ret', title: 'Return the card', 'aria-label': `Return ${full} card`, data: { ret: k }, text: '↩' })))));
-  const debs = h('div', { class: 'debs' }, DEBS.map(([name, ks]) => h('label', { title: ks.join(' & ').toUpperCase() },
-    h('input', { type: 'checkbox', class: 'mk box', data: { bind: 'deb.' + name } }), name)));
-  debs.querySelectorAll('input').forEach(i => { i.checked = !!getPath(c, i.dataset.bind); });
+      edit ? h('button', { type: 'button', 'aria-label': `${full} down`, data: { step: k, d: '-1' }, text: '−' }) : null,
+      h('input', { type: 'number', min: '-3', max: '4', inputmode: 'numeric', 'aria-label': full, readonly: !edit, tabindex: edit ? null : '-1', data: { bind: 'stats.' + k, num: '1' }, value: c.stats[k] }),
+      edit ? h('button', { type: 'button', 'aria-label': `${full} up`, data: { step: k, d: '1' }, text: '+' }) : null),
+    h('div', { class: 'ab' }, `(${ab})`, M === 'create' ? h('button', { type: 'button', class: 'ret', title: 'Return the card', 'aria-label': `Return ${full} card`, data: { ret: k }, text: '↩' }) : null))));
+  const debs = M === 'play' ? h('div', { class: 'debs' }, DEBS.map(([name, ks]) => h('label', { title: ks.join(' & ').toUpperCase() },
+    h('input', { type: 'checkbox', class: 'mk box', data: { bind: 'deb.' + name } }), name))) : null;
+  if (debs) debs.querySelectorAll('input').forEach(i => { i.checked = !!getPath(c, i.dataset.bind); });
   const vit = (nm, body) => h('div', { class: 'vit' }, h('span', { class: 'nm' }, nm), body);
   const num = (path, extra) => h('input', { type: 'number', inputmode: 'numeric', 'aria-label': path, data: { bind: path, num: '1' }, value: getPath(c, path), ...extra });
-  const vitals = h('div', { class: 'vitals' },
-    vit('Damage', h('button', { type: 'button', class: 'die', title: 'Roll damage', data: { dmg: '1' }, text: pb.die })),
-    vit(h('span', null, 'HP ', h('small', null, '(max)')), h('div', { class: 'hp' },
-      h('button', { type: 'button', class: 'step2', 'aria-label': 'HP down', data: { hp: '-1' }, text: '−' }), num('hp'),
-      h('span', { class: 'sl', text: '/' }), num('hpMax', { 'aria-label': 'max HP' }),
-      h('button', { type: 'button', class: 'step2', 'aria-label': 'HP up', data: { hp: '1' }, text: '+' }))),
-    vit('Armor', num('armor')), vit('XP', num('xp')), vit('Level', num('level')));
-  const sec = h('h3', { class: 'sec' }, 'Stats ', h('small', null, pb.statsNote));
-  const tray = scoreCards(pb).length ? h('div', { class: 'cards noprint' }) : null;
-  return h('div', null, sec, tray, grid, debs, vitals);
+  const step = (label, attr, txt) => h('button', { type: 'button', class: 'step2', 'aria-label': label, data: attr, text: txt });
+  const items = [vit('Damage', M === 'play' ? h('button', { type: 'button', class: 'die', title: 'Roll damage', data: { dmg: '1' }, text: pb.die }) : h('div', { class: 'dv', text: pb.die }))];
+  items.push(M === 'play'
+    ? vit(h('span', null, 'HP ', h('small', null, '(max)')), h('div', { class: 'hp' }, step('HP down', { hp: '-1' }, '−'), num('hp'),
+        h('span', { class: 'sl', text: '/' }), num('hpMax', { readonly: true, 'aria-label': 'max HP' }), step('HP up', { hp: '1' }, '+')))
+    : vit('Max HP', num('hpMax', { 'aria-label': 'max HP' })));
+  items.push(vit('Armor', num('armor')));
+  if (M === 'play') items.push(vit('XP', h('div', { class: 'hp' }, step('XP down', { xp: '-1' }, '−'), num('xp'), step('XP up', { xp: '1' }, '+'))));
+  if (M === 'levelup') items.push(vit('XP', num('xp')));
+  if (M !== 'create') items.push(vit('Level', M === 'levelup'
+    ? h('div', null, num('level'), h('button', { type: 'button', class: 'btn small', data: { lvlup: '1' }, text: 'Level up' }))
+    : num('level', { readonly: true })));
+  const vitals = h('div', { class: 'vitals n' + items.length }, items);
+  const hint = M === 'levelup'
+    ? h('p', { class: 'note' }, 'Raise a stat with + (Improved Stat), tick the moves you take (dimmed ones need a higher level), then press Level up.') : null;
+  const sec = h('h3', { class: 'sec' }, 'Stats ', h('small', null, M === 'create' ? pb.statsNote.split(' When')[0] : ''));
+  const tray = M === 'create' && scoreCards(pb).length ? h('div', { class: 'cards noprint' }) : null;
+  return h('div', null, sec, tray, grid, debs, hint, vitals);
 }
 function playPage(c, pb) {
-  const page = h('div', { class: 'page' }, header(c, pb));
+  const M = c.mode;
+  const page = h('div', { class: 'page mode-' + M }, header(c, pb));
   const poss = h('div', { class: 'poss' },
     h('div', { class: 'grid2' }, pb.possessions.map((col, i) => col.length ? h('div', null, blocks(col, { prefix: 'ps' + i, n: 0 }, c)) : null)));
   page.append(h('div', { class: 'band' }, statBlock(c, pb), poss));
-  const seg = h('div', { class: 'seg noprint', role: 'group', 'aria-label': 'Moves shown' }, [['all', 'All moves'], ['taken', 'Taken only']].map(([v, t]) =>
-    h('button', { type: 'button', 'aria-pressed': String((v === 'taken') === !!c.ui.takenOnly), data: { show: v }, text: t })));
-  page.append(h('div', { class: 'moves-head' }, h('h3', { class: 'sec' }, 'Moves ', h('small', null, pb.movesNote)), seg));
-  page.append(columns(pb.moves, 'mv', c, { filter: true }));
+  page.append(h('div', { class: 'moves-head' }, h('h3', { class: 'sec' }, 'Moves ', h('small', null, M === 'play' ? '' : pb.movesNote))));
+  if (M === 'play') {
+    // taken moves only, as cards that pack down the page; the keys are the same as in the other modes
+    const cards = pb.moves.flatMap((col, i) => blocks(col, { prefix: 'mv' + i, n: 0 }, c).filter(e => e.classList.contains('item')));
+    page.append(h('div', { class: 'movegrid' }, cards),
+      h('p', { class: 'note empty-moves', hidden: true }, 'No moves taken yet. Switch to Create or Level up to choose some.'));
+  } else page.append(columns(pb.moves, 'mv', c));
   return page;
 }
 // The paper is printed and folded like a book: the right half of page 1 comes first (the playbook itself), then page 2,
@@ -283,12 +307,14 @@ const slug = s => (s || 'character').toLowerCase().replace(/[^a-z0-9]+/g, '-').r
 
 function newChar(pb) {
   return { format: 'stonetop-character', version: 1, id: uid(), playbook: pb.id, name: '', pronouns: '',
-    stats: { str: 0, dex: 0, int: 0, wis: 0, con: 0, cha: 0 }, assign: {}, deb: {}, hp: pb.hpMax, hpMax: pb.hpMax, armor: 0, xp: 0, level: 1,
+    mode: 'create', stats: { str: 0, dex: 0, int: 0, wis: 0, con: 0, cha: 0 }, assign: {}, deb: {}, hp: pb.hpMax, hpMax: pb.hpMax, armor: 0, xp: 0, level: 1,
     checks: {}, gear: [], followers: [], notes: '', createNotes: '', ui: {}, updated: Date.now() };
 }
 function normalise(c) {
   c.stats ??= {}; for (const [k] of STATS) c.stats[k] ??= 0;
-  c.deb ??= {}; c.assign ??= {}; c.checks ??= {}; c.gear ??= []; c.followers ??= []; c.ui ??= {};
+  c.assign ??= {};
+  c.mode ??= (Object.keys(c.assign).length || Object.values(c.stats).some(v => v)) ? 'play' : 'create';
+  c.deb ??= {}; c.checks ??= {}; c.gear ??= []; c.followers ??= []; c.ui ??= {};
   return c;
 }
 
@@ -370,11 +396,13 @@ function sheet(id, tab) {
     at > 0 ? h('a', { class: 'btn', href: `#/c/${id}/${order[at - 1]}`, text: `← ${label[order[at - 1]]}` }) : h('span'),
     at < order.length - 1 ? h('a', { class: 'btn primary', href: `#/c/${id}/${order[at + 1]}`, text: `${label[order[at + 1]]} →` }) : null));
   app.replaceChildren(
-    bar(...tabs, h('button', { type: 'button', class: 'btn', text: 'Print', onclick: () => print() }),
+    bar(h('div', { class: 'seg modeseg', role: 'group', 'aria-label': 'Mode' }, [['create', 'Create'], ['play', 'Play'], ['levelup', 'Level up']].map(([m, t]) =>
+        h('button', { type: 'button', 'aria-pressed': String(c.mode === m), data: { setmode: m }, text: t }))),
+      ...tabs, h('button', { type: 'button', class: 'btn', text: 'Print', onclick: () => print() }),
       h('button', { type: 'button', class: 'btn', text: 'Export', onclick: () => download(`stonetop-${slug(c.name)}.json`, c) })),
     page);
   refresh(c);
-  buildRollBar();
+  if (c.mode === 'play') buildRollBar(); else { roll.hidden = true; roll.replaceChildren(); }
 }
 function refresh(c) {
   app.querySelectorAll('.stat').forEach(s => s.classList.toggle('dis', !!debilityFor(c, s.dataset.stat)));
@@ -389,6 +417,7 @@ app.addEventListener('input', e => {
   setPath(c, path, t.dataset.num ? (t.value === '' ? 0 : Number(t.value)) : t.value);
   touch(c);
   if (path.startsWith('stats.')) unassign(c, path.slice(6));       // a hand-typed score is no longer a card's
+  if (path === 'hpMax' && c.mode !== 'play') { c.hp = c.hpMax; const i = app.querySelector('[data-bind="hp"]'); if (i) i.value = c.hp; }
 });
 app.addEventListener('change', e => {
   const t = e.target, c = chars[currentId()]; if (!c) return;
@@ -403,6 +432,7 @@ app.addEventListener('change', e => {
 });
 app.addEventListener('click', e => {
   const c = chars[currentId()]; if (!c) return;
+  if (swallow) { swallow = false; return; }
   const card = e.target.closest('.card');
   if (card) { const i = Number(card.dataset.i); picked = picked === i ? null : i; drawCards(c); return; }
   const slot = e.target.closest('.stat');
@@ -410,7 +440,10 @@ app.addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   const pb = pbOf(c), ds = b.dataset;
   const setNum = (path, v) => { setPath(c, path, v); const i = app.querySelector(`[data-bind="${path}"]`); if (i) i.value = v; touch(c); };
-  if (ds.resetcards) { for (const k of Object.keys(c.assign)) setStat(c, k, 0); c.assign = {}; picked = null; drawCards(c); }
+  if (ds.setmode) { c.mode = ds.setmode; touch(c); route(); }
+  else if (ds.xp) setNum('xp', Math.max(0, (Number(c.xp) || 0) + Number(ds.xp)));
+  else if (ds.lvlup) { setNum('level', (Number(c.level) || 1) + 1); setNum('xp', 0); applyTaken(app, c); }
+  else if (ds.resetcards) { for (const k of Object.keys(c.assign)) setStat(c, k, 0); c.assign = {}; picked = null; drawCards(c); }
   else if (ds.ret) { setStat(c, ds.ret, 0); unassign(c, ds.ret); }
   else if (ds.roll) rollMove(c, ds.roll);
   else if (ds.dmg) rollDamage(c, pb);
@@ -419,15 +452,36 @@ app.addEventListener('click', e => {
   else if (ds.show) { c.ui.takenOnly = ds.show === 'taken'; touch(c); b.parentElement.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); applyTaken(app, c); }
 });
 
-app.addEventListener('dragstart', e => { const k = e.target.closest && e.target.closest('.card'); if (k) { e.dataTransfer.setData('text/plain', k.dataset.i); e.dataTransfer.effectAllowed = 'move'; } });
-app.addEventListener('dragover', e => { if (e.target.closest && e.target.closest('.stat')) e.preventDefault(); });
-app.addEventListener('drop', e => {
-  const slot = e.target.closest && e.target.closest('.stat'), c = chars[currentId()];
-  if (!slot || !c) return;
-  e.preventDefault();
-  const i = Number(e.dataTransfer.getData('text/plain'));
-  if (!Number.isNaN(i)) assignCard(c, slot.dataset.stat, i);
+// Dragging a stat card with a pointer (mouse, pen or finger). A short press is a tap: the click handler selects the card.
+let drag = null, swallow = false;
+const slotAt = e => { const el = document.elementFromPoint(e.clientX, e.clientY); return el && el.closest('.stat'); };
+app.addEventListener('pointerdown', e => {
+  const card = e.target.closest && e.target.closest('.card');
+  if (!card || card.classList.contains('used') || e.button) return;
+  drag = { card, x: e.clientX, y: e.clientY, ghost: null };
 });
+addEventListener('pointermove', e => {
+  if (!drag) return;
+  if (!drag.ghost) {
+    if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 8) return;
+    drag.ghost = drag.card.cloneNode(true); drag.ghost.classList.add('ghost'); document.body.append(drag.ghost); picked = null;
+  }
+  drag.ghost.style.left = e.clientX + 'px'; drag.ghost.style.top = e.clientY + 'px';
+  const over = slotAt(e);
+  app.querySelectorAll('.stat.over').forEach(s => { if (s !== over) s.classList.remove('over'); });
+  if (over) over.classList.add('over');
+});
+function endDrag(e, drop) {
+  if (!drag) return;
+  const d = drag; drag = null;
+  if (!d.ghost) return;
+  d.ghost.remove(); swallow = true; setTimeout(() => { swallow = false; }, 120);
+  const slot = drop && slotAt(e), c = chars[currentId()];
+  app.querySelectorAll('.stat.over').forEach(s => s.classList.remove('over'));
+  if (slot && c) assignCard(c, slot.dataset.stat, Number(d.card.dataset.i));
+}
+addEventListener('pointerup', e => endDrag(e, true));
+addEventListener('pointercancel', e => endDrag(e, false));
 
 // ---------- routing ----------
 function currentId() { const m = /^#\/c\/([^/]+)/.exec(location.hash); return m ? m[1] : null; }

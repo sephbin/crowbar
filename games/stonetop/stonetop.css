@@ -66,7 +66,6 @@ h3.sec small{font-weight:500;font-size:14px;color:var(--muted)}
 .step{display:flex;gap:8px;margin:9px 0 3px;align-items:flex-start}
 .step .n{flex:none;background:var(--ink);color:var(--paper);font:800 12px/1 "Alegreya Sans",sans-serif;width:1.55em;height:1.55em;border-radius:3px;display:grid;place-items:center;margin-top:2px}
 .item{margin:11px 0 4px}
-.item.untaken.hide{display:none}
 h4.ih{margin:0;font-size:14px;letter-spacing:.05em;text-transform:uppercase;font-weight:800;display:flex;gap:4px;align-items:center}
 .ibody p{margin-top:3px}
 .item.on>h4.ih{color:var(--accent)}
@@ -146,7 +145,6 @@ h4.ih{margin:0;font-size:14px;letter-spacing:.05em;text-transform:uppercase;font
   .page{box-shadow:none;margin:0;padding:0;max-width:none;break-after:page}
   .cols{grid-template-columns:repeat(4,minmax(0,1fr))}
   .band{grid-template-columns:1fr 1fr}
-  .item.untaken.hide{display:block}
   :root{--paper:#fff;--ink:#000;--rule:#999;--muted:#444}
 }
 
@@ -162,3 +160,24 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .stat.target{cursor:pointer;box-shadow:0 0 0 3px var(--accent)}
 .stat .ret{appearance:none;border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:13px;padding:0 4px}
 .stat:not(.has) .ret{display:none}
+
+/* modes */
+.hide{display:none!important}
+.modeseg{margin-right:4px}
+.item.locked{opacity:.45}
+.item.locked>h4.ih::after{content:"needs a higher level";font:600 11px "Alegreya Sans",sans-serif;text-transform:none;letter-spacing:0;color:var(--muted);margin-left:6px}
+/* a rule between moves, so each one reads on its own */
+.col .item{border-top:1px solid var(--rule);padding-top:9px;margin:12px 0 4px}
+.col .item:first-child{border-top:0;padding-top:0;margin-top:2px}
+/* play mode: the moves taken, as cards */
+.movegrid{columns:3 300px;column-gap:14px;margin-top:10px}
+.movegrid .item{break-inside:avoid;border:1.5px solid var(--ink);border-radius:12px;padding:10px 14px 8px;margin:0 0 14px;background:var(--paper);box-shadow:0 2px 0 var(--rule)}
+.movegrid h4.ih{font-size:15px;border-bottom:1px solid var(--rule);padding-bottom:5px;margin-bottom:5px}
+.empty-moves{text-align:center;padding:20px}
+.vitals.n3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.vitals.n4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.vit .dv{font-size:26px;font-weight:700}
+.stat.over{box-shadow:0 0 0 3px var(--accent)}
+.card{touch-action:none;user-select:none;-webkit-user-select:none}
+.card.ghost{position:fixed;transform:translate(-50%,-50%) rotate(-4deg);pointer-events:none;z-index:50;opacity:.92;box-shadow:0 8px 20px rgba(0,0,0,.3)}
+.stat input[readonly]{pointer-events:none}
