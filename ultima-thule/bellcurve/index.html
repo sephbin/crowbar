@@ -188,6 +188,7 @@ button.danger{border-color:var(--bad);color:var(--bad)}
 .ptable small{display:block;color:var(--bad)}
 .ptable .ok{color:var(--good)}.ptable .bad{color:var(--bad)}
 .pscroll{overflow-x:auto}
+.ptable .dots{color:var(--muted);letter-spacing:.1em;white-space:pre}
 .ptable tr.bad td:first-child{color:var(--bad)}
 .ptable button{width:26px;height:26px;padding:0;min-height:0;border-radius:50%}
 .pstat{display:flex;flex-direction:column;gap:2px;font-size:13px;margin:6px 0}
@@ -916,7 +917,7 @@ function profSpells(g, path) {
     const needCell = nd.length ? el("span", { class: met ? null : "bad" }, needsText(n), met ? null : el("small", {}, `missing ${gap[0].join(", ")}`)) : "";
     const byCell = by.length ? by.join(", ") : el("span", { class: "ok" }, nd.length || names.length > 1 ? "top: nothing needs it" : "nothing needs it");
     const cols = power ? [`PI ${lv ?? "?"}`] : [needCell, byCell];
-    return { bad: !!why, cells: [el("span", { class: "tree", style: `padding-left:${depth * 14}px` }, depth ? "└ " : "", n, why ? el("small", {}, why) : null), ...cols, (s0?.college || []).join(", "), sgn(cost)], label: `remove ${n}`,
+    return { bad: !!why, cells: [el("span", { class: "tree" }, depth ? el("span", { class: "dots", "aria-hidden": "true" }, "· ".repeat(depth)) : null, n, why ? el("small", {}, why) : null), ...cols, (s0?.college || []).join(", "), sgn(cost)], label: `remove ${n}`,
       remove: () => { const l = (P.picks[path] || []).filter(x => x !== p); if (l.length) P.picks[path] = l; else delete P.picks[path]; renderProfModal(); } }; });
   if (rows.length) box.append(el("div", { class: "pscroll" }, ptable(power ? ["Spell", "PI", "College", "Points"] : ["Spell", "Needs", "Needed by", "College", "Points"], rows)));
   const knownNow = () => [...(P.have?.spells || []).filter(x => x.points >= 10).map(x => x.name), ...BC.profStamp(P.prof, P.picks).spells.map(x => x.name)];
