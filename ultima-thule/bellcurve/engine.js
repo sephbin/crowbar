@@ -435,7 +435,7 @@ function weaponModes(item, rec, st) {
   const out = [];
   for (const w of rec.weapons || []) {
     const ratedST = item.st ?? rec.ratedST ?? null;
-    const dmgST = ratedST ?? st.ST;
+    const dmgST = ratedST ?? (st.ST + (st.Strike || 0));
     let dice = { n: 0, add: 0 };
     if (w.dmg.st === "thr" || w.dmg.st === "thr_leveled") dice = thrust(dmgST);
     else if (w.dmg.st === "sw" || w.dmg.st === "sw_leveled") dice = swing(dmgST);
@@ -740,7 +740,10 @@ function compute(ch, lib, opts = {}) {
   }
   // Lifting ST counts for Basic Lift (B65); ST for striking only is not applied
   const liftST = A.ST + limited.filter(f => f.attribute === "st" && f.limitation === "lifting_only").reduce((a, f) => a + f.amount, 0);
-  for (const f of limited) if (!(f.attribute === "st" && f.limitation === "lifting_only"))
+  // Striking ST adds to ST for damage only (B88): thrust, swing and weapons that use the wielder's ST
+  A.Strike = limited.filter(f => f.attribute === "st" && f.limitation === "striking_only").reduce((a, f) => a + f.amount, 0);
+  const strikeThr = thrust(A.ST + A.Strike), strikeSw = swing(A.ST + A.Strike);
+  for (const f of limited) if (!(f.attribute === "st" && (f.limitation === "lifting_only" || f.limitation === "striking_only")))
     add("WARN", `${f.source}: ${f.attribute} ${f.amount > 0 ? "+" : ""}${f.amount} (${f.limitation.replace(/_/g, " ")}) not applied to the sheet`, "", "");
 
   // ---- equipment carried: weight and encumbrance (B17). An item with "carried": false is owned but left at home.
@@ -1098,7 +1101,7 @@ function compute(ch, lib, opts = {}) {
   for (const s of spellRows) if (s.rec && s.level != null && s.prereqOk) add("ok", `spell ${s.name} ${s.attr}/${s.diff} ${s.points} pts: level ${f1(s.level)}, ${succPct(s.level)}%`, s.ref, s.path);
 
   return {
-    name: ch.name, budget, spent, breakdown, attrs: A, layerPen, drVs, drPartial: partial, attrPoints: pts, attrBonus, extra, dodge, dodgeBase, db, dbFrom, enc, gear, money, energy, gearMods, thr, sw,
+    name: ch.name, budget, spent, breakdown, attrs: A, layerPen, drVs, drPartial: partial, attrPoints: pts, attrBonus, extra, strikeThr, strikeSw, dodge, dodgeBase, db, dbFrom, enc, gear, money, energy, gearMods, thr, sw,
     traits, templateRemoved: removed, profession, skills: skillRows, spells: spellRows, weapons: weaponOf, dr, natDR, conditionals, reactions, allies, templates: tpl, issues,
     houseBackstab: traits.some(t => /^backstabber$/i.test(t.name)),
     sneakDice: traits.filter(t => /^sneak attack$/i.test(t.name)).reduce((a, t) => a + (t.levels || 1), 0),

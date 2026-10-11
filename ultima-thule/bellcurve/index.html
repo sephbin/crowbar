@@ -25,7 +25,7 @@ header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:end
 .eyebrow{font:12px/1.2 var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .eyebrow::before{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--accent);margin-right:8px}
 h1{font:400 clamp(30px,7vw,48px)/1 var(--display);margin:6px 0 0;text-transform:lowercase}
-.budget{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.budget{display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex:1 1 auto;justify-content:flex-end}
 .pill{border:1.5px solid var(--ink);border-radius:999px;padding:6px 12px;font-weight:700}
 .pill.over{background:var(--bad);border-color:var(--bad);color:#fff}
 button,.btn{font:700 12px/1 var(--body);letter-spacing:.06em;text-transform:lowercase;border:1.5px solid var(--ink);background:transparent;color:var(--ink);
@@ -245,7 +245,9 @@ svg{display:block;width:100%;height:auto}
 .result .detail{font-size:13px;color:var(--muted)}
 .wound{font-size:13px;margin-top:6px}
 .wound b{color:var(--accent)}
-.toolbar{display:flex;gap:8px;flex-wrap:wrap}
+.toolbar{display:flex;gap:6px;flex-wrap:nowrap;margin-left:auto}
+button.icon{width:34px;padding:0;display:inline-flex;align-items:center;justify-content:center}
+body.view .toolbar .ed{display:inline-flex!important;visibility:hidden}   /* keeps the bar the same height in both modes */
 /* section tabs, as on the BRP sheets */
 nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:4;background:var(--paper);display:flex;gap:4px;padding-block:10px;overflow-x:auto;border-bottom:2px solid var(--ink)}
 nav.tabs button{white-space:nowrap;flex:0 0 auto;padding:10px}
@@ -276,12 +278,12 @@ body:not(.debug) .g{display:none!important}
           <option value="oskar-penn">Oskar Penn</option>
           <option value="brock-underhill">Brock Underhill</option>
         </select>
-        <button type="button" id="open">open</button>
-        <button type="button" id="save">save</button>
-        <button type="button" id="copy">copy json</button>
-        <button type="button" id="blank" class="ed">blank</button>
-        <button type="button" id="editmode" aria-pressed="false" title="Show the editing controls">edit</button>
-        <button type="button" id="debug" aria-pressed="false" title="Show GURPS levels and 3d6 values">debug</button>
+        <button type="button" id="open" class="icon" aria-label="Open a character file" title="open a character file"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></button>
+        <button type="button" id="save" class="icon" aria-label="Save the character as a file" title="save the character as a file"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></button>
+        <button type="button" id="copy" class="icon" aria-label="Copy the character JSON" title="copy the character JSON"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg></button>
+        <button type="button" id="blank" class="icon ed" aria-label="Start a blank character" title="start a blank character"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg></button>
+        <button type="button" id="editmode" class="icon" aria-pressed="false" aria-label="Edit" title="show the editing controls"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l4-1L19 8l-3-3L5 16z"/><path d="M14 7l3 3"/></svg></button>
+        <button type="button" id="debug" class="icon" aria-pressed="false" aria-label="Debug" title="show GURPS levels and 3d6 values"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 9h8v6a4 4 0 0 1-8 0z"/><path d="M9 5l1.5 2M15 5l-1.5 2M4 13h4M16 13h4M5 8l3 2M19 8l-3 2M5 19l3-2M19 19l-3-2"/></svg></button>
         <input type="file" id="file" accept=".json,application/json" hidden>
       </div>
     </div>
@@ -486,10 +488,12 @@ function renderTabs() {
 function applyDebug() { document.body.classList.toggle("debug", !!UI.debug); $("debug").setAttribute("aria-pressed", String(!!UI.debug)); }
 // read-only view by default on every load; the edit button shows the editing controls
 let editing = false;
+const ICON_EDIT = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l4-1L19 8l-3-3L5 16z"/><path d="M14 7l3 3"/></svg>', ICON_DONE = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 6"/></svg>';
 function applyMode() {
   document.body.classList.toggle("view", !editing);
   $("editmode").setAttribute("aria-pressed", String(editing));
-  $("editmode").textContent = editing ? "done" : "edit";
+  $("editmode").innerHTML = editing ? ICON_DONE : ICON_EDIT;
+  $("editmode").setAttribute("aria-label", editing ? "Done editing" : "Edit"); $("editmode").title = editing ? "stop editing" : "show the editing controls";
   for (const id of ["cname", "concept", "notes"]) $(id).readOnly = !editing;
   $("budget").disabled = !editing || !!stack.length;
 }
@@ -1213,7 +1217,7 @@ function renderAttrs() {
     P && [`Parry · ${P.w.name.toLowerCase()}`, [`${BC.succPct(P.v)}%`, G(` · ${P.v}`)], () => pick({ kind: "attr", k: "Parry" })],
     B && [`Block · ${B.w.name.toLowerCase()}`, [`${BC.succPct(B.v)}%`, G(` · ${B.v}`)], () => pick({ kind: "attr", k: "Block" })],
     R.db && ["shield DB", `+${R.db}`],
-    ["Thrust", BC.diceTxt(R.thr)], ["Swing", BC.diceTxt(R.sw)], ["DR torso", drTxt("torso").replace(/^torso /, "")],
+    ["Thrust", R.attrs.Strike ? [BC.diceTxt(R.strikeThr), G(` · ${BC.diceTxt(R.thr)} base`)] : BC.diceTxt(R.thr)], ["Swing", R.attrs.Strike ? [BC.diceTxt(R.strikeSw), G(` · ${BC.diceTxt(R.sw)} base`)] : BC.diceTxt(R.sw)], ["DR torso", drTxt("torso").replace(/^torso /, "")],
     ["Move", e.level ? [String(e.move), G(` · basic ${f1(R.attrs.Move)}`)] : f1(R.attrs.Move)],
     R.gear.length && ["load", `${e.name.toLowerCase()} · ${f1(e.carried)} lb`]].filter(Boolean)
     .forEach(([k, v, fn]) => { const d = el("div", fn ? { role: "button", tabindex: "0", style: "cursor:pointer", onclick: fn } : {}, el("b", {}, v), el("span", {}, k)); D.append(d); });

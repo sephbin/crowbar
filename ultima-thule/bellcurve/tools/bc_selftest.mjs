@@ -174,5 +174,11 @@ eq("Research at TL3 needs literacy only, not Computer Operation", ch({ tl: 3, sk
   eq("known prerequisites are left out", BC.spellPaths(sp("Fireball"), ["Ignite Fire", "Shape Fire"], lib).paths, [["Create Fire"]]);
   eq("Affect Spirits chain, in learning order", BC.spellPaths(sp("Affect Spirits"), [], lib).paths, [["Death Vision", "Summon Spirit", "Materialize", "Solidify"]]);
 }
+{ // Striking ST (B88) raises damage only: not Basic Lift, not HP
+  const mk = traits => BC.compute({ format: "bellcurve-character", version: 1, name: "t", budget: 5000, attributes: {}, templates: [], traits, skills: [], spells: [], equipment: [] }, lib);
+  const a = mk([]), b = mk([{ name: "Striking ST", levels: 5 }]);
+  eq("Striking ST: swing rises, lift and HP don't", [b.attrs.Strike, BC.diceTxt(b.strikeSw) !== BC.diceTxt(a.sw), b.enc.bl === a.enc.bl, b.attrs.HP === a.attrs.HP], [5, true, true, true]);
+  eq("Striking ST: no longer a warning", b.issues.some(i => /not applied to the sheet/.test(i.msg)), false);
+}
 console.log(fail ? `${fail} failure(s)` : "all passed");
 process.exit(fail ? 1 : 0);
