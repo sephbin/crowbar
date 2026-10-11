@@ -1,6 +1,11 @@
 {
-  "note": "Book traits the GCS library lacks. Costs x10. Each has its page; none is a house rule.",
+  "note": "Book traits the GCS library lacks. Costs x10. Each has its page; none is a house rule. A trait with no cost here (Book-Learned Wisdom) is priced per character from the book's formula and recorded as declared points.",
   "traits": [
-    { "type": "trait", "name": "Code of Honor (Bushido)", "base": -150, "kind": "disadvantage", "cr": null, "tags": ["Disadvantage", "Mental"], "ref": "DF1:9" }
+    { "type": "trait", "name": "Code of Honor (Bushido)", "base": -150, "kind": "disadvantage", "tags": ["Disadvantage", "Mental"], "ref": "DF1:9" },
+    { "type": "trait", "name": "Equipment Bond", "canLevel": true, "perLevel": 10, "kind": "perk", "tags": ["Perk"], "ref": "DF4:4" },
+    { "type": "trait", "name": "Compulsive Inventing", "base": -50, "cr": 12, "kind": "disadvantage", "tags": ["Disadvantage", "Mental"], "ref": "DF4:5" },
+    { "type": "trait", "name": "Book-Learned Wisdom", "kind": "advantage", "tags": ["Advantage", "Mental"], "ref": "DF4:8", "variable": "5 per slot + 2 per point of abilities in the slot" },
+    { "type": "trait", "name": "Ninja Talent", "canLevel": true, "perLevel": 100, "kind": "advantage", "tags": ["Advantage", "Talent"], "ref": "DF12:4" },
+    { "type": "trait", "name": "Resistant to Psionics", "canLevel": true, "perLevel": 20, "maxLevels": 6, "kind": "advantage", "tags": ["Advantage"], "ref": "DF14:14" }
   ]
 }

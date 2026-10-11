@@ -579,7 +579,8 @@ function profStamp(prof, picks) {
       if (notes) t.notes = notes;
       if (lv != null) t.levels = lv;
       if (o.cr) t.cr = o.cr;
-      if (o.modifiers) t.modifiers = [...o.modifiers];
+      if (o.modifiers) t.modifiers = structuredClone(o.modifiers);
+      if (o.declare) t.points = cost;   // a trait the library can't price (Unusual Background): the book's cost
       st.traits.push(t);
     } else if (o.type === "skill") {
       const spec = profSpec(o, p), same = st.skills.find(s => s.name === o.name && (s.spec || "") === (spec || ""));
@@ -641,7 +642,11 @@ function compute(ch, lib, opts = {}) {
     row.features = (rec.features || []).map(f => ({ ...f, amount: f.per_level ? f.amount * (row.levels || 0) : f.amount, source: fullName(inst.name, inst.notes) }));
     for (const e of c.errors) add("ERROR", `${inst.name}: ${e}`, rec.ref, path);
     for (const w of c.warns) add("WARN", `${inst.name}: ${w}`, rec.ref, path);
-    if (inst.points != null && inst.points !== c.cost) add("ERROR", `${fullName(inst.name, inst.notes)}: declared ${inst.points} pts, rules give ${c.cost}`, rec.ref, path);
+    // a trait with no cost in the library (Unusual Background, Book-Learned Wisdom) is priced by the GM or a formula:
+    // the declared points are used
+    const noCost = !rec.base && !rec.perLevel && !(rec.mods || []).some(m => m.adj && m.adj !== "0") && !rec.house;
+    if (noCost && inst.points != null) { row.cost = inst.points; add("ok", `${fullName(inst.name, inst.notes)}: ${inst.points} pts as declared (${rec.variable || "priced by the GM"})`, rec.ref, path); }
+    else if (inst.points != null && inst.points !== c.cost) add("ERROR", `${fullName(inst.name, inst.notes)}: declared ${inst.points} pts, rules give ${c.cost}`, rec.ref, path);
     if (inst.levels != null && !rec.canLevel) add("WARN", `${inst.name}: has no levels; "levels" ignored`, rec.ref, path);
     if (rec.canLevel && rec.maxLevels && (inst.levels ?? 1) > rec.maxLevels) add("ERROR", `${inst.name}: level ${inst.levels} above the maximum ${rec.maxLevels}`, rec.ref, path);
     if (rec.house) add("ok", `${fullName(inst.name, inst.notes)}${row.levels ? " " + row.levels : ""}: house rule, ${c.cost} pts`, rec.ref, path);
