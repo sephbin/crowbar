@@ -4,7 +4,7 @@ import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { readFileSync, writeFileSync, statSync } from 'fs';
+import { readFileSync, writeFileSync, statSync, readdirSync, mkdirSync, unlinkSync } from 'fs';
 import cors from 'cors';
 import vaultRoutes from './server/routes/vault.js';
 import claudeRoutes from './server/routes/claude.js';
@@ -57,6 +57,37 @@ app.put('/api/review-marks', (req, res) => {
   }
   writeFileSync(MARKS, JSON.stringify(marks, null, 1));
   res.json(marks);
+});
+
+// Bell Curve characters saved from the builder's "save to server" button: ultima-thule/bellcurve/saved/<id>.json
+// (gitignored: they are the player's own sheets). The id is a slug of the character's name.
+const SAVED = join(__dirname, 'ultima-thule', 'bellcurve', 'saved');
+const savedId = s => (/^[a-z0-9][a-z0-9-]{0,79}$/.test(String(s)) ? String(s) : null);
+app.get('/api/bellcurve/characters', (_req, res) => {
+  let files = [];
+  try { files = readdirSync(SAVED).filter(f => f.endsWith('.json')); } catch { /* none saved yet */ }
+  const list = files.map(f => {
+    const p = join(SAVED, f);
+    let name = f.replace(/\.json$/, ''), concept = '';
+    try { const c = JSON.parse(readFileSync(p, 'utf8')); name = c.name || name; concept = c.concept || ''; } catch { /* unreadable file: listed by file name */ }
+    return { id: f.replace(/\.json$/, ''), name, concept, updated: statSync(p).mtime.toISOString() };
+  }).sort((a, b) => b.updated.localeCompare(a.updated));
+  res.json(list);
+});
+app.get('/api/bellcurve/characters/:id', (req, res) => {
+  const id = savedId(req.params.id); if (!id) return res.status(400).json({ error: 'bad id' });
+  try { res.type('json').send(readFileSync(join(SAVED, id + '.json'), 'utf8')); } catch { res.status(404).json({ error: 'not found' }); }
+});
+app.put('/api/bellcurve/characters/:id', (req, res) => {
+  const id = savedId(req.params.id); if (!id) return res.status(400).json({ error: 'bad id' });
+  if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body) || req.body.format !== 'bellcurve-character') return res.status(400).json({ error: 'expected a bellcurve-character' });
+  mkdirSync(SAVED, { recursive: true });
+  writeFileSync(join(SAVED, id + '.json'), JSON.stringify(req.body, null, 2));
+  res.json({ id, saved: new Date().toISOString() });
+});
+app.delete('/api/bellcurve/characters/:id', (req, res) => {
+  const id = savedId(req.params.id); if (!id) return res.status(400).json({ error: 'bad id' });
+  try { unlinkSync(join(SAVED, id + '.json')); res.json({ id, deleted: true }); } catch { res.status(404).json({ error: 'not found' }); }
 });
 
 // Book text for the Bell Curve builder's rules tab: rules/library-with-text.json (gitignored, this machine only),

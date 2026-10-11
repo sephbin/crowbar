@@ -11,6 +11,8 @@ ultima-thule/rules/pages/
 ultima-thule/rules/brp_all.txt
 # copyrighted GURPS books (Bell Curve): PDFs and extracted text stay local
 ultima-thule/bellcurve/rules/
+# characters saved to the server from the builder (the player's own sheets)
+ultima-thule/bellcurve/saved/
 
 # page comments collected by annotate/ (can name private pages)
 annotations/

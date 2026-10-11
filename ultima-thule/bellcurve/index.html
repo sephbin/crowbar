@@ -280,6 +280,8 @@ body:not(.debug) .g{display:none!important}
         </select>
         <button type="button" id="open" class="icon" aria-label="Open a character file" title="open a character file"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></button>
         <button type="button" id="save" class="icon" aria-label="Save the character as a file" title="save the character as a file"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></button>
+        <button type="button" id="srvsave" class="icon" hidden aria-label="Save to the server" title="save to the server"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18a4 4 0 0 1-.6-7.96A6 6 0 0 1 18 9a4.5 4.5 0 0 1 0 9"/><path d="M12 21v-8m0 0l-3 3m3-3l3 3"/></svg></button>
+        <button type="button" id="srvload" class="icon" hidden aria-label="Load from the server" title="load from the server"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18a4 4 0 0 1-.6-7.96A6 6 0 0 1 18 9a4.5 4.5 0 0 1 0 9"/><path d="M12 13v8m0 0l-3-3m3 3l3-3"/></svg></button>
         <button type="button" id="copy" class="icon" aria-label="Copy the character JSON" title="copy the character JSON"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg></button>
         <button type="button" id="blank" class="icon ed" aria-label="Start a blank character" title="start a blank character"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg></button>
         <button type="button" id="editmode" class="icon" aria-pressed="false" aria-label="Edit" title="show the editing controls"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l4-1L19 8l-3-3L5 16z"/><path d="M14 7l3 3"/></svg></button>
@@ -750,9 +752,15 @@ const NUMWORD = ["none", "one", "two", "three", "four", "five", "six", "seven", 
 const sgn = v => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v);
 let P = null;   // the open dialog: { prof, picks }
 const profSec = g => g.label || { advantages: "Advantages", disadvantages: "Disadvantages", spells: "Spells", remainder: "Not read from the book" }[g.section] || "Skills";
+// "one skill, +240", "two skills, +120 each": how many to take and what each costs; the list itself is shown once the alternative is picked
+function groupWord(g) {
+  const kind = g.options.every(x => x.type === "skill") ? "skill" : g.options.every(x => x.type === "trait") ? "trait" : "choice";
+  const costs = [...new Set(g.options.map(x => BC.profOptCost(x, {})))];
+  return `${NUMWORD[g.n] || g.n} ${kind}${g.n > 1 ? "s" : ""}${costs.length === 1 && costs[0] ? `, ${sgn(costs[0])}${g.n > 1 ? " each" : ""}` : ""}`;
+}
 function profLabel(o, p = {}) {
-  if (o.type === "bundle") return o.items.map(it => profLabel(it)).join(" + ");
-  if (o.type === "group") return `${NUMWORD[o.n] || o.n} of ${o.options.map(x => profLabel(x)).join(", ")}`;
+  if (o.type === "bundle") return o.items.length === 1 && o.items[0].type === "group" ? groupWord(o.items[0]) : o.items.map(it => profLabel(it)).join(" + ");
+  if (o.type === "group") return groupWord(o);
   if (o.type === "skill") return BC.fullName(o.name, p.spec ?? o.spec ?? (o.choices ? (o.choices.length > 3 ? "various" : o.choices.join(" / ")) : o.ask || ""));
   if (o.type === "trait") { const lv = p.levels ?? o.levels; return `${BC.fullName(o.name.replace(/:\s*@[^@]+@$/, ""), p.notes ?? o.notes)}${lv != null ? " " + lv : ""}${o.upgrade ? " (raises the one above)" : ""}`; }
   return o.name;
@@ -772,7 +780,9 @@ function profKey(o, p = {}) {
   if (o.type === "spell") return `sp:${lcs(o.name)}`;
   return null;
 }
-const needsSpec = o => o.type === "skill" && !o.spec && !!(o.ask || o.choices);
+// a trait whose book note is a description to fill in ("Enhanced Parry (One Melee Weapon skill)", "Weapon Master (One Weapon)", "Slayer Training (Any)")
+const traitAsk = o => o.type === "trait" && !!o.notes && !o.noteChoices && !/@/.test(o.name) && /^(one|any|either|a particular|an? (?:large )?category)\b/i.test(o.notes);
+const needsSpec = o => (o.type === "skill" && !o.spec && !!(o.ask || o.choices)) || traitAsk(o);
 // what is taken so far, from fixed items and every pick
 function profTaken() {
   const m = new Map();
@@ -798,6 +808,14 @@ function profHave(o, p = {}) {
 }
 const profMark = (o, p) => { const h = profHave(o, p); return h ? el("span", { class: "pmark" }, h.text) : null; };
 function specControl(o, pick, upd) {
+  if (traitAsk(o)) {
+    const cur = pick.notes && pick.notes !== o.notes ? pick.notes : "";
+    const skillish = /skill/i.test(o.notes);
+    return [el("button", { type: "button", class: "pick", "aria-label": `${o.name}: choose`, onclick: () => chooser({
+      title: `${o.name}: ${o.notes}`, sub: o.notes, placeholder: skillish ? "search skills, or type your own" : "type it", custom: true, kind: "trait-notes",
+      items: () => !skillish ? [] : [...new Set(LIB.skills.filter(s => (s.tags || []).includes("Melee Combat") && !s.spec).map(s => s.name))].sort().map(n => ({ value: n, label: n, chosen: lcs(n) === lcs(cur) })),
+      onPick: it => upd("notes", it.value) }) }, cur || "choose…")];
+  }
   if (o.type !== "skill" || o.spec) return [];
   const cur = pick.spec ?? (o.choices?.includes(o.name) ? o.name : "");
   // another pick (or a fixed item) already has this specialty
@@ -866,7 +884,9 @@ function profChoice(g, path, o, i, gid, byPath) {
   };
   const rowFor = (pick, another) => {
     const k = profKey(o, {}), have = profHave(o, pick || {});
-    const dup = !pick && !another && ((k && P.taken.get(k) > 0) || have?.kind === "dup");
+    // "Striking ST 1" and "Striking ST 2" are two prices for one trait: taking one rules the other out
+    const sibling = !pick && o.type === "trait" && g.options.some((q, j) => j !== i && q.type === "trait" && q.name === o.name && (q.notes || "") === (o.notes || "") && q.levels !== o.levels && list.some(p => p.o === j && (p.g || null) === gid));
+    const dup = !pick && !another && (sibling || (k && P.taken.get(k) > 0) || have?.kind === "dup");
     const dkey = `${path}:${i}:${gid || ""}:${pick ? mine.indexOf(pick) : another ? mine.length : 0}`;
     const [nameBtn] = pname(o, (another ? "another: " : "") + profLabel(o, pick || {}), dkey);
     const row = el("div", { class: "popt" + (o.type === "note" ? " note" : "") + (dup ? " off" : "") }, nameBtn);
@@ -881,7 +901,7 @@ function profChoice(g, path, o, i, gid, byPath) {
       if (o.type === "bundle") { const nest = el("div", { class: "pnest" }); o.items.forEach((it, kk) => nest.append(profItem(it, `${path}.${i}.${kk}`, byPath))); wrap.append(nest); }
       if (o.type === "group") wrap.append(profGroup(o, `${path}.${i}`, byPath, null, true));
     }
-    row.append(...[dup ? el("span", { class: "pmark" }, have?.kind === "dup" ? have.text : "already taken") : profMark(o, pick || {}), el("span", { class: "pc" }, profCost(o, pick || {})),
+    row.append(...[dup ? el("span", { class: "pmark" }, sibling ? "another level is chosen" : have?.kind === "dup" ? have.text : "already taken") : profMark(o, pick || {}), el("span", { class: "pc" }, profCost(o, pick || {})),
       el("input", { type: single ? "radio" : "checkbox", class: "psel", name: `p-${path}`, checked: !!pick, disabled: dup, "aria-label": `${another ? "another " : ""}${profLabel(o, pick || {})}`, onchange: e => toggle(e.target.checked, pick) })].filter(Boolean));
     return wrap;
   };
@@ -1190,7 +1210,7 @@ function renderProfession() {
   if (!pr) { box.append(el("div", { class: "bad" }, `${ch.profession.name}: not in the library`), el("div", { class: "ed" }, remove)); return; }
   const done = pr.checks.filter(c => c.ok).length;
   box.append(el("div", { class: "row" },
-    el("span", { class: "nm roll", role: "button", tabindex: "0", onclick: () => openProf(baseOf(ch.profession), ch.profession.picks, ch.profession.lens), onkeydown: e => e.key === "Enter" && e.currentTarget.click() }, pr.rec.name, pr.rec.lensOf ? ` + ${pr.rec.lensOf.name} lens` : ""),
+    el("span", { class: "nm" + (editing ? " roll" : ""), ...(editing ? { role: "button", tabindex: "0", onclick: () => openProf(baseOf(ch.profession), ch.profession.picks, ch.profession.lens), onkeydown: e => e.key === "Enter" && e.currentTarget.click() } : {}) }, pr.rec.name, pr.rec.lensOf ? ` + ${pr.rec.lensOf.name} lens` : ""),
     el("span", { class: "meta" }, `${refTxt(pr.rec.ref)} · ${done} of ${pr.checks.length} choices made`),
     el("span", { class: "val" }, el("b", {}, String(pr.rec.points * 10)), el("span", {}, "template")), el("span")));
   const stat = el("div", { class: "pstat" });
@@ -1965,6 +1985,26 @@ function loadChar(obj, msg) {
 $("open").addEventListener("click", () => $("file").click());
 $("file").addEventListener("change", e => { const f = e.target.files[0]; if (!f) return; f.text().then(t => { try { loadChar(JSON.parse(t), `opened ${f.name}`); } catch (err) { toast("could not read: " + err.message); } }); e.target.value = ""; });
 $("save").addEventListener("click", () => { const blob = new Blob([JSON.stringify(strip(ROOT), null, 2)], { type: "application/json" }); const a = el("a", { href: URL.createObjectURL(blob), download: slug(ROOT.name) + ".json" }); document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); });
+// characters kept on the server (the API runs beside the page in dev; on GitHub Pages there is none, so the buttons stay hidden)
+const API = "/api/bellcurve/characters";
+fetch(API).then(r => { if (!r.ok) throw 0; return r.json(); }).then(() => { $("srvsave").hidden = false; $("srvload").hidden = false; }).catch(() => {});
+$("srvsave").addEventListener("click", async () => {
+  const id = slug(ROOT.name);
+  try {
+    const list = await fetch(API).then(r => r.json());
+    if (list.some(x => x.id === id) && !confirm(`"${ROOT.name}" is already saved on the server. Replace it?`)) return;
+    const r = await fetch(`${API}/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(strip(ROOT)) });
+    if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || r.status);
+    toast(`saved ${ROOT.name} to the server`);
+  } catch (err) { toast("could not save to the server: " + err.message); }
+});
+$("srvload").addEventListener("click", async () => {
+  let list; try { list = await fetch(API).then(r => r.json()); } catch { return toast("the server is not reachable"); }
+  if (!list.length) return toast("nothing is saved on the server yet");
+  chooser({ kind: "server-characters", title: "Load from the server", sub: `${list.length} saved`, placeholder: "search saved characters",
+    items: () => list.map(x => ({ value: x.id, label: x.name, sub: [x.concept, new Date(x.updated).toLocaleString()].filter(Boolean).join(" · ") })),
+    onPick: it => fetch(`${API}/${it.value}`).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(obj => loadChar(obj, `loaded ${obj.name}`)).catch(err => toast("could not load: " + err.message)) });
+});
 $("copy").addEventListener("click", () => { navigator.clipboard?.writeText(JSON.stringify(strip(ROOT), null, 2)).then(() => toast("character JSON copied"), () => toast("clipboard blocked")); });
 $("blank").addEventListener("click", () => { if (confirm("Start a blank character? The current one is replaced (save it first if you want it).")) loadChar(BLANK()); });
 $("example").addEventListener("change", e => { const v = e.target.value; e.target.value = ""; if (!v) return;
@@ -1979,7 +2019,7 @@ $("rtabs").addEventListener("click", e => { const b = e.target.closest("[data-rt
 $("rmodal").addEventListener("click", e => { if (e.target === e.currentTarget) closeRoller(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape") { if (K) closeK(); else if (!$("pmodal").hidden) closeProf(); else closeRoller(); } });
 $("debug").addEventListener("click", () => { UI.debug = !UI.debug; saveUI(); applyDebug(); roller(); });
-$("editmode").addEventListener("click", () => { editing = !editing; applyMode(); });
+$("editmode").addEventListener("click", () => { editing = !editing; applyMode(); renderProfession(); });
 // the name, concept and notes fields are read-only in the view, so a tap on a phone shows no keyboard: a tap on one turns editing on and focuses it
 for (const id of ["cname", "concept", "notes"]) $(id).addEventListener("click", e => {
   if (editing) return;
