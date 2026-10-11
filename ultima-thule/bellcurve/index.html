@@ -931,7 +931,11 @@ function profPool(path, g) {
         el("td", { class: "r" }, el("button", { type: "button", "aria-label": `remove ${name}`, onclick: () => drop(p) }, "×")));
     }))));
   const mixed = !TYPES[sec] && sec !== "skills" && sec !== "spells";
-  const items = () => sec === "skills" ? skillItems().filter(it => !it.value.ask).map(it => ({ ...it, _k: "skill" }))
+  // "skills covered by Occultist": the skills the Talent adds its bonus to
+  const cov = /covered by ([^;(]+?)\s*(?:\(|;|$)/i.exec(g.open || "");
+  const covRec = cov && LIB.traits.find(t => lcs(t.name) === lcs(`Talent (${cov[1]})`) || lcs(t.name) === lcs(cov[1]));
+  const covered = covRec ? new Set((covRec.features || []).filter(f => f.type === "skill_bonus" && f.name?.compare === "is").map(f => lcs(f.name.qualifier))) : null;
+  const items = () => sec === "skills" ? skillItems().filter(it => !covered || covered.has(lcs(it.value.name ?? it.label))).map(it => ({ ...it, _k: "skill" }))
     : sec === "spells" ? spellItems().map(it => ({ ...it, _k: "spell" }))
     : TYPES[sec] ? traitItems().filter(it => TYPES[sec].some(k => it.facets?.Type?.includes(k))).map(it => ({ ...it, _k: "trait" }))
     : [...traitItems().map(it => ({ ...it, _k: "trait", sub: it.sub || it.facets?.Type?.[0] })), ...skillItems().filter(it => !it.value.ask).map(it => ({ ...it, _k: "skill", sub: "skill" }))];
