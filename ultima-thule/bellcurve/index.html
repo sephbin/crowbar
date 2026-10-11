@@ -131,6 +131,29 @@ body.view input[readonly],body.view textarea[readonly]{border-color:transparent;
 body.locked{overflow:hidden}
 .rfoot{display:flex;justify-content:flex-end;margin-top:12px;padding-top:10px;border-top:1px solid var(--rule)}
 button.danger{border-color:var(--bad);color:var(--bad)}
+/* profession choices */
+.roller.prof{width:min(760px,100%)}
+.pfoot{gap:8px;align-items:center}
+.pfoot #ptotal{margin-right:auto;font-size:13px}
+.pgrp{border-top:1px solid var(--rule);padding:10px 0 6px}
+.pgrp > .ph{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.pgrp > .ph b{font-size:14px}
+.pgrp .rule{font-size:12px;color:var(--muted)}
+.pgrp .rule.ok{color:var(--good)} .pgrp .rule.bad{color:var(--bad)}
+.popts{display:flex;flex-direction:column;gap:2px;margin-top:6px}
+.popt{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:14px;padding:2px 0}
+.popt > span:nth-child(2){flex:1 1 10em;min-width:0}
+.popt .pc{margin-left:auto;color:var(--muted);font-size:12px;white-space:nowrap}
+.popt.fixed{color:var(--ink)}
+.popt.note{font-style:italic;color:var(--muted)}
+.popt input[type=number]{width:4.5em}
+.popt select,.popt input[type=text]{max-width:14em}
+.pnest{margin:4px 0 4px 22px;padding-left:10px;border-left:2px solid var(--rule)}
+.pchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.pchips span{border:1px solid var(--rule);border-radius:999px;padding:2px 4px 2px 10px;font-size:13px;display:inline-flex;gap:4px;align-items:center}
+.pchips button{width:24px;height:24px;padding:0;border-radius:50%}
+.pstat{display:flex;flex-direction:column;gap:2px;font-size:13px;margin:6px 0}
+.pstat .ok{color:var(--good)} .pstat .bad{color:var(--bad)}
 .mtabs{display:flex;gap:6px;margin:4px 0 12px}
 .mtabs button[aria-selected="true"]{background:var(--ink);color:var(--paper)}
 .rules dl{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:4px 12px;margin:0 0 12px;font-size:14px}
@@ -238,6 +261,11 @@ body:not(.debug) .g{display:none!important}
       </section>
 
       <section class="box" data-tab="base">
+        <h3 class="bar">profession <small>Dungeon Fantasy · 250-point templates, 2500 here</small></h3>
+        <div id="profession"></div>
+      </section>
+
+      <section class="box" data-tab="base">
         <h3 class="bar">templates <small>race or meta-traits</small></h3>
         <div id="templates"></div>
         <div class="addrow">
@@ -306,6 +334,16 @@ body:not(.debug) .g{display:none!important}
       </section>
     </div>
 
+  </div>
+  <div class="modal" id="pmodal" hidden>
+    <aside class="box roller prof" role="dialog" aria-modal="true" aria-labelledby="pname">
+      <div class="rhead">
+        <div style="min-width:0"><p class="rtitle" id="pname">—</p><p class="rsub" id="psub"></p></div>
+        <button type="button" class="mclose" id="pclose" aria-label="Close profession choices">×</button>
+      </div>
+      <div id="pbody"></div>
+      <div class="rfoot pfoot"><span id="ptotal" class="muted"></span><button type="button" id="pcancel">cancel</button><button type="button" class="primary" id="papply">apply to sheet</button></div>
+    </aside>
   </div>
   <div class="modal" id="rmodal" hidden>
     <aside class="box roller" role="dialog" aria-modal="true" aria-labelledby="rname" aria-live="polite">
@@ -446,7 +484,7 @@ function render() {
   renderTabs();
   $("budget").value = R.budget; applyMode();
   const pill = $("spent"); pill.textContent = `${R.spent} / ${R.budget}`; pill.classList.toggle("over", R.spent > R.budget);
-  renderIssues(); renderTemplates(); renderAttrs(); renderSkills(); renderSpells(); renderTraits(); renderEquipment(); renderWeapons();
+  renderIssues(); renderProfession(); renderTemplates(); renderAttrs(); renderSkills(); renderSpells(); renderTraits(); renderEquipment(); renderWeapons();
   roller();
 }
 
@@ -460,6 +498,204 @@ function renderIssues() {
     I.append(el("div", { class: `issue ${x.sev}` }, el("b", {}, x.sev), el("span", {}, x.msg), x.ref ? el("span", { class: "ref" }, x.ref) : null));
   const b = R.breakdown;
   I.append(el("p", { class: "hint" }, `template ${b.template} · attributes ${b.attributes} · advantages ${b.advantages} · disadvantages ${b.disadvantages} · quirks ${b.quirks} · skills ${b.skills} · spells ${b.spells}`));
+}
+
+// ---------- profession (Dungeon Fantasy): its choices are made in a dialog and applied to the sheet. The choices are
+// kept on the character ("profession": { name, picks }), so they can be edited later: editing or removing takes the
+// old contributions off the sheet first. The validator checks the choices and what's on the sheet.
+const NUMWORD = ["none", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
+const sgn = v => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v);
+let P = null;   // the open dialog: { prof, picks }
+const profSec = g => g.label || { advantages: "Advantages", disadvantages: "Disadvantages", spells: "Spells" }[g.section] || "Skills";
+function profLabel(o, p = {}) {
+  if (o.type === "bundle") return o.items.map(it => profLabel(it)).join(" + ");
+  if (o.type === "group") return `${NUMWORD[o.n] || o.n} of ${o.options.map(x => profLabel(x)).join(", ")}`;
+  if (o.type === "skill") return BC.fullName(o.name, p.spec ?? o.spec ?? (o.choices ? o.choices.join(" / ") : o.ask || ""));
+  if (o.type === "trait") { const lv = p.levels ?? o.levels; return `${BC.fullName(o.name.replace(/:\s*@[^@]+@$/, ""), p.notes ?? o.notes)}${lv != null ? " " + lv : ""}${o.upgrade ? " (raises the one above)" : ""}`; }
+  return o.name;
+}
+function profCost(o, p = {}) {
+  if (o.type === "bundle" || o.type === "group") return "";
+  if (o.variable && p.cost == null) return o.range ? `${sgn(o.range[0])} to ${sgn(o.range[1])}` : "varies";
+  const c = BC.profOptCost(o, p);
+  return `${sgn(c)}${o.per != null && o.max !== o.min ? ` (${sgn(o.per)}/level)` : ""}`;
+}
+function specControl(o, pick, upd) {
+  if (o.type !== "skill" || o.spec) return [];
+  if (o.choices) {
+    const cur = pick.spec ?? (o.choices.includes(o.name) ? o.name : "");
+    return [el("select", { "aria-label": `${o.name} specialty`, onchange: e => upd("spec", e.target.value || null) },
+      el("option", { value: "" }, "specialty…"), ...o.choices.map(c => el("option", { value: c, selected: c === cur }, c)))];
+  }
+  if (o.ask) return [el("input", { type: "text", value: pick.spec ?? "", placeholder: `specialty (${o.ask})`, "aria-label": `${o.name} specialty`, onchange: e => upd("spec", e.target.value.trim() || null) })];
+  return [];
+}
+// a fixed item: taken; a skill that needs a specialty records it as a pick at its own place
+function profItem(o, path, byPath) {
+  if (o.type === "group") return profGroup(o, path, byPath, null, true);
+  const d = (P.picks[path] || [])[0] || {};
+  const upd = (k, v) => { const x = { ...d, [k]: v }; if (v == null) delete x[k]; if (Object.keys(x).length) P.picks[path] = [x]; else delete P.picks[path]; renderProfModal(); };
+  return el("div", { class: "popt fixed" + (o.type === "note" ? " note" : "") }, el("span", { "aria-hidden": "true" }, "•"), el("span", {}, profLabel(o, d)), ...specControl(o, d, upd), el("span", { class: "pc" }, profCost(o, d)));
+}
+function profChoice(g, path, o, i, gid, byPath) {
+  const list = P.picks[path] || [], at = list.findIndex(p => p.o === i && (p.g || null) === gid), pick = list[at];
+  const single = g.kind === "count" && g.n === 1;
+  const toggle = on => {
+    let l = single ? [] : (P.picks[path] || []).filter(p => !(p.o === i && (p.g || null) === gid));
+    if (on) l.push({ ...(gid ? { g: gid } : {}), o: i });
+    // choices made inside a dropped package go with it
+    for (const k of Object.keys(P.picks)) if (k.startsWith(`${path}.`) && (single || k.startsWith(`${path}.${i}.`) || k === `${path}.${i}`)) delete P.picks[k];
+    if (l.length) P.picks[path] = l; else delete P.picks[path];
+    renderProfModal();
+  };
+  const row = el("label", { class: "popt" + (o.type === "note" ? " note" : "") },
+    el("input", { type: single ? "radio" : "checkbox", name: `p-${path}`, checked: at >= 0, onchange: e => toggle(e.target.checked) }), el("span", {}, profLabel(o, pick || {})));
+  const wrap = el("div", {}, row);
+  if (pick) {
+    const upd = (k, v) => { if (v == null) delete pick[k]; else pick[k] = v; renderProfModal(); };
+    if (o.per != null && o.max !== o.min) row.append(el("input", { type: "number", min: o.min ?? 1, max: o.max ?? 99, value: pick.levels ?? o.min ?? 1, "aria-label": `${o.name} level`, onchange: e => upd("levels", Math.max(o.min ?? 1, Math.min(o.max ?? 99, Math.round(+e.target.value) || 1))) }));
+    if (o.variable) row.append(el("input", { type: "number", step: 10, value: pick.cost ?? "", placeholder: "points", "aria-label": `${o.name} points`, onchange: e => upd("cost", e.target.value === "" ? null : Math.round(+e.target.value)) }));
+    if (o.noteChoices) row.append(el("select", { "aria-label": `${o.name} choice`, onchange: e => upd("notes", e.target.value) }, ...o.noteChoices.map(n => el("option", { value: n, selected: (pick.notes ?? o.notes) === n }, n))));
+    row.append(...specControl(o, pick, upd));
+    if (o.type === "bundle") { const nest = el("div", { class: "pnest" }); o.items.forEach((it, k) => nest.append(profItem(it, `${path}.${i}.${k}`, byPath))); wrap.append(nest); }
+    if (o.type === "group") wrap.append(profGroup(o, `${path}.${i}`, byPath, null, true));
+  }
+  row.append(el("span", { class: "pc" }, profCost(o, pick || {})));
+  return wrap;
+}
+// points spent outside the listed options: an open list ("25 points in Holy abilities") or raising earlier skills
+function profExtra(path, kind, label, opts) {
+  const list = P.picks[path] || [], mine = list.filter(p => kind === "open" ? p.text != null : p.skill);
+  const box = el("div", { class: "pnest" }, el("div", { class: "rule" }, label));
+  if (mine.length) box.append(el("div", { class: "pchips" }, mine.map(p => el("span", {}, `${kind === "open" ? p.text : BC.fullName(p.skill, p.spec)} ${sgn(p.cost)}`,
+    el("button", { type: "button", "aria-label": "remove", onclick: () => { const l = (P.picks[path] || []).filter(x => x !== p); if (l.length) P.picks[path] = l; else delete P.picks[path]; renderProfModal(); } }, "×")))));
+  const what = kind === "open" ? el("input", { type: "text", placeholder: "ability, e.g. True Faith (Turning)", "aria-label": label })
+    : el("select", { "aria-label": label }, el("option", { value: "" }, "skill…"), ...opts.map(s => el("option", { value: JSON.stringify(s) }, BC.fullName(s.name, s.spec))));
+  const pts = el("input", { type: "number", step: 10, placeholder: "points", "aria-label": "points", style: "width:6em" });
+  box.append(el("div", { class: "popt" }, what, pts, el("button", { type: "button", onclick: () => {
+    const c = Math.round(+pts.value); if (!c || !what.value) return;
+    const p = kind === "open" ? { text: what.value.trim(), cost: c } : (s => ({ skill: s.name, ...(s.spec ? { spec: s.spec } : {}), cost: c }))(JSON.parse(what.value));
+    (P.picks[path] ||= []).push(p); renderProfModal();
+  } }, "add")));
+  return box;
+}
+// "Choose 20 clerical spells": a searchable list; clerical and druidic spells show their Power Investiture level
+function profSpells(g, path) {
+  const power = g.spellList === "wizardly" ? null : g.spellList;
+  const st = BC.profStamp(P.prof, P.picks), piT = st.traits.find(t => (power === "druidic" ? /^Power Investiture \(Druidic\)$/ : /^Power Investiture$/).test(t.name));
+  const pi = piT?.levels || 0, W = LIB.dfWizardly;
+  const pool = power ? Object.entries(LIB.piSpells?.[power] || {}).sort((a, b) => a[1] - b[1] || a[0].localeCompare(b[0])) : LIB.spells.map(s => [s.name, null]);
+  const offLimits = n => { if (power || !W) return false; const s = LIB.spells.find(x => x.name === n); return W.spells.includes(n) || (s && !W.allowed.includes(n) && s.college.length && s.college.every(c => W.colleges.includes(c))); };
+  const box = el("div", {});
+  const list = P.picks[path] || [];
+  if (power) box.append(el("div", { class: "rule" }, `Power Investiture ${pi}: spells up to PI ${pi} (DF1 p.19)`));
+  box.append(el("div", { class: "pchips" }, list.map(p => { const lv = power ? LIB.piSpells[power][p.spell] : null;
+    return el("span", { class: (lv != null && lv > pi) || offLimits(p.spell) ? "bad" : null, title: lv > pi ? `needs PI ${lv}` : offLimits(p.spell) ? "off-limits to dungeon fantasy wizards (DF1 p.20)" : null }, `${p.spell}${lv != null ? ` · PI ${lv}` : ""}`,
+      el("button", { type: "button", "aria-label": `remove ${p.spell}`, onclick: () => { const l = (P.picks[path] || []).filter(x => x !== p); if (l.length) P.picks[path] = l; else delete P.picks[path]; renderProfModal(); } }, "×")); })));
+  const id = `dl-p-${path}`, inp = el("input", { type: "search", list: id, placeholder: `add a ${g.spellList} spell`, "aria-label": `add a ${g.spellList} spell` });
+  const dl = el("datalist", { id }, pool.filter(([n, lv]) => !list.some(p => p.spell === n) && (lv == null || lv <= pi) && !offLimits(n)).map(([n, lv]) => el("option", { value: n }, lv != null ? `PI ${lv}` : "")));
+  const addIt = () => { const n = pool.find(([x]) => x.toLowerCase() === inp.value.trim().toLowerCase())?.[0]; if (!n) { toast(`"${inp.value}" isn't on the list`); return; } (P.picks[path] ||= []).push({ spell: n }); renderProfModal(); };
+  inp.addEventListener("keydown", e => { if (e.key === "Enter") addIt(); });
+  box.append(el("div", { class: "popt" }, inp, dl, el("button", { type: "button", onclick: addIt }, "add")));
+  return box;
+}
+function profGroup(g, path, byPath, title, nested) {
+  const box = el("div", { class: nested ? "pnest" : "pgrp" });
+  const c = byPath.get(path);
+  const rule = g.kind === "fixed" ? "" : g.spellList ? `choose ${g.n} ${g.spellList} spells` : g.kind === "points" ? `spend ${sgn(g.n)} points` : `choose ${NUMWORD[g.n] || g.n}`;
+  const st = c ? `${c.have} of ${c.n}${c.kind === "points" ? " pts" : ""}` : "";
+  if (title || rule) box.append(el("div", { class: "ph" }, title ? el("b", {}, title) : "", rule ? el("span", { class: "rule" + (c ? (c.ok ? " ok" : " bad") : "") }, `${rule}${st ? ` · ${st}` : ""}`) : ""));
+  const opts = el("div", { class: "popts" }); box.append(opts);
+  if (g.kind === "fixed") { g.options.forEach((o, i) => opts.append(profItem(o, `${path}.${i}`, byPath))); return box; }
+  if (g.spellList) { opts.append(profSpells(g, path)); return box; }
+  g.options.forEach((o, i) => opts.append(profChoice(g, path, o, i, null, byPath)));
+  // "-20 points chosen from among the previous traits or ...": the earlier lists count too
+  if (g.prev) { const idx = P.prof.groups.indexOf(g); for (const x of P.prof.groups.slice(Math.max(0, idx - g.prev), idx)) {
+    opts.append(el("div", { class: "rule", style: "margin-top:4px" }, `or from ${profSec(x).toLowerCase()} above:`));
+    x.options.forEach((o, i) => opts.append(profChoice(g, path, o, i, x.id, byPath))); } }
+  if (g.open) opts.append(profExtra(path, "open", `or points in ${g.open}`));
+  if (g.prevSkills) opts.append(profExtra(path, "raise", "or points raising a skill above", BC.profStamp(P.prof, P.picks).skills.map(s => ({ name: s.name, spec: s.spec }))));
+  return box;
+}
+function renderProfModal() {
+  const { prof, picks } = P;
+  $("pname").textContent = prof.name;
+  $("psub").textContent = `${refTxt(prof.ref)} · ${prof.points * 10} points · ${Object.entries(prof.attributes).map(([k, v]) => `${k} ${sgn(v)}`).join(", ")}`;
+  const checks = BC.profCheck(prof, picks), byPath = new Map(checks.filter(c => c.kind !== "spec").map(c => [c.path, c]));
+  const body = $("pbody"), top = body.parentElement.scrollTop; body.innerHTML = "";
+  for (const g of prof.groups) if (g.kind !== "note") body.append(profGroup(g, g.id, byPath, profSec(g)));
+  const open = checks.filter(c => !c.ok);
+  $("ptotal").textContent = open.length ? `${open.length} still open: ${open.slice(0, 3).map(c => c.kind === "spec" ? c.label.replace(/: choose a specialty$/, " specialty") : c.label).join(", ")}${open.length > 3 ? "…" : ""}` : "every choice made";
+  $("papply").hidden = !editing; $("pcancel").textContent = editing ? "cancel" : "close";
+  body.parentElement.scrollTop = top;
+}
+let profFrom = null;
+function openProf(prof, picks) {
+  P = { prof, picks: structuredClone(picks || {}) };
+  profFrom = document.activeElement;
+  renderProfModal();
+  $("pmodal").hidden = false; document.body.classList.add("locked");
+  $("pmodal").querySelector(".roller").scrollTop = 0; $("pclose").focus();
+}
+function closeProf() {
+  if ($("pmodal").hidden) return;
+  $("pmodal").hidden = true; document.body.classList.remove("locked"); P = null;
+  if (profFrom?.isConnected) profFrom.focus();
+}
+// put a profession's contributions on the sheet, or take them off (only what it added: raised levels and points stay)
+const sameTrait = (a, b) => a.name.toLowerCase() === b.name.toLowerCase() && (a.notes || "").toLowerCase() === (b.notes || "").toLowerCase();
+const sameSkill = (a, b) => a.name.toLowerCase() === b.name.toLowerCase() && (a.spec || "").toLowerCase() === (b.spec || "").toLowerCase();
+function stampInto(ch, st) {
+  for (const [k, v] of Object.entries(st.attributes)) { ch.attributes[k] = (ch.attributes[k] || 0) + v; if (!ch.attributes[k]) delete ch.attributes[k]; }
+  for (const t of st.traits) { const x = ch.traits.find(y => sameTrait(y, t)); if (x && t.levels != null) x.levels = (x.levels || 0) + t.levels; else if (!x) ch.traits.push(structuredClone(t)); }
+  for (const s of st.skills) { const x = ch.skills.find(y => sameSkill(y, s)); if (x) x.points = (x.points || 0) + s.points; else ch.skills.push({ ...s }); }
+  for (const s of st.spells) { const x = ch.spells.find(y => y.name === s.name); if (x) x.points = (x.points || 0) + s.points; else ch.spells.push({ ...s }); }
+}
+function unstampFrom(ch, st) {
+  for (const [k, v] of Object.entries(st.attributes)) { ch.attributes[k] = (ch.attributes[k] || 0) - v; if (!ch.attributes[k]) delete ch.attributes[k]; }
+  for (const t of st.traits) { const i = ch.traits.findIndex(y => sameTrait(y, t)); if (i < 0) continue; const x = ch.traits[i];
+    if (t.levels != null && (x.levels || 0) > t.levels) x.levels -= t.levels; else ch.traits.splice(i, 1); }
+  for (const s of st.skills) { const i = ch.skills.findIndex(y => sameSkill(y, s)); if (i < 0) continue; ch.skills[i].points -= s.points; if (ch.skills[i].points <= 0) ch.skills.splice(i, 1); }
+  for (const s of st.spells) { const i = ch.spells.findIndex(y => y.name === s.name); if (i < 0) continue; ch.spells[i].points -= s.points; if (ch.spells[i].points < 10) ch.spells.splice(i, 1); }
+}
+function takeOffProfession(ch) {
+  const prof = (LIB.professions || []).find(p => p.name === ch.profession?.name);
+  if (prof) unstampFrom(ch, BC.profStamp(prof, ch.profession.picks || {}));
+  delete ch.profession;
+}
+$("papply").addEventListener("click", () => {
+  if (!P) return;
+  const ch = C(), prof = P.prof, picks = P.picks;
+  for (const k of Object.keys(picks)) if (!picks[k]?.length) delete picks[k];
+  if (ch.profession) takeOffProfession(ch);
+  stampInto(ch, BC.profStamp(prof, picks));
+  ch.profession = { name: prof.name, picks };
+  closeProf(); change(); toast(`${prof.name} applied`);
+});
+$("pcancel").addEventListener("click", closeProf);
+$("pclose").addEventListener("click", closeProf);
+$("pmodal").addEventListener("click", e => { if (e.target === $("pmodal")) closeProf(); });
+function renderProfession() {
+  const ch = C(), box = $("profession"), pr = R.profession; box.innerHTML = "";
+  if (!ch.profession) {
+    box.append(el("div", { class: "list-note" }, "None."));
+    const s = el("select", { "aria-label": "Profession" }, el("option", { value: "" }, "choose a profession…"), ...(LIB.professions || []).map(p => el("option", { value: p.name }, `${p.name} · ${refTxt(p.ref)}`)));
+    box.append(el("div", { class: "addrow ed", style: "margin-top:0" }, s, el("button", { type: "button", onclick: () => { const p = (LIB.professions || []).find(x => x.name === s.value); if (p) openProf(p, {}); } }, "choose")));
+    return;
+  }
+  const remove = el("button", { type: "button", class: "danger", onclick: () => { if (confirm(`Remove ${ch.profession.name} and take its traits, skills and spells off the sheet?`)) { takeOffProfession(ch); change(); } } }, "remove profession");
+  if (!pr) { box.append(el("div", { class: "bad" }, `${ch.profession.name}: not in the library`), el("div", { class: "ed" }, remove)); return; }
+  const done = pr.checks.filter(c => c.ok).length;
+  box.append(el("div", { class: "row" },
+    el("span", { class: "nm roll", role: "button", tabindex: "0", onclick: () => openProf(pr.rec, ch.profession.picks), onkeydown: e => e.key === "Enter" && e.currentTarget.click() }, pr.rec.name),
+    el("span", { class: "meta" }, `${refTxt(pr.rec.ref)} · ${done} of ${pr.checks.length} choices made`),
+    el("span", { class: "val" }, el("b", {}, String(pr.rec.points * 10)), el("span", {}, "template")), el("span")));
+  const stat = el("div", { class: "pstat" });
+  for (const c of pr.checks.filter(c => !c.ok)) stat.append(el("span", { class: "bad" }, c.kind === "spec" ? c.label : `${c.label}: ${c.have} of ${c.n}${c.kind === "points" ? " points" : " chosen"}`));
+  for (const n of pr.stamp.notes) stat.append(el("span", { class: "muted" }, `by hand: ${n.text}${n.points ? ` (${sgn(n.points)})` : ""}`));
+  if (stat.childNodes.length) box.append(stat);
+  if (R.budget < pr.rec.points * 10) box.append(el("p", { class: "hint" }, `Dungeon Fantasy delvers start on ${pr.rec.points * 10} points; this sheet's budget is ${R.budget}.`));
+  box.append(el("div", { class: "ed", style: "display:flex;gap:8px;margin-top:6px" }, el("button", { type: "button", onclick: () => openProf(pr.rec, ch.profession.picks) }, "edit choices"), remove));
 }
 
 function renderTemplates() {
@@ -573,13 +809,14 @@ function renderSpells() {
   const ch = C(), K = $("spells"); K.innerHTML = "";
   const mag = R.traits.find(t => /^magery$/i.test(t.name));
   const en = R.energy;
-  $("magery").textContent = `${mag ? `Magery ${mag.levels} adds +${mag.levels} to spells` : "no Magery"} · energy FP ${f1(en.FP)}${en.largest ? ` + Powerstone ${en.largest}` : ""}`;
+  const piSp = R.spells.find(s => s.power);
+  $("magery").textContent = `${mag ? `Magery ${mag.levels} adds +${mag.levels} to spells` : piSp ? "" : "no Magery"}${piSp ? `${mag ? " · " : ""}Power Investiture ${piSp.pi} adds +${piSp.pi} to ${piSp.power} spells` : ""} · energy FP ${f1(en.FP)}${en.largest ? ` + Powerstone ${en.largest}` : ""}`;
   if (!ch.spells.length) K.append(el("div", { class: "list-note" }, "No spells."));
   R.spells.forEach((s, i) => {
     const short = s.energy != null && s.energy > en.FP + en.largest;
     K.append(el("div", { class: "row" },
       el("span", { class: "nm roll", role: "button", tabindex: "0", onclick: () => pick({ kind: "spell", i }), onkeydown: e => e.key === "Enter" && e.currentTarget.click() }, s.name, s.inst.notes ? ` (${s.inst.notes})` : ""),
-      el("span", { class: "meta" }, s.rec ? [`${s.attr}/${s.diff} · ${s.rec.college.join(", ")} · `,
+      el("span", { class: "meta" }, s.rec ? [`${s.attr}/${s.diff} · ${s.power ? `${s.power} · PI ${s.piNeed ?? "?"}` : s.rec.college.join(", ")} · `,
         el("span", { class: short ? "bad" : null, title: short ? "more than FP plus the largest Powerstone; the rest comes from HP" : null }, `cost ${s.rec.cost}${s.energy != null && String(s.energy) !== String(s.rec.cost).trim() ? ` (${s.energy} at this skill)` : ""}`),
         ` · ${s.rec.time} · ${s.ref}`] : el("span", { class: "bad" }, "not in library"),
         s.rec ? (s.prereqOk ? el("span", { class: "good" }, " · prereqs ok") : el("span", { class: "bad" }, ` · needs ${s.missing.join("; ")}`)) : ""),
@@ -1222,7 +1459,7 @@ $("notes").addEventListener("input", e => { C().notes = e.target.value; save(); 
 $("rclose").addEventListener("click", closeRoller);
 $("rtabs").addEventListener("click", e => { const b = e.target.closest("[data-rtab]"); if (!b) return; rtab = b.dataset.rtab; renderRules(target()); });
 $("rmodal").addEventListener("click", e => { if (e.target === e.currentTarget) closeRoller(); });
-document.addEventListener("keydown", e => { if (e.key === "Escape") closeRoller(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") { if (!$("pmodal").hidden) closeProf(); else closeRoller(); } });
 $("debug").addEventListener("click", () => { UI.debug = !UI.debug; saveUI(); applyDebug(); roller(); });
 $("editmode").addEventListener("click", () => { editing = !editing; applyMode(); });
 $("budget").addEventListener("change", e => { ROOT.budget = Math.max(0, Math.round(+e.target.value || 0)); change(); });

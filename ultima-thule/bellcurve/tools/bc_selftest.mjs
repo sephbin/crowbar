@@ -144,5 +144,19 @@ eq("mail under a breastplate: 7 against crushing (mail -2), breastplate front on
 eq("boots: DR 2 on the foot", ch({ equipment: [{ name: "Boots" }] }).dr.foot, 2);
 eq("foot: -4, as for a hand", BC.LOCS.find(l => l.name === "foot").pen, -4);
 
+// Dungeon Fantasy professions (DF1 pp.4-13), parsed from the book
+eq("all 11 DF1 professions total 250 points", lib.professions.map(p => p.points).every(x => x === 250) && lib.professions.length === 11, true);
+const knight = lib.professions.find(p => p.name === "Knight");
+const kst = BC.profStamp(knight, { g7: [{ o: 1 }], "g7.1.0": [{ o: 1 }, { o: 3 }], "g5.0": [{ o: 0 }], "g8.3": [{ spec: "Land" }] });
+eq("Knight: two weapons from package 2 at 12 points each, Brawling, Strategy (Land)", ["Broadsword", "Shortsword", "Brawling"].map(n => kst.skills.find(s => s.name === n)?.points).concat(kst.skills.find(s => s.name === "Strategy")?.spec), [120, 120, 20, "Land"]);
+const thief = lib.professions.find(p => p.name === "Thief"), tg = thief.groups.find(g => g.kind === "points" && g.section === "advantages");
+const hmd = tg.options.findIndex(o => o.name === "High Manual Dexterity");
+eq("Thief: High Manual Dexterity 2 raises the fixed level 1 for 5 points (x10)", [BC.profOptCost(tg.options[hmd], { levels: 2 }), BC.profStamp(thief, { [tg.id]: [{ o: hmd, levels: 2 }] }).traits.find(t => t.name === "High Manual Dexterity").levels], [50, 2]);
+const priest = PI => BC.compute({ attributes: {}, traits: [{ name: "Clerical Investment" }, { name: "Power Investiture", levels: PI }], skills: [], spells: [{ name: "Bless", points: 10, power: "clerical" }], equipment: [] }, lib);
+eq("clerical Bless needs Power Investiture 5 (DF1 p.19)", [priest(3).issues.some(x => x.sev === "ERROR" && /Bless: needs Power Investiture 5/.test(x.msg)), priest(5).issues.some(x => x.sev === "ERROR" && /Bless/.test(x.msg))], [true, false]);
+eq("Vow is the disadvantage (Major -10), not the one-point quirk", BC.traitCost(lib.traits.find(t => t.name === "Vow"), { name: "Vow", modifiers: ["Major"] }, lib.modifiers).cost, -100);
+eq("x1/3 multiplier: Resistant to Disease (+3) costs 3 (x10)", BC.traitCost(lib.traits.find(t => t.name === "Resistant"), { name: "Resistant", modifiers: ["Occasional: Disease, Ingested Poison, etc.", "+3 to all HT rolls to resist"] }, lib.modifiers).cost, 30);
+eq("Research at TL3 needs literacy only, not Computer Operation", ch({ tl: 3, skills: [{ name: "Research", points: 10 }] }).issues.some(x => x.sev === "ERROR" && /Research/.test(x.msg)), false);
+
 console.log(fail ? `${fail} failure(s)` : "all passed");
 process.exit(fail ? 1 : 0);

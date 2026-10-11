@@ -1,0 +1,6 @@
+{
+  "note": "Book traits the GCS library lacks. Costs x10. Each has its page; none is a house rule.",
+  "traits": [
+    { "type": "trait", "name": "Code of Honor (Bushido)", "base": -150, "kind": "disadvantage", "cr": null, "tags": ["Disadvantage", "Mental"], "ref": "DF1:9" }
+  ]
+}

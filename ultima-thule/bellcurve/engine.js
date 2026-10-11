@@ -148,7 +148,8 @@ function parseAdj(adj) {
   if (/^x/i.test(s)) {
     const body = s.slice(1);
     if (body.endsWith("%")) return { kind: "pmult", amount: parseFloat(body) };
-    return { kind: "mult", amount: parseFloat(body) };
+    const frac = /^(\d+(?:\.\d+)?)\/(\d+(?:\.\d+)?)$/.exec(body);   // "x1/3" (Resistant, +3 to HT rolls)
+    return { kind: "mult", amount: frac ? +frac[1] / +frac[2] : parseFloat(body) };
   }
   if (s.endsWith("%")) return { kind: "pct", amount: parseFloat(s) };
   return { kind: "add", amount: parseFloat(s) };
@@ -328,12 +329,17 @@ function findSkill(lib, name, spec) {
   return { rec: null, why: `needs a specialization (${rows.filter(r => !r.spec.startsWith("@")).slice(0, 8).map(r => r.spec).join(", ")}${rows.length > 8 ? ", …" : ""})` };
 }
 const findOne = (map, name) => (map.get(lc(name)) || [])[0] || null;
+// a trait instance's record: by name, or by page where the name has two ("Vow" with "ref": "B165" is the quirk)
+const findTrait = (ix, inst) => { const c = ix.traits.get(lc(inst.name)) || []; return (inst.ref && c.find(r => String(r.ref || "").split(",").map(x => x.trim()).includes(inst.ref))) || c[0] || null; };
 
 // ---------------------------------------------------------------- prerequisites
 function checkPrereq(p, st) {
   // returns {ok, missing:[text]}
   if (!p) return { ok: true, missing: [] };
   if (p.type === "prereq_list") {
+    // a list that applies only at some TLs (Research: Computer Operation at TL8+, literacy at TL4-); skipped when the
+    // campaign TL isn't set
+    if (p.when_tl && p.when_tl.compare !== "any" && (st.tl == null || !numCmp(p.when_tl, st.tl))) return { ok: true, missing: [] };
     const res = (p.prereqs || []).map(x => checkPrereq(x, st));
     if (!res.length) return { ok: true, missing: [] };
     if (p.all !== false) { const bad = res.filter(r => !r.ok); return { ok: !bad.length, missing: bad.flatMap(r => r.missing) }; }
@@ -346,6 +352,8 @@ function checkPrereq(p, st) {
     case "trait_prereq": {
       const hit = st.traits.find(t => strCmp(p.name, t.name) && numCmp(p.level, t.levels ?? 0) && strCmp(p.notes, t.notes || ""));
       ok = !!hit;
+      // everyone speaks and writes a native language for free (B23-B24); it's only on the sheet when languages are recorded
+      if (!ok && has && /^language/i.test(p.name?.qualifier || "") && !st.traits.some(t => /^language/i.test(t.name))) ok = true;
       label = `trait ${p.name?.qualifier}${p.level && p.level.compare !== "any" ? " level " + cmpTxt(p.level) : ""}${p.notes && p.notes.compare !== "any" ? ` (notes ${cmpTxt(p.notes)})` : ""}`;
       break;
     }
@@ -501,7 +509,8 @@ const spellEnergy = (cost, level) => {
 // stamp() turns a profession and its picks into what goes on the sheet; check() reports each choice's state.
 function profOptCost(o, pick = {}) {
   if (o.variable) return pick.cost ?? 0;
-  if (o.per != null && (o.min != null || o.type === "attr")) return o.per * (pick.levels ?? o.min ?? 1);
+  // an upgrade over a fixed level ("High Manual Dexterity 2-4" after level 1) pays only for the added levels
+  if (o.per != null && (o.min != null || o.type === "attr")) return o.per * ((pick.levels ?? o.min ?? 1) - (o.from || 0));
   return o.cost ?? 0;
 }
 const profGroupOf = (prof, g, p) => p.g ? prof.groups.find(x => x.id === p.g) : g;
@@ -510,7 +519,8 @@ function profWalk(prof, picks, fn) {
   const take = (o, pick, path) => {
     if (o.type === "group") return choose(o, path);
     if (o.type === "bundle") return o.items.forEach((it, i) => take(it, {}, `${path}.${i}`));
-    fn(o, pick, path);
+    // a fixed item's specialty is recorded as a pick at its own place: "g6.3": [{ "spec": "Arctic" }]
+    fn(o, pick.o == null && !pick.spell && pick.text == null && !pick.skill ? { ...(picks?.[path]?.[0] || {}), ...pick } : pick, path);
   };
   const choose = (g, path) => {
     for (const p of picks?.[path] || []) {
@@ -540,15 +550,20 @@ function profChoices(prof, picks) {
   }
   return out;
 }
+// the specialty a taken skill ends up with: the pick's, the book's, or the skill's own name where the library has it
+// as a specialty ("Shield" is Shield (Shield))
+const profSpec = (o, p) => p.spec ?? o.spec ?? (o.choices?.includes(o.name) ? o.name : undefined);
 function profCheck(prof, picks) {
-  return profChoices(prof, picks).map(({ g, path, label }) => {
+  const specs = [];
+  profWalk(prof, picks, (o, p, path) => { if (o.type === "skill" && (o.ask || o.choices) && !profSpec(o, p)) specs.push({ path, label: `${o.name}: choose a specialty`, kind: "spec", ok: false, o }); });
+  return [...specs, ...profChoices(prof, picks).map(({ g, path, label }) => {
     const ps = picks?.[path] || [];
     if (g.kind === "points") {
       const have = ps.reduce((a, p) => { const o = p.o != null ? profGroupOf(prof, g, p)?.options?.[p.o] : null; return a + (o ? profOptCost(o, p) : (p.cost ?? 0)); }, 0);
       return { path, label, kind: "points", n: g.n, have, ok: have === g.n, g };
     }
     return { path, label, kind: "count", n: g.n, have: ps.length, ok: ps.length === g.n, g };
-  });
+  })];
 }
 function profStamp(prof, picks) {
   const st = { attributes: { ...prof.attributes }, traits: [], skills: [], spells: [], notes: [] };
@@ -567,7 +582,7 @@ function profStamp(prof, picks) {
       if (o.modifiers) t.modifiers = [...o.modifiers];
       st.traits.push(t);
     } else if (o.type === "skill") {
-      const spec = p.spec ?? o.spec, same = st.skills.find(s => s.name === o.name && (s.spec || "") === (spec || ""));
+      const spec = profSpec(o, p), same = st.skills.find(s => s.name === o.name && (s.spec || "") === (spec || ""));
       if (same) same.points += cost; else st.skills.push({ name: o.name, ...(spec ? { spec } : {}), points: cost });
     } else if (o.type === "spell") st.spells.push({ name: o.name, points: cost, ...(o.power ? { power: o.power } : {}) });
     else st.notes.push({ text: o.name, points: cost });
@@ -603,7 +618,7 @@ function compute(ch, lib, opts = {}) {
     for (const k of ATTR_KEYS) if (tpl.attributes?.[k]) tplAttrs[k] = (tplAttrs[k] || 0) + tpl.attributes[k];
     (tpl.traits || []).forEach((t, i) => {
       if (!removedSet.has(removedKey(tpl.name, t)) && !removedSet.has(lc(`${tpl.name}|${t.name}`))) { traitRows.push({ inst: t, from: tpl.name, path: `templates[${j}].traits[${i}]` }); return; }
-      const rec = t.rec || findOne(ix.traits, t.name);
+      const rec = t.rec || findTrait(ix, t);
       const cost = rec ? traitCost(rec, t, lib.modifiers || []).cost : (t.points ?? 0);
       removed.push({ template: tpl.name, trait: fullName(t.name, t.notes), name: t.name, inst: t, rec, cost });
       add("ok", `${fullName(t.name, t.notes)}: taken off the ${tpl.name} template (${cost < 0 ? "+" : "−"}${Math.abs(cost)} pts to the total)`, rec?.ref || "", `templates[${j}].traits[${i}]`);
@@ -614,7 +629,7 @@ function compute(ch, lib, opts = {}) {
   (ch.traits || []).forEach((t, i) => traitRows.push({ inst: t, from: null, path: `traits[${i}]` }));
 
   const traits = traitRows.map(({ inst, from, path }) => {
-    const rec = inst.rec || findOne(ix.traits, inst.name);
+    const rec = inst.rec || findTrait(ix, inst);
     const row = { inst, rec, from, path, name: inst.name, levels: inst.levels ?? (rec?.canLevel ? 1 : 0), notes: inst.notes || "", cost: inst.points ?? 0, features: [] };
     if (!rec) {
       add("ERROR", `${inst.name}: not in library. Flag for Andrew; using declared ${inst.points ?? 0} pts`, "", path);
@@ -842,7 +857,7 @@ function compute(ch, lib, opts = {}) {
   });
 
   // ---- prerequisites
-  const pstate = { traits, skills: skillRows, spells: spellRows, attrs: A };
+  const pstate = { traits, skills: skillRows, spells: spellRows, attrs: A, tl: ctl };
   for (const t of traits) if (t.rec?.prereqs) {
     const r = checkPrereq(t.rec.prereqs, pstate);
     if (!r.ok) add("ERROR", `${t.name}: prerequisites missing: ${r.missing.join("; ")}`, t.rec.ref, t.path);
@@ -867,7 +882,7 @@ function compute(ch, lib, opts = {}) {
     if (!prof) add("ERROR", `profession "${ch.profession.name}" not in library`, "", "profession");
     else {
       const picks = ch.profession.picks || {}, checks = profCheck(prof, picks), stamp = profStamp(prof, picks);
-      for (const c of checks) if (!c.ok) add("WARN", `${prof.name}: ${c.label}: ${c.kind === "points" ? `${c.have / 10} of ${c.n / 10} points` : `${c.have} of ${c.n} chosen`}`, prof.ref, "profession");
+      for (const c of checks) if (!c.ok) add("WARN", c.kind === "spec" ? `${prof.name}: ${c.label}` : `${prof.name}: ${c.label}: ${c.kind === "points" ? `${c.have / 10} of ${c.n / 10} points` : `${c.have} of ${c.n} chosen`}`, prof.ref, "profession");
       for (const t of stamp.traits) if (!traits.some(x => lc(x.name) === lc(t.name) && (!t.notes || lc(x.notes || "") === lc(t.notes))))
         add("WARN", `${prof.name}: ${fullName(t.name, t.notes)} is not on the sheet`, prof.ref, "profession");
       for (const s of stamp.skills) { const have = skillRows.find(x => x.rec && lc(x.name) === lc(s.name) && (!s.spec || lc(x.spec || "") === lc(s.spec)));

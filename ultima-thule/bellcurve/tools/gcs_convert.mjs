@@ -232,6 +232,15 @@ for (const f of SOURCES.modifiers) for (const r of walk(read(L(f)).rows.map(func
 const SRC = path.join(ROOT, "data", "src");
 const house = read(path.join(SRC, "house-rules.json"));
 for (const t of house.traits) out.traits.unshift({ ...t, house: true });
+// book traits GCS lacks, with their page (Code of Honor (Bushido) at -15 is DF1's price)
+for (const t of read(path.join(SRC, "book-traits.json")).traits) out.traits.push(t);
+// where a name has both a full trait and GCS's one-point quirk version (Vow, Obsession, Code of Honor), the full trait
+// comes first, so a plain name finds it; "ref" on an instance picks the quirk (B165)
+{
+  const first = new Map(); out.traits.forEach((t, i) => { if (!first.has(t.name)) first.set(t.name, i); });
+  const order = new Map(out.traits.map((t, i) => [t, [first.get(t.name), t.kind === "quirk" ? 1 : 0, i]]));
+  out.traits.sort((a, b) => { const x = order.get(a), y = order.get(b); return x[0] - y[0] || x[1] - y[1] || x[2] - y[2]; });
+}
 out.natural = read(path.join(SRC, "natural.json")).natural;
 out.circumstances = read(path.join(SRC, "circumstances.json")).circumstances;
 out.modsets = read(path.join(SRC, "modifier-sets.json")).sets;

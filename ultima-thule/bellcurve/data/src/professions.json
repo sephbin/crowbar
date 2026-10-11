@@ -225,29 +225,28 @@
        "type": "trait",
        "name": "Striking ST",
        "cost": 50,
-       "levels": 1,
-       "upgrade": true
+       "levels": 1
       },
       {
        "type": "trait",
        "name": "Striking ST",
        "cost": 90,
        "levels": 2,
-       "upgrade": true
+       "modifiers": [
+        "Size (-10%)"
+       ]
       },
       {
        "type": "trait",
        "name": "Temperature Tolerance",
        "cost": 10,
-       "levels": 1,
-       "upgrade": true
+       "levels": 1
       },
       {
        "type": "trait",
        "name": "Temperature Tolerance",
        "cost": 20,
-       "levels": 2,
-       "upgrade": true
+       "levels": 2
       },
       {
        "type": "trait",
@@ -301,15 +300,13 @@
        "type": "trait",
        "name": "Low TL",
        "cost": -50,
-       "levels": 1,
-       "upgrade": true
+       "levels": 1
       },
       {
        "type": "trait",
        "name": "Low TL",
        "cost": -100,
-       "levels": 2,
-       "upgrade": true
+       "levels": 2
       },
       {
        "type": "trait",
@@ -341,13 +338,19 @@
        "type": "trait",
        "name": "Appearance",
        "notes": "Unattractive",
-       "cost": -40
+       "cost": -40,
+       "modifiers": [
+        "Unattractive (-40)"
+       ]
       },
       {
        "type": "trait",
        "name": "Appearance",
        "notes": "Ugly",
-       "cost": -80
+       "cost": -80,
+       "modifiers": [
+        "Ugly (-80)"
+       ]
       },
       {
        "type": "trait",
@@ -389,15 +392,13 @@
        "type": "trait",
        "name": "Ham-Fisted",
        "cost": -50,
-       "levels": 1,
-       "upgrade": true
+       "levels": 1
       },
       {
        "type": "trait",
        "name": "Ham-Fisted",
        "cost": -100,
-       "levels": 2,
-       "upgrade": true
+       "levels": 2
       },
       {
        "type": "trait",
@@ -420,7 +421,10 @@
        "type": "trait",
        "name": "Sense of Duty",
        "notes": "Adventuring companions",
-       "cost": -50
+       "cost": -50,
+       "modifiers": [
+        "Friends and Companions (-50)"
+       ]
       }
      ]
     },
@@ -445,7 +449,24 @@
       {
        "type": "skill",
        "name": "Survival",
-       "ask": "any",
+       "choices": [
+        "Arctic",
+        "Bank",
+        "Deep Ocean Vent",
+        "Desert",
+        "Fresh-Water Lake",
+        "Island/Beach",
+        "Jungle",
+        "Mountain",
+        "Open Ocean",
+        "Plains",
+        "Reef",
+        "River/Stream",
+        "Salt-Water Sea",
+        "Swampland",
+        "Tropical Lagoon",
+        "Woodlands"
+       ],
        "cost": 10,
        "diff": "A"
       },
@@ -704,7 +725,12 @@
       {
        "type": "skill",
        "name": "Animal Handling",
-       "ask": "any",
+       "choices": [
+        "Big Cats",
+        "Dogs",
+        "Equines",
+        "Raptors"
+       ],
        "cost": 20,
        "diff": "A"
       },
@@ -898,19 +924,28 @@
        "type": "trait",
        "name": "Appearance",
        "notes": "Attractive",
-       "cost": 40
+       "cost": 40,
+       "modifiers": [
+        "Attractive (40)"
+       ]
       },
       {
        "type": "trait",
        "name": "Appearance",
        "notes": "Handsome",
-       "cost": 120
+       "cost": 120,
+       "modifiers": [
+        "Beautiful (120)"
+       ]
       },
       {
        "type": "trait",
        "name": "Appearance",
        "notes": "Very Handsome",
-       "cost": 160
+       "cost": 160,
+       "modifiers": [
+        "Very Beautiful (160)"
+       ]
       },
       {
        "type": "trait",
@@ -932,7 +967,9 @@
        "cost": 50,
        "min": 2,
        "max": 6,
-       "per": 50
+       "per": 50,
+       "upgrade": true,
+       "from": 1
       },
       {
        "type": "trait",
@@ -948,7 +985,10 @@
        "type": "trait",
        "name": "Eidetic Memory",
        "notes": "Photographic",
-       "cost": 100
+       "cost": 100,
+       "modifiers": [
+        "Photographic (50)"
+       ]
       },
       {
        "type": "trait",
@@ -1069,7 +1109,10 @@
        "type": "trait",
        "name": "Sense of Duty",
        "notes": "Adventuring companions",
-       "cost": -50
+       "cost": -50,
+       "modifiers": [
+        "Friends and Companions (-50)"
+       ]
       },
       {
        "type": "trait",
@@ -1301,7 +1344,16 @@
       {
        "type": "skill",
        "name": "Fast-Draw",
-       "ask": "any",
+       "choices": [
+        "Arrow",
+        "Force Sword",
+        "Knife",
+        "Long Arm",
+        "Pistol",
+        "Sword",
+        "Two-Handed Sword",
+        "Ammo"
+       ],
        "cost": 10,
        "diff": "E"
       },
@@ -1314,7 +1366,18 @@
       {
        "type": "skill",
        "name": "Current Affairs",
-       "ask": "any",
+       "choices": [
+        "Business",
+        "Headline News",
+        "High Culture",
+        "People",
+        "Politics",
+        "Popular Culture",
+        "Regional",
+        "Science & Technology",
+        "Sports",
+        "Travel"
+       ],
        "cost": 10,
        "diff": "E"
       },
@@ -1441,7 +1504,13 @@
       {
        "type": "skill",
        "name": "Connoisseur",
-       "ask": "any",
+       "choices": [
+        "Dance",
+        "Literature",
+        "Music",
+        "Visual Arts",
+        "Wine"
+       ],
        "cost": 10,
        "diff": "A"
       },
@@ -1665,15 +1734,13 @@
        "type": "trait",
        "name": "Talent (Healer)",
        "cost": 100,
-       "levels": 1,
-       "upgrade": true
+       "levels": 1
       },
       {
        "type": "trait",
        "name": "Talent (Healer)",
        "cost": 200,
-       "levels": 2,
-       "upgrade": true
+       "levels": 2
       },
       {
        "type": "trait",
@@ -1758,13 +1825,19 @@
        "type": "trait",
        "name": "Sense of Duty",
        "notes": "Coreligionists",
-       "cost": -100
+       "cost": -100,
+       "modifiers": [
+        "Large Group (-100)"
+       ]
       },
       {
        "type": "trait",
        "name": "Vow",
        "notes": "No edged weapons",
-       "cost": -100
+       "cost": -100,
+       "modifiers": [
+        "Major (-100)"
+       ]
       }
      ]
     },
@@ -1794,13 +1867,19 @@
        "type": "trait",
        "name": "Intolerance",
        "notes": "\"Evil\" religions",
-       "cost": -50
+       "cost": -50,
+       "modifiers": [
+        "Scope: Common (-50)"
+       ]
       },
       {
        "type": "trait",
        "name": "Intolerance",
        "notes": "All other religions",
-       "cost": -100
+       "cost": -100,
+       "modifiers": [
+        "Scope: Anyone unlike you (-100)"
+       ]
       },
       {
        "type": "trait",
@@ -1810,6 +1889,9 @@
        "noteChoices": [
         "Chastity",
         "Vegetarianism"
+       ],
+       "modifiers": [
+        "Minor (-50)"
        ]
       },
       {
@@ -1881,7 +1963,10 @@
        "type": "trait",
        "name": "Sense of Duty",
        "notes": "Adventuring companions",
-       "cost": -50
+       "cost": -50,
+       "modifiers": [
+        "Friends and Companions (-50)"
+       ]
       },
       {
        "type": "trait",
@@ -1931,7 +2016,12 @@
       {
        "type": "skill",
        "name": "Innate Attack",
-       "ask": "any",
+       "choices": [
+        "Beam",
+        "Breath",
+        "Gaze",
+        "Projectile"
+       ],
        "cost": 40,
        "diff": "E"
       },
@@ -2284,21 +2374,21 @@
        "cost": 50,
        "min": 2,
        "max": 4,
-       "per": 50
+       "per": 50,
+       "upgrade": true,
+       "from": 1
       },
       {
        "type": "trait",
        "name": "Talent (Healer)",
        "cost": 100,
-       "levels": 1,
-       "upgrade": true
+       "levels": 1
       },
       {
        "type": "trait",
        "name": "Talent (Healer)",
        "cost": 200,
-       "levels": 2,
-       "upgrade": true
+       "levels": 2
       },
       {
        "type": "trait",
@@ -2322,15 +2412,13 @@
        "type": "trait",
        "name": "Talent (Outdoorsman)",
        "cost": 100,
-       "levels": 1,
-       "upgrade": true
+       "levels": 1
       },
       {
        "type": "trait",
        "name": "Talent (Outdoorsman)",
        "cost": 200,
-       "levels": 2,
-       "upgrade": true
+       "levels": 2
       },
       {
        "type": "trait",
@@ -2400,19 +2488,28 @@
        "type": "trait",
        "name": "Sense of Duty",
        "notes": "Wild nature",
-       "cost": -150
+       "cost": -150,
+       "modifiers": [
+        "Entire Race (-150)"
+       ]
       },
       {
        "type": "trait",
        "name": "Vow",
        "notes": "Vegetarianism",
-       "cost": -50
+       "cost": -50,
+       "modifiers": [
+        "Minor (-50)"
+       ]
       },
       {
        "type": "trait",
        "name": "Vow",
        "notes": "Never sleep indoors",
-       "cost": -100
+       "cost": -100,
+       "modifiers": [
+        "Major (-100)"
+       ]
       },
       {
        "type": "trait",
@@ -2437,7 +2534,10 @@
        "type": "trait",
        "name": "Intolerance",
        "notes": "Urbanites",
-       "cost": -50
+       "cost": -50,
+       "modifiers": [
+        "Scope: Common (-50)"
+       ]
       },
       {
        "type": "trait",
@@ -2536,7 +2636,12 @@
       {
        "type": "skill",
        "name": "Innate Attack",
-       "ask": "any",
+       "choices": [
+        "Beam",
+        "Breath",
+        "Gaze",
+        "Projectile"
+       ],
        "cost": 40,
        "diff": "E"
       },
@@ -2683,7 +2788,12 @@
       {
        "type": "skill",
        "name": "Animal Handling",
-       "ask": "any",
+       "choices": [
+        "Big Cats",
+        "Dogs",
+        "Equines",
+        "Raptors"
+       ],
        "cost": 10,
        "diff": "A"
       },
@@ -2751,7 +2861,24 @@
       {
        "type": "skill",
        "name": "Survival",
-       "ask": "any",
+       "choices": [
+        "Arctic",
+        "Bank",
+        "Deep Ocean Vent",
+        "Desert",
+        "Fresh-Water Lake",
+        "Island/Beach",
+        "Jungle",
+        "Mountain",
+        "Open Ocean",
+        "Plains",
+        "Reef",
+        "River/Stream",
+        "Salt-Water Sea",
+        "Swampland",
+        "Tropical Lagoon",
+        "Woodlands"
+       ],
        "cost": 10,
        "diff": "A"
       }
@@ -2811,14 +2938,25 @@
       {
        "type": "skill",
        "name": "Animal Handling",
-       "spec": "any other",
+       "choices": [
+        "Big Cats",
+        "Dogs",
+        "Equines",
+        "Raptors"
+       ],
        "cost": 10,
        "diff": "A"
       },
       {
        "type": "skill",
        "name": "Hidden Lore",
-       "spec": "any other",
+       "choices": [
+        "Conspiracies",
+        "Demon Lore",
+        "Earth",
+        "Faerie Lore",
+        "Spirit Lore"
+       ],
        "cost": 10,
        "diff": "A"
       },
@@ -2972,7 +3110,9 @@
        "cost": 50,
        "min": 2,
        "max": 4,
-       "per": 50
+       "per": 50,
+       "upgrade": true,
+       "from": 1
       },
       {
        "type": "trait",
@@ -3109,15 +3249,13 @@
        "type": "trait",
        "name": "Striking ST",
        "cost": 50,
-       "levels": 1,
-       "upgrade": true
+       "levels": 1
       },
       {
        "type": "trait",
        "name": "Striking ST",
        "cost": 100,
-       "levels": 2,
-       "upgrade": true
+       "levels": 2
       },
       {
        "type": "trait",
@@ -3142,13 +3280,19 @@
        "type": "trait",
        "name": "Sense of Duty",
        "notes": "Good entities",
-       "cost": -100
+       "cost": -100,
+       "modifiers": [
+        "Large Group (-100)"
+       ]
       },
       {
        "type": "trait",
        "name": "Vow",
        "notes": "Own no more than horse can carry",
-       "cost": -100
+       "cost": -100,
+       "modifiers": [
+        "Major (-100)"
+       ]
       }
      ]
     },
@@ -3196,13 +3340,19 @@
        "type": "trait",
        "name": "Intolerance",
        "notes": "\"Evil\" religions",
-       "cost": -50
+       "cost": -50,
+       "modifiers": [
+        "Scope: Common (-50)"
+       ]
       },
       {
        "type": "trait",
        "name": "Intolerance",
        "notes": "All other religions",
-       "cost": -100
+       "cost": -100,
+       "modifiers": [
+        "Scope: Anyone unlike you (-100)"
+       ]
       },
       {
        "type": "trait",
@@ -3220,7 +3370,10 @@
        "type": "trait",
        "name": "Vow",
        "notes": "Chastity",
-       "cost": -50
+       "cost": -50,
+       "modifiers": [
+        "Minor (-50)"
+       ]
       }
      ]
     },
@@ -3262,7 +3415,10 @@
        "type": "trait",
        "name": "Sense of Duty",
        "notes": "Adventuring companions",
-       "cost": -50
+       "cost": -50,
+       "modifiers": [
+        "Friends and Companions (-50)"
+       ]
       },
       {
        "type": "trait",
@@ -3536,7 +3692,16 @@
       {
        "type": "skill",
        "name": "Fast-Draw",
-       "ask": "any",
+       "choices": [
+        "Arrow",
+        "Force Sword",
+        "Knife",
+        "Long Arm",
+        "Pistol",
+        "Sword",
+        "Two-Handed Sword",
+        "Ammo"
+       ],
        "cost": 10,
        "diff": "E"
       },
@@ -3797,15 +3962,13 @@
        "type": "trait",
        "name": "Striking ST",
        "cost": 50,
-       "levels": 1,
-       "upgrade": true
+       "levels": 1
       },
       {
        "type": "trait",
        "name": "Striking ST",
        "cost": 100,
-       "levels": 2,
-       "upgrade": true
+       "levels": 2
       },
       {
        "type": "trait",
@@ -3863,7 +4026,10 @@
        "name": "Obsession",
        "notes": "Slay some specific type of monster",
        "cost": -50,
-       "cr": 12
+       "cr": 12,
+       "modifiers": [
+        "Short term (-50)"
+       ]
       },
       {
        "type": "trait",
@@ -3874,13 +4040,19 @@
        "type": "trait",
        "name": "Sense of Duty",
        "notes": "Nation",
-       "cost": -100
+       "cost": -100,
+       "modifiers": [
+        "Large Group (-100)"
+       ]
       },
       {
        "type": "trait",
        "name": "Vow",
        "notes": "Never refuse a challenge to combat",
-       "cost": -100
+       "cost": -100,
+       "modifiers": [
+        "Major (-100)"
+       ]
       },
       {
        "type": "trait",
@@ -3936,7 +4108,10 @@
        "type": "trait",
        "name": "Sense of Duty",
        "notes": "Adventuring companions",
-       "cost": -50
+       "cost": -50,
+       "modifiers": [
+        "Friends and Companions (-50)"
+       ]
       }
      ]
     },
@@ -3967,7 +4142,16 @@
       {
        "type": "skill",
        "name": "Fast-Draw",
-       "ask": "any",
+       "choices": [
+        "Arrow",
+        "Force Sword",
+        "Knife",
+        "Long Arm",
+        "Pistol",
+        "Sword",
+        "Two-Handed Sword",
+        "Ammo"
+       ],
        "cost": 10,
        "diff": "E"
       },
@@ -4510,7 +4694,8 @@
        "type": "trait",
        "name": "Talent (Chi Talent)",
        "cost": 150,
-       "levels": 3
+       "levels": 3,
+       "upgrade": true
       },
       {
        "type": "trait",
@@ -4603,7 +4788,10 @@
        "type": "trait",
        "name": "Weapon Master",
        "notes": "One exotic weapon",
-       "cost": 200
+       "cost": 200,
+       "modifiers": [
+        "One weapon (200)"
+       ]
       },
       {
        "type": "trait",
@@ -4634,9 +4822,9 @@
      "options": [
       {
        "type": "trait",
-       "name": "Code of Honor",
-       "notes": "Bushido",
+       "name": "Code of Honor (Bushido)",
        "cost": -150,
+       "notes": "Bushido",
        "noteChoices": [
         "Bushido",
         "equivalent to Chivalry"
@@ -4659,7 +4847,10 @@
        "name": "Obsession",
        "notes": "\"Perfect my art at any cost\"",
        "cost": -100,
-       "cr": 12
+       "cr": 12,
+       "modifiers": [
+        "Long term (-100)"
+       ]
       },
       {
        "type": "trait",
@@ -4670,19 +4861,28 @@
        "type": "trait",
        "name": "Vow",
        "notes": "Vegetarianism",
-       "cost": -50
+       "cost": -50,
+       "modifiers": [
+        "Minor (-50)"
+       ]
       },
       {
        "type": "trait",
        "name": "Vow",
        "notes": "Silence",
-       "cost": -100
+       "cost": -100,
+       "modifiers": [
+        "Major (-100)"
+       ]
       },
       {
        "type": "trait",
        "name": "Vow",
        "notes": "Always fight unarmed",
-       "cost": -150
+       "cost": -150,
+       "modifiers": [
+        "Great (-150)"
+       ]
       },
       {
        "type": "trait",
@@ -4734,7 +4934,10 @@
        "type": "trait",
        "name": "Sense of Duty",
        "notes": "Adventuring companions",
-       "cost": -50
+       "cost": -50,
+       "modifiers": [
+        "Friends and Companions (-50)"
+       ]
       },
       {
        "type": "trait",
@@ -4963,7 +5166,16 @@
       {
        "type": "skill",
        "name": "Fast-Draw",
-       "ask": "any",
+       "choices": [
+        "Arrow",
+        "Force Sword",
+        "Knife",
+        "Long Arm",
+        "Pistol",
+        "Sword",
+        "Two-Handed Sword",
+        "Ammo"
+       ],
        "cost": 10,
        "diff": "E"
       },
@@ -5063,7 +5275,7 @@
       {
        "type": "skill",
        "name": "Flying Leap",
-       "spec": "requires Power Blow",
+       "book": "requires Power Blow",
        "cost": 20,
        "diff": "H"
       },
@@ -5310,7 +5522,10 @@
        "type": "trait",
        "name": "Weapon Master",
        "notes": "Bow",
-       "cost": 200
+       "cost": 200,
+       "modifiers": [
+        "One weapon (200)"
+       ]
       }
      ]
     },
@@ -5354,7 +5569,10 @@
        "type": "trait",
        "name": "Sense of Duty",
        "notes": "Adventuring companions",
-       "cost": -50
+       "cost": -50,
+       "modifiers": [
+        "Friends and Companions (-50)"
+       ]
       },
       {
        "type": "trait",
@@ -5384,7 +5602,10 @@
        "type": "trait",
        "name": "Intolerance",
        "notes": "Urbanites",
-       "cost": -50
+       "cost": -50,
+       "modifiers": [
+        "Scope: Common (-50)"
+       ]
       },
       {
        "type": "trait",
@@ -5424,13 +5645,19 @@
        "type": "trait",
        "name": "Vow",
        "notes": "Never sleep indoors",
-       "cost": -100
+       "cost": -100,
+       "modifiers": [
+        "Major (-100)"
+       ]
       },
       {
        "type": "trait",
        "name": "Vow",
        "notes": "Own no more than what can be carried",
-       "cost": -100
+       "cost": -100,
+       "modifiers": [
+        "Major (-100)"
+       ]
       }
      ]
     },
@@ -5626,7 +5853,24 @@
       {
        "type": "skill",
        "name": "Survival",
-       "ask": "any",
+       "choices": [
+        "Arctic",
+        "Bank",
+        "Deep Ocean Vent",
+        "Desert",
+        "Fresh-Water Lake",
+        "Island/Beach",
+        "Jungle",
+        "Mountain",
+        "Open Ocean",
+        "Plains",
+        "Reef",
+        "River/Stream",
+        "Salt-Water Sea",
+        "Swampland",
+        "Tropical Lagoon",
+        "Woodlands"
+       ],
        "cost": 10,
        "diff": "A"
       }
@@ -5649,7 +5893,16 @@
       {
        "type": "skill",
        "name": "Fast-Draw",
-       "spec": "any other",
+       "choices": [
+        "Arrow",
+        "Force Sword",
+        "Knife",
+        "Long Arm",
+        "Pistol",
+        "Sword",
+        "Two-Handed Sword",
+        "Ammo"
+       ],
        "cost": 10,
        "diff": "E"
       },
@@ -5806,7 +6059,10 @@
        "type": "trait",
        "name": "Weapon Master",
        "notes": "Weapon of choice",
-       "cost": 200
+       "cost": 200,
+       "modifiers": [
+        "One weapon (200)"
+       ]
       }
      ]
     },
@@ -5863,19 +6119,28 @@
        "type": "trait",
        "name": "Appearance",
        "notes": "Attractive",
-       "cost": 40
+       "cost": 40,
+       "modifiers": [
+        "Attractive (40)"
+       ]
       },
       {
        "type": "trait",
        "name": "Appearance",
        "notes": "Handsome",
-       "cost": 120
+       "cost": 120,
+       "modifiers": [
+        "Beautiful (120)"
+       ]
       },
       {
        "type": "trait",
        "name": "Appearance",
        "notes": "Very Handsome",
-       "cost": 160
+       "cost": 160,
+       "modifiers": [
+        "Very Beautiful (160)"
+       ]
       },
       {
        "type": "trait",
@@ -5901,14 +6166,16 @@
        "name": "Enhanced Parry",
        "notes": "Weapon of choice",
        "cost": 50,
-       "levels": 2
+       "levels": 2,
+       "upgrade": true
       },
       {
        "type": "trait",
        "name": "Enhanced Parry",
        "notes": "Weapon of choice",
        "cost": 100,
-       "levels": 3
+       "levels": 3,
+       "upgrade": true
       },
       {
        "type": "trait",
@@ -5949,15 +6216,13 @@
        "type": "trait",
        "name": "Striking ST",
        "cost": 50,
-       "levels": 1,
-       "upgrade": true
+       "levels": 1
       },
       {
        "type": "trait",
        "name": "Striking ST",
        "cost": 100,
-       "levels": 2,
-       "upgrade": true
+       "levels": 2
       },
       {
        "type": "note",
@@ -5988,31 +6253,46 @@
        "name": "Obsession",
        "notes": "\"Become the best swordsman in the world\"",
        "cost": -100,
-       "cr": 12
+       "cr": 12,
+       "modifiers": [
+        "Long term (-100)"
+       ]
       },
       {
        "type": "trait",
        "name": "Vow",
        "notes": "Use only weapon of choice",
-       "cost": -50
+       "cost": -50,
+       "modifiers": [
+        "Minor (-50)"
+       ]
       },
       {
        "type": "trait",
        "name": "Vow",
        "notes": "Never refuse a challenge to combat",
-       "cost": -100
+       "cost": -100,
+       "modifiers": [
+        "Major (-100)"
+       ]
       },
       {
        "type": "trait",
        "name": "Vow",
        "notes": "Challenge every swordsman to combat",
-       "cost": -150
+       "cost": -150,
+       "modifiers": [
+        "Great (-150)"
+       ]
       },
       {
        "type": "trait",
        "name": "Vow",
        "notes": "Never wear armor",
-       "cost": -150
+       "cost": -150,
+       "modifiers": [
+        "Great (-150)"
+       ]
       }
      ]
     },
@@ -6104,7 +6384,10 @@
        "type": "trait",
        "name": "Sense of Duty",
        "notes": "Adventuring companions",
-       "cost": -50
+       "cost": -50,
+       "modifiers": [
+        "Friends and Companions (-50)"
+       ]
       },
       {
        "type": "trait",
@@ -6398,7 +6681,16 @@
       {
        "type": "skill",
        "name": "Fast-Draw",
-       "spec": "any other",
+       "choices": [
+        "Arrow",
+        "Force Sword",
+        "Knife",
+        "Long Arm",
+        "Pistol",
+        "Sword",
+        "Two-Handed Sword",
+        "Ammo"
+       ],
        "cost": 10,
        "diff": "E"
       },
@@ -6429,7 +6721,13 @@
       {
        "type": "skill",
        "name": "Connoisseur",
-       "ask": "any",
+       "choices": [
+        "Dance",
+        "Literature",
+        "Music",
+        "Visual Arts",
+        "Wine"
+       ],
        "cost": 10,
        "diff": "A"
       },
@@ -6589,15 +6887,13 @@
        "type": "trait",
        "name": "Enhanced Dodge",
        "cost": 150,
-       "levels": 1,
-       "upgrade": true
+       "levels": 1
       },
       {
        "type": "trait",
        "name": "Enhanced Dodge",
        "cost": 300,
-       "levels": 2,
-       "upgrade": true
+       "levels": 2
       },
       {
        "type": "trait",
@@ -6613,7 +6909,9 @@
        "cost": 50,
        "min": 2,
        "max": 4,
-       "per": 50
+       "per": 50,
+       "upgrade": true,
+       "from": 1
       },
       {
        "type": "trait",
@@ -6662,14 +6960,20 @@
        "name": "Striking ST",
        "cost": 20,
        "levels": 1,
-       "book": "Only on surprise attack, -60%"
+       "book": "Only on surprise attack, -60%",
+       "modifiers": [
+        "One Attack Only (-60%)"
+       ]
       },
       {
        "type": "trait",
        "name": "Striking ST",
        "cost": 40,
        "levels": 2,
-       "book": "Only on surprise attack, -60%"
+       "book": "Only on surprise attack, -60%",
+       "modifiers": [
+        "One Attack Only (-60%)"
+       ]
       },
       {
        "type": "trait",
@@ -6825,7 +7129,10 @@
        "type": "trait",
        "name": "Sense of Duty",
        "notes": "Adventuring companions",
-       "cost": -50
+       "cost": -50,
+       "modifiers": [
+        "Friends and Companions (-50)"
+       ]
       },
       {
        "type": "trait",
@@ -7099,7 +7406,16 @@
       {
        "type": "skill",
        "name": "Fast-Draw",
-       "ask": "any",
+       "choices": [
+        "Arrow",
+        "Force Sword",
+        "Knife",
+        "Long Arm",
+        "Pistol",
+        "Sword",
+        "Two-Handed Sword",
+        "Ammo"
+       ],
        "cost": 10,
        "diff": "E"
       },
@@ -7136,7 +7452,13 @@
       {
        "type": "skill",
        "name": "Connoisseur",
-       "ask": "any",
+       "choices": [
+        "Dance",
+        "Literature",
+        "Music",
+        "Visual Arts",
+        "Wine"
+       ],
        "cost": 10,
        "diff": "A"
       },
@@ -7281,7 +7603,10 @@
        "type": "trait",
        "name": "Eidetic Memory",
        "notes": "Photographic",
-       "cost": 100
+       "cost": 100,
+       "modifiers": [
+        "Photographic (50)"
+       ]
       },
       {
        "type": "trait",
@@ -7368,7 +7693,11 @@
        "name": "Wild Talent",
        "cost": 210,
        "levels": 1,
-       "book": "Retention, +25%; Focused, Magical, -20%"
+       "book": "Retention, +25%; Focused, Magical, -20%",
+       "modifiers": [
+        "Retention (25%)",
+        "Focused (-20%)"
+       ]
       }
      ]
     },
@@ -7400,6 +7729,9 @@
         "Become the world's most powerful wizard",
         "a lich",
         "etc."
+       ],
+       "modifiers": [
+        "Long term (-100)"
        ]
       },
       {
@@ -7491,7 +7823,10 @@
        "type": "trait",
        "name": "Klutz",
        "notes": "Total",
-       "cost": -150
+       "cost": -150,
+       "modifiers": [
+        "Total (-100)"
+       ]
       },
       {
        "type": "trait",
@@ -7530,7 +7865,10 @@
        "type": "trait",
        "name": "Sense of Duty",
        "notes": "Adventuring companions",
-       "cost": -50
+       "cost": -50,
+       "modifiers": [
+        "Friends and Companions (-50)"
+       ]
       },
       {
        "type": "trait",
@@ -7669,7 +8007,12 @@
       {
        "type": "skill",
        "name": "Innate Attack",
-       "ask": "any",
+       "choices": [
+        "Beam",
+        "Breath",
+        "Gaze",
+        "Projectile"
+       ],
        "cost": 40,
        "diff": "E"
       },
@@ -7754,7 +8097,13 @@
       {
        "type": "skill",
        "name": "Hidden Lore",
-       "spec": "any other",
+       "choices": [
+        "Conspiracies",
+        "Demon Lore",
+        "Earth",
+        "Faerie Lore",
+        "Spirit Lore"
+       ],
        "cost": 10,
        "diff": "A"
       },
