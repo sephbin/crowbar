@@ -505,10 +505,15 @@ function renderAttrs() {
     P && [`Parry · ${P.w.name.toLowerCase()}`, [`${BC.succPct(P.v)}%`, G(` · ${P.v}`)], () => pick({ kind: "attr", k: "Parry" })],
     B && [`Block · ${B.w.name.toLowerCase()}`, [`${BC.succPct(B.v)}%`, G(` · ${B.v}`)], () => pick({ kind: "attr", k: "Block" })],
     R.db && ["shield DB", `+${R.db}`],
-    ["Thrust", BC.diceTxt(R.thr)], ["Swing", BC.diceTxt(R.sw)], ["DR torso", String(dr)],
+    ["Thrust", BC.diceTxt(R.thr)], ["Swing", BC.diceTxt(R.sw)], ["DR torso", drTxt("torso").replace(/^torso /, "")],
     ["Move", e.level ? [String(e.move), G(` · basic ${f1(R.attrs.Move)}`)] : f1(R.attrs.Move)],
     R.gear.length && ["load", `${e.name.toLowerCase()} · ${f1(e.carried)} lb`]].filter(Boolean)
     .forEach(([k, v, fn]) => { const d = el("div", fn ? { role: "button", tabindex: "0", style: "cursor:pointer", onclick: fn } : {}, el("b", {}, v), el("span", {}, k)); D.append(d); });
+}
+// a location's DR with its split values (mail is lower against crushing) and partial cover (a breastplate covers the front)
+function drTxt(L) {
+  const extra = [R.drVs.cr[L] != null ? `${R.drVs.cr[L]} vs crushing` : "", R.drVs.burn[L] != null ? `${R.drVs.burn[L]} vs burning` : "", ...(R.drPartial[L] || []).map(x => x.part === "front only" ? `${R.dr[L] - x.amount} from behind` : x.part)].filter(Boolean);
+  return `${L} ${R.dr[L]}${extra.length ? ` (${extra.join(", ")})` : ""}`;
 }
 // best Parry or Block over all attacks
 function bestDef(k) {
@@ -753,7 +758,7 @@ function renderEquipment() {
       meta, el("span", { class: "val" }, el("b", {}, "×" + (it.qty || 1))),
       stepper(it.name + " quantity", () => it.qty || 1, v => { if (v > 1) it.qty = v; else delete it.qty; }, 1, 1)));
   });
-  const e = R.enc, parts = BC.LOCS.filter(l => R.dr[l.name]).map(l => `${l.name} ${R.dr[l.name]}`);
+  const e = R.enc, parts = BC.LOCS.filter(l => R.dr[l.name] || R.drVs.burn[l.name]).map(l => drTxt(l.name));
   $("drsum").textContent = [`${lbTxt(e.carried)} of ${lbTxt(e.bl)} basic lift: ${e.overloaded ? "too heavy to move" : e.name.toLowerCase() + " load"}`, parts.length ? "DR " + parts.join(" · ") : "no DR"].join(" · ");
 }
 

@@ -593,28 +593,40 @@ function compute(ch, lib, opts = {}) {
   // ---- armour worn (B286): pieces on different locations combine freely. Layers on one location add their DR, but
   // every layer under the outermost must be flexible and concealable. An extra layer anywhere but the head gives -1 to
   // DX and DX-based skills (applied to DX after Basic Speed, so Speed, Move and Dodge are unchanged).
+  // Split DR: mail is -2 against crushing (B283 note [3]); NBC and space suits have DR only against burning and corrosion;
+  // breastplates cover only the front and sandals only the sole (B284 note [2]), noted per location.
   const dr = {}; LOCS.forEach(l => dr[l.name] = 0);
+  const drVs = { cr: {}, burn: {} }, partial = {};
   const layers = {};
-  gear.forEach((g, gi) => {
+  gear.forEach(g => {
     if (!g.rec?.dr || !g.carried || g.item.worn === false) return;
     const at = {};
-    for (const d of g.rec.dr) for (const loc of d.locations) for (const L of DR_LOC[loc] || []) at[L] = Math.max(at[L] || 0, d.amount);
-    for (const L in at) (layers[L] ||= []).push({ g, amount: at[L], inner: !!(g.rec.flexible && g.rec.concealable) });
+    for (const d of g.rec.dr) for (const loc of d.locations) for (const L of DR_LOC[loc] || []) {
+      const p = at[L] ||= { amount: 0, cr: 0, burn: 0, part: null };
+      if (d.vs === "crushing") p.cr = Math.min(p.cr, d.amount);
+      else if (d.vs === "burning or corrosion") p.burn = Math.max(p.burn, d.amount);
+      else { p.amount = Math.max(p.amount, d.amount); if (d.vs === "frontal" || d.vs === "underside") p.part = d.vs === "frontal" ? "front only" : "sole only"; }
+    }
+    for (const L in at) (layers[L] ||= []).push({ g, ...at[L], inner: !!(g.rec.flexible && g.rec.concealable) });
   });
   let layered = false;
   const badLayer = new Set();
   for (const L in layers) {
-    const ps = layers[L];
-    if (ps.length === 1) { dr[L] = ps[0].amount; continue; }
-    const rigid = ps.filter(p => !p.inner);
-    if (rigid.length > 1) {
-      dr[L] = Math.max(...ps.map(p => p.amount));
-      const k = rigid.map(p => p.g.rec.name).sort().join(" and ");
-      if (!badLayer.has(k)) { badLayer.add(k); add("ERROR", `${k} can't be layered: only flexible, concealable armour goes underneath (${L} uses the higher DR)`, "B286", rigid[1].g.path); }
-      continue;
+    let ps = layers[L];
+    if (ps.length > 1) {
+      const rigid = ps.filter(p => !p.inner);
+      if (rigid.length > 1) {
+        const k = rigid.map(p => p.g.rec.name).sort().join(" and ");
+        if (!badLayer.has(k)) { badLayer.add(k); add("ERROR", `${k} can't be layered: only flexible, concealable armour goes underneath (${L} uses the higher DR)`, "B286", rigid[1].g.path); }
+        ps = [ps.reduce((a, p) => p.amount > a.amount ? p : a)];
+      } else if (!HEAD_LOCS.has(L) && ps.filter(p => p.amount > 0).length > 1) layered = true;
     }
     dr[L] = ps.reduce((a, p) => a + p.amount, 0);
-    if (!HEAD_LOCS.has(L)) layered = true;
+    const cr = ps.reduce((a, p) => a + p.cr, 0), burn = ps.reduce((a, p) => a + p.burn, 0);
+    if (cr) drVs.cr[L] = dr[L] + cr;
+    if (burn) drVs.burn[L] = dr[L] + burn;
+    const parts = ps.filter(p => p.part).map(p => ({ name: p.g.rec.name, part: p.part, amount: p.amount }));
+    if (parts.length) partial[L] = parts;
   }
   const layerPen = layered ? -1 : 0;
   if (layered) {
@@ -843,6 +855,7 @@ function compute(ch, lib, opts = {}) {
   const natDR = {}; LOCS.forEach(l => natDR[l.name] = 0);
   for (const f of traitDR) for (const loc of f.locations || ["all"]) for (const L of DR_LOC[loc] || []) natDR[L] += f.amount;
   for (const k in dr) dr[k] += natDR[k];
+  for (const t in drVs) for (const k in drVs[t]) drVs[t][k] += natDR[k];
 
   // ---- conditionals and reactions, for the roller and the sheet
   const conditionals = [...features.filter(f => f.type === "conditional_modifier").map(f => ({ situation: f.situation, amount: f.amount, source: f.source })), ...gearConds];
@@ -885,7 +898,7 @@ function compute(ch, lib, opts = {}) {
   for (const s of spellRows) if (s.rec && s.level != null && s.prereqOk) add("ok", `spell ${s.name} ${s.attr}/${s.diff} ${s.points} pts: level ${f1(s.level)}, ${succPct(s.level)}%`, s.ref, s.path);
 
   return {
-    name: ch.name, budget, spent, breakdown, attrs: A, layerPen, attrPoints: pts, attrBonus, extra, dodge, dodgeBase, db, dbFrom, enc, gear, money, energy, gearMods, thr, sw,
+    name: ch.name, budget, spent, breakdown, attrs: A, layerPen, drVs, drPartial: partial, attrPoints: pts, attrBonus, extra, dodge, dodgeBase, db, dbFrom, enc, gear, money, energy, gearMods, thr, sw,
     traits, templateRemoved: removed, skills: skillRows, spells: spellRows, weapons: weaponOf, dr, natDR, conditionals, reactions, allies, templates: tpl, issues,
     houseBackstab: traits.some(t => /^backstabber$/i.test(t.name)),
     sneakDice: traits.filter(t => /^sneak attack$/i.test(t.name)).reduce((a, t) => a + (t.levels || 1), 0),

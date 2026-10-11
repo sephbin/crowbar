@@ -156,7 +156,8 @@ for (const f of SOURCES.equipment) for (const r of walk(read(L(f)).rows)) {
   const rec = { type: "equipment", name: r.description, tl: r.tech_level ?? "", cost: +r.base_value || 0, weight: r.base_weight || "" };
   if (r.rated_strength) rec.ratedST = r.rated_strength;
   if (r.weapons?.length) rec.weapons = r.weapons.map(convWeapon);
-  const dr = (r.features || []).filter(x => x.type === "dr_bonus").map(x => ({ locations: x.locations || [x.location], amount: x.amount }));
+  // vs: crushing (mail's lower DR, B283 note [3]), burning or corrosion (only against those), frontal or underside (partial cover)
+  const dr = (r.features || []).filter(x => x.type === "dr_bonus").map(x => ({ locations: x.locations || [x.location], amount: x.amount, ...(x.specialization ? { vs: x.specialization } : {}) }));
   if (dr.length) rec.dr = dr;
   // layering (B286) needs the inner layer flexible and concealable; GCS records both in the notes, as the book's tables do
   if (dr.length && /flexible/i.test(r.local_notes || "")) rec.flexible = true;

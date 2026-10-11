@@ -140,6 +140,7 @@ const lay = ch({ equipment: [{ name: "Mail Shirt" }, { name: "Steel Breastplate"
 eq("mail shirt under a breastplate: torso DR 4 + 5 = 9", lay.dr.torso, 9);
 eq("layered armour: -1 to DX and DX-based skills, Speed unchanged", [lay.attrs.DX, lay.skills[0].level, lay.attrs.Speed], [9, 9, 5]);
 eq("leather armour can't go under a breastplate", ch({ equipment: [{ name: "Leather Armor" }, { name: "Steel Breastplate" }] }).issues.some(x => x.sev === "ERROR" && /B286/.test(x.ref)), true);
+eq("mail under a breastplate: 7 against crushing (mail -2), breastplate front only", [lay.drVs.cr.torso, lay.drPartial.torso.map(x => x.name + " " + x.part).join()], [7, "Steel Breastplate front only"]);
 eq("boots: DR 2 on the foot", ch({ equipment: [{ name: "Boots" }] }).dr.foot, 2);
 eq("foot: -4, as for a hand", BC.LOCS.find(l => l.name === "foot").pen, -4);
 
