@@ -428,6 +428,7 @@ const POWERSTONE = /^(\d+) pt powerstone$/i;   // M20
 // the skills an item is used with at no penalty decide its quality rules
 function itemClass(rec) {
   const tags = rec.tags || [];
+  if (/^M\d/.test(rec.ref || "")) return "magic";   // Powerstones, potions and other Magic items have no quality grades
   if (tags.includes("Shield")) return "shield";
   if (rec.dr?.length) return "armour";
   if (tags.some(t => /^AmmoType:(Arrow|Bolt)$/.test(t))) return "melee";   // B277: arrows and bolts use melee quality
@@ -473,7 +474,7 @@ function itemQuality(rec, quality, tl) {
     if (q === "good") { r.mult = 5; r.notes.push("+1 equipment modifier"); }
     else if (q === "fine") { r.mult = 20; r.notes.push("+2 equipment modifier"); }
     else if (q !== "basic") r.error = "gear comes basic, good or fine";
-  } else r.error = `the Basic Set gives no quality grades for ${cls === "armour" ? "armour" : "shields"}`;
+  } else r.error = `no quality grades for ${{ armour: "armour", shield: "shields", magic: "magic items" }[cls]}`;
   return r;
 }
 // energy cost after high skill (M8: -1 at 15, -2 at 20, -1 more per full five levels past 20); null when the cost isn't a flat number

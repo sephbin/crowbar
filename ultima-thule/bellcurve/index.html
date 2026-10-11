@@ -99,6 +99,8 @@ body.view .ed,body.view .ctl,body.view .step,body.view .x,body.view .addrow,body
 body:not(.view) .vw{display:none!important}
 body.view input[readonly],body.view textarea[readonly]{border-color:transparent;background:transparent;padding-left:0}
 #editmode[aria-pressed="true"]{background:var(--accent);color:var(--paper);border-color:var(--accent)}
+.ictl{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;margin-top:6px}
+.ictl label{display:inline-flex;gap:5px;align-items:center}
 .row.removed .nm{text-decoration:line-through;color:var(--muted);font-weight:400}
 .row.removed .val b{color:var(--muted)}
 .row details summary{cursor:pointer;color:var(--muted)}
@@ -290,6 +292,7 @@ body:not(.debug) .g{display:none!important}
 
       <section class="box" data-tab="kit">
         <h3 class="bar">equipment <small id="drsum"></small></h3>
+        <div id="campaign"></div>
         <div id="equipment"></div>
         <div class="addrow">
           <input type="search" id="newitem" list="dl-equipment" placeholder="add equipment" aria-label="Equipment">
@@ -369,7 +372,7 @@ function computeAll() {
   for (const t of stack) {
     const a = res.allies.find(x => x.trait.inst === t);
     ch = norm(t.character);
-    res = BC.compute(ch, LIB, { budget: a?.budget ?? ch.budget });
+    res = BC.compute(ch, LIB, { budget: a?.budget ?? ch.budget, tl: ROOT.tl });
     RCHAIN.push(res);
   }
   R = res;
@@ -497,9 +500,21 @@ function renderAttrs() {
       el("button", { type: "button", "aria-label": `Raise ${k}`, onclick: () => bump(k, 10) }, "+")));
   }
   const D = $("derived"); D.innerHTML = "";
-  const dr = R.dr.torso;
-  [["Dodge", [`${BC.succPct(R.dodge)}%`, G(` · ${R.dodge}`)], () => pick({ kind: "attr", k: "Dodge" })], ["Thrust", BC.diceTxt(R.thr)], ["Swing", BC.diceTxt(R.sw)], ["DR torso", String(dr)], ["Move", f1(R.attrs.Move)]]
+  const dr = R.dr.torso, P = bestDef("parryLevel"), B = bestDef("blockLevel"), e = R.enc;
+  [["Dodge", [`${BC.succPct(R.dodge)}%`, G(` · ${R.dodge}`)], () => pick({ kind: "attr", k: "Dodge" })],
+    P && [`Parry · ${P.w.name.toLowerCase()}`, [`${BC.succPct(P.v)}%`, G(` · ${P.v}`)], () => pick({ kind: "attr", k: "Parry" })],
+    B && [`Block · ${B.w.name.toLowerCase()}`, [`${BC.succPct(B.v)}%`, G(` · ${B.v}`)], () => pick({ kind: "attr", k: "Block" })],
+    R.db && ["shield DB", `+${R.db}`],
+    ["Thrust", BC.diceTxt(R.thr)], ["Swing", BC.diceTxt(R.sw)], ["DR torso", String(dr)],
+    ["Move", e.level ? [String(e.move), G(` · basic ${f1(R.attrs.Move)}`)] : f1(R.attrs.Move)],
+    R.gear.length && ["load", `${e.name.toLowerCase()} · ${f1(e.carried)} lb`]].filter(Boolean)
     .forEach(([k, v, fn]) => { const d = el("div", fn ? { role: "button", tabindex: "0", style: "cursor:pointer", onclick: fn } : {}, el("b", {}, v), el("span", {}, k)); D.append(d); });
+}
+// best Parry or Block over all attacks
+function bestDef(k) {
+  let b = null;
+  for (const w of R.weapons) for (const m of w.modes) if (m[k] != null && (!b || m[k] > b.v)) b = { v: m[k], w, m };
+  return b;
 }
 
 const stepper = (label, get, set, step = 10, min = 0) => el("span", { class: "ctl" },
@@ -542,6 +557,7 @@ function renderSkills() {
       el("span", { class: "nm roll", role: "button", tabindex: "0", onclick: () => pick(w >= 0 && !R.weapons[w].natural ? { kind: "weapon", i: w, skill: i } : { kind: "skill", i }), onkeydown: e => e.key === "Enter" && e.currentTarget.click() }, nm),
       el("span", { class: "meta" }, s.rec ? (s.rec.technique ? `technique ${s.diff} · ${s.rec.parent.name}` : `${s.attr}/${s.diff}`) : el("span", { class: "bad" }, "not in library"),
         s.level != null ? G(` · ${s.attr}${s.rel >= 0 ? "+" : ""}${f1(s.rel)}${s.bonus ? ` (incl. ${s.bonus > 0 ? "+" : ""}${s.bonus} traits)` : ""}`) : "", s.level != null && s.source === "default" ? " · default" : "",
+        s.encPen ? el("span", { class: "bad" }, ` · ${R.enc.name.toLowerCase()} encumbrance`, G(` ${s.encPen}`)) : "",
         s.ref ? ` · ${s.ref}` : ""),
       el("span", { class: "val" }, el("b", {}, s.level == null ? "—" : BC.succPct(s.level) + "%"), s.level == null ? el("span", {}, "no level") : G("level " + f1(s.level))),
       pctStepper(nm, "skills", i)));
@@ -551,12 +567,16 @@ function renderSkills() {
 function renderSpells() {
   const ch = C(), K = $("spells"); K.innerHTML = "";
   const mag = R.traits.find(t => /^magery$/i.test(t.name));
-  $("magery").textContent = mag ? `Magery ${mag.levels} adds +${mag.levels} to spells` : "no Magery";
+  const en = R.energy;
+  $("magery").textContent = `${mag ? `Magery ${mag.levels} adds +${mag.levels} to spells` : "no Magery"} · energy FP ${f1(en.FP)}${en.largest ? ` + Powerstone ${en.largest}` : ""}`;
   if (!ch.spells.length) K.append(el("div", { class: "list-note" }, "No spells."));
   R.spells.forEach((s, i) => {
+    const short = s.energy != null && s.energy > en.FP + en.largest;
     K.append(el("div", { class: "row" },
       el("span", { class: "nm roll", role: "button", tabindex: "0", onclick: () => pick({ kind: "spell", i }), onkeydown: e => e.key === "Enter" && e.currentTarget.click() }, s.name, s.inst.notes ? ` (${s.inst.notes})` : ""),
-      el("span", { class: "meta" }, s.rec ? `${s.attr}/${s.diff} · ${s.rec.college.join(", ")} · cost ${s.rec.cost} · ${s.rec.time} · ${s.ref}` : el("span", { class: "bad" }, "not in library"),
+      el("span", { class: "meta" }, s.rec ? [`${s.attr}/${s.diff} · ${s.rec.college.join(", ")} · `,
+        el("span", { class: short ? "bad" : null, title: short ? "more than FP plus the largest Powerstone; the rest comes from HP" : null }, `cost ${s.rec.cost}${s.energy != null && String(s.energy) !== String(s.rec.cost).trim() ? ` (${s.energy} at this skill)` : ""}`),
+        ` · ${s.rec.time} · ${s.ref}`] : el("span", { class: "bad" }, "not in library"),
         s.rec ? (s.prereqOk ? el("span", { class: "good" }, " · prereqs ok") : el("span", { class: "bad" }, ` · needs ${s.missing.join("; ")}`)) : ""),
       el("span", { class: "val" }, el("b", {}, s.level == null ? "—" : BC.succPct(s.level) + "%"), s.level == null ? el("span", {}, "no level") : G("level " + f1(s.level))),
       pctStepper(s.name, "spells", i, 10)));
@@ -676,23 +696,65 @@ function renderTraits() {
 }
 const openMods = new Set();
 
+// quality grades each kind of item can take (B274 melee, B277 bows, B280 firearms, B345 other gear); none for armour or shields
+const QUALS = { melee: ["cheap", "good", "fine"], sword: ["cheap", "good", "fine", "very fine"], fencing: ["cheap", "good", "fine", "very fine"],
+  bow: ["good", "fine"], firearm: ["good", "fine", "very fine"], gear: ["basic", "good", "fine"] };
+const usd = v => "$" + (+v).toLocaleString("en", { maximumFractionDigits: 2 });
+const lbTxt = v => `${+(+v).toFixed(v < 1 ? 3 : 1)} lb`;
+const flag = (label, on, set) => el("label", { class: "ed" }, el("input", { type: "checkbox", checked: on, onchange: e => { set(e.target.checked); change(); } }), " " + label);
+// campaign TL (the root character's; allies share it) sets starting wealth (B27); Wealth multiplies it (B25)
+function renderCampaign() {
+  const ch = C(), box = $("campaign"), m = R.money, root = !stack.length; box.innerHTML = "";
+  const tl = el("select", { class: "ed", disabled: !root, "aria-label": "Campaign tech level", onchange: e => { if (e.target.value === "") delete ROOT.tl; else ROOT.tl = +e.target.value; change(); } },
+    el("option", { value: "" }, "campaign TL not set"), ...BC.TL_WEALTH.map((w, k) => el("option", { value: k, selected: ROOT.tl === k }, `TL${k}${k === 12 ? "+" : ""} · ${usd(w)}`)));
+  const txt = m ? `TL${m.tl} · starting wealth ${usd(m.start)} (${m.wealth}${m.mult !== 1 ? ` ×${m.mult}` : ""})${m.settled ? `, ${usd(m.limit)} for gear` : ""} · spent ${usd(m.spent)} · ${m.left >= 0 ? `${usd(m.left)} left` : `${usd(-m.left)} over`}`
+    : "campaign TL not set, so starting wealth isn't checked";
+  box.append(el("div", { class: "ed addrow", style: "margin-top:0" }, tl, flag("settled: 20% for gear (B26)", !!ch.settled, v => { if (v) ch.settled = true; else delete ch.settled; })),
+    el("p", { class: "hint", style: "margin-top:0" }, el("span", { class: m && m.left < 0 ? "bad" : null }, txt)));
+}
 function renderEquipment() {
   const ch = C(), E = $("equipment"); E.innerHTML = "";
+  renderCampaign();
   if (!ch.equipment.length) E.append(el("div", { class: "list-note" }, "No equipment."));
   ch.equipment.forEach((it, i) => {
-    const rec = LIB.equipment.find(e => e.name.toLowerCase() === String(it.name).toLowerCase());
-    const meta = el("span", { class: "meta" }, rec ? `TL${rec.tl} · $${rec.cost} · ${rec.weight} · ${rec.ref}` : el("span", { class: "bad" }, "not in library"));
-    if (rec?.ratedST != null) meta.append(el("span", {}, " · ST"), el("input", { type: "number", class: "ed", value: it.st ?? rec.ratedST, style: "width:4.5em", "aria-label": `${it.name} strength`, onchange: e => { const v = Math.round(+e.target.value); if (v && v !== rec.ratedST) it.st = v; else delete it.st; change(); } }),
-      el("span", { class: "vw" }, String(it.st ?? rec.ratedST)));
-    if (rec?.dr) meta.append(el("label", { class: "ed" }, el("input", { type: "checkbox", checked: it.worn !== false, onchange: e => { if (e.target.checked) delete it.worn; else it.worn = false; change(); } }), " worn"),
-      el("span", { class: "vw" }, it.worn !== false ? "worn" : "not worn"), el("span", {}, ` DR ${rec.dr.map(d => `${d.amount} ${d.locations.join("/")}`).join(", ")}`));
+    const g = R.gear[i], rec = g?.rec, meta = el("span", { class: "meta" });
+    if (!rec) meta.append(el("span", { class: "bad" }, "not in library"));
+    else {
+      meta.append(`TL${rec.tl || "–"} · ${usd(g.cost)}${g.qty > 1 ? ` for ${g.qty}` : ""} · ${lbTxt(g.weight)} · ${rec.ref}`);
+      // editing controls on one wrapping line; in view mode only the states that differ from the default show
+      const ctl = el("span", { class: "ed ictl" }), views = [];
+      const opts = QUALS[g.qual.cls];
+      if (opts || it.quality) {
+        ctl.append(el("select", { "aria-label": `${it.name} quality`, onchange: e => { if (e.target.value) it.quality = e.target.value; else delete it.quality; change(); } },
+          el("option", { value: "" }, "list price"), ...(opts || [it.quality]).map(q => el("option", { value: q, selected: String(it.quality || "").toLowerCase() === q }, q))));
+        if (it.quality) views.push(String(it.quality).toLowerCase());
+      }
+      if (g.qual.error) meta.append(el("span", { class: "bad" }, ` · ${g.qual.error}`));
+      if (rec.ratedST != null) { ctl.append(el("label", {}, "ST ", el("input", { type: "number", value: it.st ?? rec.ratedST, style: "width:4.5em", "aria-label": `${it.name} strength`, onchange: e => { const v = Math.round(+e.target.value); if (v && v !== rec.ratedST) it.st = v; else delete it.st; change(); } })));
+        views.push(`ST ${it.st ?? rec.ratedST}`); }
+      if (rec.dr || rec.db) {
+        const word = rec.db ? "ready" : "worn";
+        ctl.append(flag(word, it.worn !== false, v => { if (v) delete it.worn; else it.worn = false; }));
+        views.push(it.worn !== false ? word : `not ${word}`);
+      }
+      ctl.append(flag("carried", g.carried, v => { if (v) delete it.carried; else it.carried = false; }), flag("not bought", !!it.free, v => { if (v) it.free = true; else delete it.free; }));
+      if (!g.carried) views.push("left at home");
+      if (it.free) views.push("not bought");
+      if (rec.dr) meta.append(` · DR ${rec.dr.map(d => `${d.amount} ${d.locations.join("/")}`).join(", ")}`);
+      if (rec.db) meta.append(` · DB +${rec.db}`);
+      const ps = /^(\d+) pt powerstone$/i.exec(rec.name); if (ps) meta.append(` · ${ps[1]} energy`);
+      if (rec.notes) meta.append(` · ${rec.notes}`);
+      if (views.length) meta.append(el("span", { class: "vw" }, ` · ${views.join(" · ")}`));
+      meta.append(ctl);
+    }
     meta.append(removeBtn(it.name, () => ch.equipment.splice(i, 1)));
-    E.append(el("div", { class: "row" }, el("span", { class: "nm" }, it.label || it.name), meta,
-      el("span", { class: "val" }, el("b", {}, "×" + (it.qty || 1))),
+    E.append(el("div", { class: "row" },
+      el("span", { class: "nm roll", role: "button", tabindex: "0", onclick: () => pick({ kind: "item", i }), onkeydown: e => e.key === "Enter" && e.currentTarget.click() }, it.label || it.name),
+      meta, el("span", { class: "val" }, el("b", {}, "×" + (it.qty || 1))),
       stepper(it.name + " quantity", () => it.qty || 1, v => { if (v > 1) it.qty = v; else delete it.qty; }, 1, 1)));
   });
-  const parts = BC.LOCS.filter(l => R.dr[l.name]).map(l => `${l.name} ${R.dr[l.name]}`);
-  $("drsum").textContent = parts.length ? "DR " + parts.join(" · ") : "no DR";
+  const e = R.enc, parts = BC.LOCS.filter(l => R.dr[l.name]).map(l => `${l.name} ${R.dr[l.name]}`);
+  $("drsum").textContent = [`${lbTxt(e.carried)} of ${lbTxt(e.bl)} basic lift: ${e.overloaded ? "too heavy to move" : e.name.toLowerCase() + " load"}`, parts.length ? "DR " + parts.join(" · ") : "no DR"].join(" · ");
 }
 
 function renderWeapons() {
@@ -701,7 +763,9 @@ function renderWeapons() {
     const best = w.modes.reduce((a, m) => m.level != null && (a == null || m.level > a.level) ? m : a, null);
     W.append(el("div", { class: "row" },
       el("span", { class: "nm roll", role: "button", tabindex: "0", onclick: () => pick({ kind: "weapon", i }), onkeydown: e => e.key === "Enter" && e.currentTarget.click() }, w.name),
-      el("span", { class: "meta" }, w.modes.map(m => `${m.usage.toLowerCase()} ${BC.diceTxt(m.dice)} ${m.type} (${m.skillName})`).join(" · ")),
+      el("span", { class: "meta" }, w.modes.flatMap((m, j) => [j ? " · " : "", `${m.usage.toLowerCase()} ${BC.diceTxt(m.dice)} ${m.type} (${m.skillName})`,
+        ...(m.parryLevel != null ? [" parry ", `${BC.succPct(m.parryLevel)}%`, G(` ${m.parryLevel}${m.parryFlags}`)] : []),
+        ...(m.blockLevel != null ? [" block ", `${BC.succPct(m.blockLevel)}%`, G(` ${m.blockLevel}`)] : [])])),
       el("span", { class: "val" }, el("b", {}, best ? BC.succPct(best.level) + "%" : "—"), best ? G("level " + f1(best.level)) : ""),
       el("span")));
   });
@@ -711,12 +775,23 @@ function renderWeapons() {
 function target() {
   if (sel.kind === "attr") {
     const k = sel.k;
-    if (k === "Dodge") return { name: "Dodge", base: R.dodge, sub: ["active defence", G(` · floor(Basic Speed ${f1(R.attrs.Speed)}) + 3${R.extra.dodge ? ` + ${R.extra.dodge} traits` : ""}`)], key: "Dodge" };
+    if (k === "Dodge") return { name: "Dodge", base: R.dodge, defence: true, sub: ["active defence", R.enc.level ? ` · ${R.enc.name.toLowerCase()} encumbrance` : "",
+      G(` · floor(Basic Speed ${f1(R.attrs.Speed)}) + 3${R.extra.dodge ? ` + ${R.extra.dodge} traits` : ""}${R.enc.level ? ` − ${R.enc.level} encumbrance` : ""}`)], key: "Dodge" };
+    if (k === "Parry" || k === "Block") {
+      const b = bestDef(k === "Parry" ? "parryLevel" : "blockLevel"); if (!b) return null;
+      const n = parseInt(k === "Parry" ? b.m.parry : b.m.block, 10) || 0, tr = R.extra[k.toLowerCase()];
+      const unbal = k === "Parry" && /U/i.test(b.m.parryFlags) ? " · unbalanced: no parry after attacking with it" : "";
+      return { name: `${k} · ${b.w.name}`, base: b.v, defence: true, key: k,
+        sub: ["active defence", unbal, b.m.encPen ? ` · fencing weapon, ${R.enc.name.toLowerCase()} encumbrance` : "",
+          G(` · 3 + half ${b.m.skillName} ${f1(b.m.level - (b.m.encPen || 0))}${n ? ` ${n > 0 ? "+" : ""}${n}` : ""}${tr ? ` + ${tr} traits` : ""}${b.m.encPen ? ` ${b.m.encPen}` : ""}`)] };
+    }
     return R.attrs[k] == null ? null : { name: k, base: R.attrs[k], sub: ["attribute roll"], key: k };
   }
   if (sel.kind === "weapon") { const w = R.weapons[sel.i]; if (!w) return null; return { name: w.name, w, key: w.name }; }
   if (sel.kind === "trait") { const tr = R.traits[sel.i]; if (!tr) return null;
     return { name: BC.fullName(tr.name, tr.inst.notes), trait: tr, sub: [`${tr.kind || "trait"} · ${tr.cost} pts${tr.from ? ` · from ${tr.from}` : ""}`], key: tr.name }; }
+  if (sel.kind === "item") { const g = R.gear[sel.i]; if (!g) return null;
+    return { name: g.item.label || g.item.name, item: g, sub: [`item · ${usd(g.cost)} · ${lbTxt(g.weight)}`], key: g.item.name }; }
   if (sel.kind === "spell") { const s = R.spells[sel.i]; if (!s) return null; return { name: s.name, base: s.level, sub: [s.rec ? `${s.attr}/${s.diff} spell · ${s.points} pts · cost ${s.rec.cost} · ${s.rec.time}${s.rec.resist ? " · resisted by " + s.rec.resist : ""}` : ""], key: s.name, spell: s }; }
   const s = R.skills[sel.i]; if (!s) return null;
   return { name: BC.fullName(s.name, s.spec), base: s.level, sub: [`${s.attr}/${s.diff} · ${s.points} pts`, s.level != null ? G(` · ${s.attr}${s.rel >= 0 ? "+" : ""}${f1(s.rel)}`) : ""], key: s.name, skill: s };
@@ -735,6 +810,9 @@ function sitList(t) {
     const re = new RegExp(`\\b${String(name).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i");
     if (re.test(c.situation)) out.push({ name: c.situation.replace(/^to\s+/i, ""), mod: c.amount, cond: true, title: c.source });
   }
+  // a ready shield's Defense Bonus against attacks from the front or shield side (B287); carried kits (B345)
+  if (t.defence && R.db) out.push({ name: `${R.dbFrom.toLowerCase()}, front or shield side`, mod: R.db, cond: true, title: `Defense Bonus +${R.db}, Basic Set p.287` });
+  if (t.skill) for (const g of R.gearMods) if (BC.strCmp(g.name, t.skill.name)) out.push({ name: g.source, mod: g.amount, cond: true, title: `${g.source}: +${g.amount} when used` });
   out.push(...bookMods(t));
   return out;
 }
@@ -772,7 +850,7 @@ function rollerFoot() {
     $("rremove").onclick = () => { (ch.templateRemoved ||= []).push({ template: tr.from, trait: BC.fullName(tr.name, tr.inst.notes) }); sel = { kind: "attr", k: "DX" }; closeRoller(); change(); toast(`${tr.name} taken off ${tr.from}`); };
     return;
   }
-  const [list, i, what] = sel.kind === "spell" ? [ch.spells, sel.i, "spell"] : si != null ? [ch.skills, si, "skill"]
+  const [list, i, what] = sel.kind === "spell" ? [ch.spells, sel.i, "spell"] : sel.kind === "item" ? [ch.equipment, sel.i, "item"] : si != null ? [ch.skills, si, "skill"]
     : tr && !tr.from ? [ch.traits, ch.traits.indexOf(tr.inst), "trait"] : [null];
   $("rfoot").hidden = !list?.[i];
   if (!list?.[i]) return;
@@ -923,6 +1001,26 @@ function traitRules(t) {
     ["from", t.from], ["categories", (rec.tags || []).join(", ")], ["page", refTxt(rec.ref)],
   ]), bookBlock({ kind: "trait", name: rec.name, ref: rec.ref }), modsBlock(t)];
 }
+function itemRules(g) {
+  const rec = g.rec;
+  if (!rec) return [el("p", { class: "no" }, "Not in the library.")];
+  const itl = parseInt(rec.tl, 10), up = R.money && itl > R.money.tl ? 2 ** (itl - R.money.tl) : 1;
+  const ws = R.weapons.filter(w => w.path === g.path);
+  return [dl([
+    ["tech level", rec.tl ? `TL${rec.tl}` : null],
+    ["cost", [`${usd(g.cost)}`, g.qty > 1 ? ` for ${g.qty}` : "", ` (list ${usd(rec.cost)}${g.qual.mult !== 1 ? `, ×${g.qual.mult} ${g.item.quality}` : ""}${up > 1 ? `, ×${up} above campaign TL` : ""})`, g.item.free ? " · not bought" : ""]],
+    ["weight", `${lbTxt(g.weight)}${g.qty > 1 ? ` for ${g.qty}` : ""}${g.carried ? "" : " · left at home"}`],
+    ["quality", g.item.quality ? [String(g.item.quality).toLowerCase(), g.qual.notes.length ? `: ${g.qual.notes.join("; ")}` : "", g.qual.error ? el("span", { class: "bad" }, ` (${g.qual.error})`) : ""] : null],
+    ["DR", rec.dr ? rec.dr.map(d => `${d.amount} ${d.locations.join("/")}`).join(", ") : null],
+    ["defense bonus", rec.db ? `+${rec.db} to Dodge, Parry and Block against attacks from the front or shield side` : null],
+    ["situational", (rec.conds || []).map(c => `${c.amount > 0 ? "+" : ""}${c.amount} ${c.situation}`).join("; ")],
+    ["bonus", (rec.bonuses || []).filter(b => b.type === "skill_bonus").map(b => `${b.amount > 0 ? "+" : ""}${b.amount} to ${b.name?.qualifier}`).join("; ")],
+    ["notes", rec.notes], ["legality class", rec.lc != null ? `LC${rec.lc}` : null], ["categories", (rec.tags || []).join(", ")], ["page", refTxt(rec.ref)],
+  ]), ws.length ? el("h4", {}, "attacks") : null, ws.length ? el("ul", {}, ws.flatMap(w => w.modes.map(m => el("li", {}, `${m.usage.toLowerCase()}: ${BC.diceTxt(m.dice)} ${BC.TYPE_NAME[m.type] || m.type}`,
+    m.reach ? ` · reach ${m.reach}` : "", m.range ? ` · range ${m.range}` : "", m.acc != null && m.acc !== "" ? ` · Acc ${m.acc}` : "", ` · ${m.skillName} `, ...pctAt(m.level),
+    m.parryLevel != null ? [" · parry ", ...pctAt(m.parryLevel)] : "", m.blockLevel != null ? [" · block ", ...pctAt(m.blockLevel)] : "")))) : null,
+    bookBlock({ kind: "equipment", name: rec.name, ref: rec.ref })];
+}
 function skillRules(s) {
   const rec = s.rec, out = [];
   if (!rec) return [el("p", { class: "no" }, "Not in the library.")];
@@ -989,12 +1087,12 @@ function weaponRules(w) {
 }
 function renderRules(t) {
   // a trait has nothing to roll: rules only, no tabs
-  const P = $("rpane-rules"), has = !!(t && (t.skill || t.spell || t.w || t.trait));
-  $("rtabs").hidden = !has || !!t.trait;
-  const tab = t?.trait ? "rules" : has ? rtab : "roll";
+  const P = $("rpane-rules"), has = !!(t && (t.skill || t.spell || t.w || t.trait || t.item)), only = !!(t?.trait || t?.item);
+  $("rtabs").hidden = !has || only;
+  const tab = only ? "rules" : has ? rtab : "roll";
   $("rtabs").querySelectorAll("button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.rtab === tab)));
   P.hidden = tab !== "rules"; $("rpane-roll").hidden = tab !== "roll";
-  P.replaceChildren(...(!has ? [] : t.trait ? traitRules(t.trait) : t.w ? weaponRules(t.w) : t.spell ? spellRules(t.spell) : skillRules(t.skill)).filter(Boolean));
+  P.replaceChildren(...(!has ? [] : t.trait ? traitRules(t.trait) : t.item ? itemRules(t.item) : t.w ? weaponRules(t.w) : t.spell ? spellRules(t.spell) : skillRules(t.skill)).filter(Boolean));
 }
 
 function roller() {
@@ -1012,7 +1110,8 @@ function roller() {
   if (isW) {
     mode = Math.min(mode, t.w.modes.length - 1); m = t.w.modes[mode]; base = m.level; type = m.type;
     $("rbase").replaceChildren(`${m.usage.toLowerCase()} · ${m.skillName}${m.hasSkill ? "" : " (default)"}`, m.stPen ? " · too weak" : "",
-      G(`${m.stPen ? ` · ${m.stPen} for ST` : ""}${m.ratedST ? ` · ST ${m.ratedST}` : ""}`), `${m.reach ? ` · reach ${m.reach}` : ""}${m.range ? ` · range ${m.range}` : ""}`);
+      G(`${m.stPen ? ` · ${m.stPen} for ST` : ""}${m.ratedST ? ` · ST ${m.ratedST}` : ""}`), `${m.reach ? ` · reach ${m.reach}` : ""}${m.range ? ` · range ${m.range}` : ""}`,
+      m.encPen ? ` · ${R.enc.name.toLowerCase()} encumbrance` : "", m.parryLevel != null ? ` · parry ${BC.succPct(m.parryLevel)}%` : "", m.blockLevel != null ? ` · block ${BC.succPct(m.blockLevel)}%` : "");
   } else $("rbase").replaceChildren(...t.sub);
   const ch = C();
   const bsAll = (ch.options?.backstabber || "all") !== "melee";
