@@ -159,7 +159,7 @@
 
   // ---------------------------------------------------------------- state
   let mode = false, hover = null, sel = null /* { el, quote } */, popEl = null, panelEl = null, editing = null, showPins = true;
-  let fabSide = lsGet("annotate:side", "right");
+  let fabSide = lsGet("annotate:side", cfg.side === "right" ? "right" : "left");
   const hl = h("div", { class: "hl", hidden: true }), hlSel = h("div", { class: "hl sel", hidden: true });
   const banner = h("div", { class: "banner", hidden: true }, "Comment mode: tap something on the page");
   const fab = h("div", { class: "fab" + (fabSide === "left" ? " left" : "") });

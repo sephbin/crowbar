@@ -20,7 +20,7 @@ Where `<host>` comes from: the crowbar server serves it at `/annotate/annotate.j
 
 ## Using it
 
-- The round button at the bottom right toggles comment mode. The list button beside it shows the count of open comments.
+- The round button at the bottom left (`data-side="right"` or the settings panel moves it) toggles comment mode. The list button beside it shows the count of open comments.
 - In comment mode the page ignores taps, so links and buttons don't fire. Tap an element, write the note, pick a type (change, bug, question, praise), save. "↑ parent" widens the selection to the element's parent. On a computer you can also drag-select text; the quoted text is saved.
 - Tap a pin to edit, resolve or delete. The list panel has "this page" and "whole site", copy for Claude (markdown), share (phones), github issue, json download, and settings.
 - Esc leaves comment mode.
