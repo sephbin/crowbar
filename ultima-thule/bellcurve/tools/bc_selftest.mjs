@@ -158,5 +158,13 @@ eq("Vow is the disadvantage (Major -10), not the one-point quirk", BC.traitCost(
 eq("x1/3 multiplier: Resistant to Disease (+3) costs 3 (x10)", BC.traitCost(lib.traits.find(t => t.name === "Resistant"), { name: "Resistant", modifiers: ["Occasional: Disease, Ingested Poison, etc.", "+3 to all HT rolls to resist"] }, lib.modifiers).cost, 30);
 eq("Research at TL3 needs literacy only, not Computer Operation", ch({ tl: 3, skills: [{ name: "Research", points: 10 }] }).issues.some(x => x.sev === "ERROR" && /Research/.test(x.msg)), false);
 
+// spell prerequisite paths
+{
+  const sp = n => lib.spells.find(x => x.name === n);
+  eq("Ignite Fire has no prerequisite spells", BC.spellPaths(sp("Ignite Fire"), [], lib).paths, [[]]);
+  eq("Fireball: one path once supersets are dropped", BC.spellPaths(sp("Fireball"), [], lib).paths, [["Ignite Fire", "Shape Fire", "Create Fire"]]);
+  eq("known prerequisites are left out", BC.spellPaths(sp("Fireball"), ["Ignite Fire", "Shape Fire"], lib).paths, [["Create Fire"]]);
+  eq("Affect Spirits chain, in learning order", BC.spellPaths(sp("Affect Spirits"), [], lib).paths, [["Death Vision", "Summon Spirit", "Materialize", "Solidify"]]);
+}
 console.log(fail ? `${fail} failure(s)` : "all passed");
 process.exit(fail ? 1 : 0);

@@ -131,6 +131,25 @@ body.view input[readonly],body.view textarea[readonly]{border-color:transparent;
 body.locked{overflow:hidden}
 .rfoot{display:flex;justify-content:flex-end;margin-top:12px;padding-top:10px;border-top:1px solid var(--rule)}
 button.danger{border-color:var(--bad);color:var(--bad)}
+/* chooser: search, categories and a list, for anything with a lot of options */
+.kmodal{z-index:60}
+.kmodal .roller{width:min(560px,100%)}
+.ksearch{width:100%;margin:8px 0 4px;font-size:16px}
+.kcats{display:flex;gap:6px;overflow-x:auto;padding:4px 0 8px;-webkit-overflow-scrolling:touch}
+.kcats button{flex:0 0 auto;font-size:12px;padding:6px 10px;min-height:30px}
+.kcats button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.klist{display:flex;flex-direction:column;border-top:1px solid var(--rule);max-height:50vh;overflow:auto}
+.kitem{display:flex;gap:8px;align-items:baseline;text-align:left;width:100%;border:0;border-bottom:1px solid var(--rule);border-radius:0;padding:10px 4px;min-height:44px;
+  font:15px/1.3 var(--body);letter-spacing:0;text-transform:none;font-weight:400}
+.kitem .kl{flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
+.kitem .ks{flex:0 0 auto;font-size:12px;color:var(--muted);text-align:right;max-width:45%}
+.kitem:disabled{opacity:.45}
+.kitem.chosen .kl{font-weight:700}
+.kitem.custom{color:var(--accent);font-weight:700}
+.kmore{font-size:12px;color:var(--muted);padding:8px 4px}
+.kopt{display:flex;gap:8px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--rule);cursor:pointer}
+.kopt input{margin-top:3px;width:18px;height:18px}
+.kopt small{display:block;color:var(--muted)}
 /* profession choices */
 .roller.prof{width:min(760px,100%)}
 .pfoot{gap:8px;align-items:center}
@@ -145,6 +164,10 @@ button.danger{border-color:var(--bad);color:var(--bad)}
 .popt > span:nth-child(2){flex:1 1 10em;min-width:0}
 .popt .pc{margin-left:auto;color:var(--muted);font-size:12px;white-space:nowrap}
 .popt.fixed{color:var(--ink)}
+.popt.off{color:var(--muted)}
+.popt.off > span:nth-child(2){text-decoration:line-through}
+.pmark{font-size:12px;color:var(--warn);white-space:nowrap}
+.popt button.pick{font-size:13px;min-height:32px;padding:6px 10px;max-width:14em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .popt.note{font-style:italic;color:var(--muted)}
 .popt input[type=number]{width:4.5em}
 .popt select,.popt input[type=text]{max-width:14em}
@@ -249,8 +272,8 @@ body:not(.debug) .g{display:none!important}
       <div class="crumb" id="crumb" hidden></div>
 
       <section class="box" data-tab="base">
-        <input class="name" id="cname" type="text" aria-label="Character name">
-        <input class="concept" id="concept" type="text" placeholder="concept" aria-label="Concept">
+        <input class="name" id="cname" type="text" aria-label="Character name" autocomplete="off" enterkeyhint="done">
+        <input class="concept" id="concept" type="text" placeholder="concept" aria-label="Concept" autocomplete="off" enterkeyhint="done">
       </section>
 
       <section class="box issues" data-tab="base">
@@ -268,10 +291,7 @@ body:not(.debug) .g{display:none!important}
       <section class="box" data-tab="base">
         <h3 class="bar">templates <small>race or meta-traits</small></h3>
         <div id="templates"></div>
-        <div class="addrow">
-          <input type="search" id="newtpl" list="dl-templates" placeholder="add template" aria-label="Template">
-          <button type="button" id="addtpl">add</button>
-        </div>
+        <div class="addrow"><button type="button" id="addtpl">add template…</button></div>
       </section>
 
       <section class="box" data-tab="base">
@@ -283,10 +303,7 @@ body:not(.debug) .g{display:none!important}
       <section class="box" data-tab="traits">
         <h3 class="bar">advantages &amp; disadvantages <small>costs ×10 from the library</small></h3>
         <div id="traits"></div>
-        <div class="addrow">
-          <input type="search" id="newtrait" list="dl-traits" placeholder="add trait" aria-label="Trait">
-          <button type="button" id="addtrait">add</button>
-        </div>
+        <div class="addrow"><button type="button" id="addtrait">add trait…</button></div>
         <div id="conds"></div>
       </section>
 
@@ -303,29 +320,20 @@ body:not(.debug) .g{display:none!important}
       <section class="box" data-tab="skills">
         <h3 class="bar">skills <small>10 pts per step · tap a name to roll</small></h3>
         <div id="skills"></div>
-        <div class="addrow">
-          <input type="search" id="newskill" list="dl-skills" placeholder="add skill, e.g. Hidden Lore (Spirit Lore)" aria-label="Skill">
-          <button type="button" id="addskill">add</button>
-        </div>
+        <div class="addrow"><button type="button" id="addskill">add skill…</button></div>
       </section>
 
       <section class="box" data-tab="magic">
         <h3 class="bar">spells <small id="magery"></small></h3>
         <div id="spells"></div>
-        <div class="addrow">
-          <input type="search" id="newspell" list="dl-spells" placeholder="add spell" aria-label="Spell">
-          <button type="button" id="addspell">add</button>
-        </div>
+        <div class="addrow"><button type="button" id="addspell">add spell…</button></div>
       </section>
 
       <section class="box" data-tab="kit">
         <h3 class="bar">equipment <small id="drsum"></small></h3>
         <div id="campaign"></div>
         <div id="equipment"></div>
-        <div class="addrow">
-          <input type="search" id="newitem" list="dl-equipment" placeholder="add equipment" aria-label="Equipment">
-          <button type="button" id="additem">add</button>
-        </div>
+        <div class="addrow"><button type="button" id="additem">add equipment…</button></div>
       </section>
 
       <section class="box" data-tab="notes">
@@ -343,6 +351,16 @@ body:not(.debug) .g{display:none!important}
       </div>
       <div id="pbody"></div>
       <div class="rfoot pfoot"><span id="ptotal" class="muted"></span><button type="button" id="pcancel">cancel</button><button type="button" class="primary" id="papply">apply to sheet</button></div>
+    </aside>
+  </div>
+  <div class="modal kmodal" id="kmodal" hidden>
+    <aside class="box roller" role="dialog" aria-modal="true" aria-labelledby="ktitle">
+      <div class="rhead">
+        <div style="min-width:0"><p class="rtitle" id="ktitle">—</p><p class="rsub" id="ksub"></p></div>
+        <button type="button" class="mclose" id="kclose" aria-label="Close">×</button>
+      </div>
+      <div id="kbody"></div>
+      <div class="rfoot pfoot" id="kfoot"></div>
     </aside>
   </div>
   <div class="modal" id="rmodal" hidden>
@@ -377,11 +395,11 @@ body:not(.debug) .g{display:none!important}
     </aside>
   </div>
 </div>
-<datalist id="dl-skills"></datalist><datalist id="dl-traits"></datalist><datalist id="dl-spells"></datalist><datalist id="dl-equipment"></datalist><datalist id="dl-templates"></datalist>
 
 <script src="engine.js"></script>
 <script src="data/library.js"></script>
 <script src="data/descriptions.js"></script>
+<script src="data/picks.js"></script>
 <script>
 "use strict";
 const LIB = globalThis.BC_LIBRARY, f1 = BC.f1;
@@ -455,14 +473,127 @@ function applyMode() {
   $("budget").disabled = !editing || !!stack.length;
 }
 
-// ---------- datalists ----------
-function fillLists() {
-  const fill = (id, items) => { const d = $(id); d.innerHTML = ""; for (const v of items) d.append(el("option", { value: v })); };
-  fill("dl-skills", LIB.skills.map(s => s.spec ? `${s.name} (${s.spec.startsWith("@") ? "" : s.spec})`.replace(" ()", " (") : s.name));
-  fill("dl-traits", [...new Set(LIB.traits.map(t => t.name))]);
-  fill("dl-spells", LIB.spells.map(s => s.name));
-  fill("dl-equipment", LIB.equipment.map(e => e.name));
-  fill("dl-templates", LIB.templates.map(t => t.name));
+// ---------- chooser: search box, category chips and a list, for anything with a lot of options ----------
+// chooser({ title, sub, items, placeholder, custom, stay, onPick }): items is a list or a function returning one, each
+// { value, label, sub, cats: [..], off: "reason it can't be picked", chosen }. custom lets the typed text be picked as it
+// stands; stay keeps the list open after a pick (for choosing several). kdialog() puts any content in the same panel.
+let K = null;
+const lcs = s => String(s ?? "").toLowerCase().trim();
+function openK(o) {
+  if (K) closeK(false);
+  K = { ...o, from: document.activeElement };
+  $("ktitle").textContent = o.title; $("ksub").textContent = o.sub || "";
+  $("kmodal").hidden = false; document.body.classList.add("locked");
+  $("kmodal").querySelector(".roller").scrollTop = 0;
+}
+function closeK(refocus = true) {
+  if (!K) return;
+  const from = K.from; K = null;
+  $("kmodal").hidden = true; $("kbody").replaceChildren(); $("kfoot").replaceChildren();
+  if ($("pmodal").hidden && $("rmodal").hidden) document.body.classList.remove("locked");
+  if (refocus && from?.isConnected) from.focus();
+}
+function chooser(o) {
+  openK({ q: "", cat: "", ...o });
+  $("kfoot").replaceChildren(el("button", { type: "button", onclick: () => closeK() }, o.stay ? "done" : "cancel"));
+  buildChooser();
+  if (matchMedia("(pointer:fine)").matches) $("kbody").querySelector("input")?.focus();   // on a phone the keyboard would hide the list
+}
+function buildChooser() {
+  const items = typeof K.items === "function" ? K.items() : K.items;
+  const counts = new Map();
+  for (const it of items) for (const c of it.cats || []) counts.set(c, (counts.get(c) || 0) + 1);
+  const cats = [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 40).map(x => x[0]);
+  const list = el("div", { class: "klist", role: "list" }), chips = el("div", { class: "kcats", role: "group", "aria-label": "Categories" });
+  const hit = it => { const q = lcs(K.q).split(/\s+/).filter(Boolean), hay = lcs(`${it.label} ${it.sub || ""} ${(it.cats || []).join(" ")}`);
+    return (!K.cat || (it.cats || []).includes(K.cat)) && q.every(w => hay.includes(w)); };
+  const pickIt = it => { if (it.off) return; const cb = K.onPick, stay = K.stay; if (stay) { cb(it); buildChooser(); } else { closeK(false); cb(it); } };
+  const fill = () => {
+    const q = lcs(K.q), found = items.filter(hit).sort((a, b) => (lcs(b.label).startsWith(q) - lcs(a.label).startsWith(q)) || 0);
+    list.replaceChildren();
+    const typed = K.q.trim();
+    if (K.custom && typed && !items.some(it => lcs(it.label) === q))
+      list.append(el("button", { type: "button", class: "kitem custom", onclick: () => pickIt({ value: typed, label: typed, custom: true }) }, el("span", { class: "kl" }, `use "${typed}"`)));
+    for (const it of found.slice(0, 150))
+      list.append(el("button", { type: "button", role: "listitem", class: "kitem" + (it.chosen ? " chosen" : ""), disabled: !!it.off, onclick: () => pickIt(it) },
+        el("span", { class: "kl" }, it.label), el("span", { class: "ks" }, it.off || it.sub || "")));
+    if (found.length > 150) list.append(el("div", { class: "kmore" }, `${found.length - 150} more: type to narrow the list`));
+    if (!found.length && !(K.custom && typed)) list.append(el("div", { class: "kmore" }, "Nothing matches."));
+  };
+  const drawChips = () => {
+    chips.replaceChildren();
+    if (cats.length < 2 || items.length < 12) return;
+    for (const c of ["", ...cats]) chips.append(el("button", { type: "button", "aria-pressed": String(K.cat === c), onclick: () => { K.cat = c; drawChips(); fill(); } }, c || "all"));
+  };
+  const inp = el("input", { type: "search", class: "ksearch", placeholder: K.placeholder || "search", "aria-label": "Search", autocomplete: "off", autocapitalize: "off", spellcheck: "false", enterkeyhint: "search", value: K.q,
+    oninput: e => { K.q = e.target.value; fill(); },
+    onkeydown: e => { if (e.key !== "Enter") return; e.preventDefault(); const first = list.querySelector(".kitem:not(:disabled)"); if (first) first.click(); } });
+  $("kbody").replaceChildren(inp, chips, list);
+  drawChips(); fill();
+}
+// any other content in the panel
+function kdialog({ title, sub, body, buttons }) {
+  openK({ title, sub, dialog: true });
+  $("kbody").replaceChildren(...[].concat(body).filter(Boolean));
+  $("kfoot").replaceChildren(...buttons.map(b => el("button", { type: "button", class: b.primary ? "primary" : null, onclick: () => { closeK(false); b.run?.(); } }, b.label)));
+}
+$("kclose").addEventListener("click", () => closeK());
+$("kmodal").addEventListener("click", e => { if (e.target === e.currentTarget) closeK(); });
+
+// ---- the lists the pickers offer (built once)
+const PICKS = globalThis.BC_PICKS || { byAsk: {}, bySkill: {} };
+const memo = {};
+const once = (k, f) => memo[k] ||= f();
+const skillItems = () => once("skills", () => {
+  const seen = new Set(), out = [];
+  for (const s of LIB.skills) {
+    const ask = s.spec?.startsWith("@"), label = ask ? `${s.name} (specialty…)` : s.spec ? `${s.name} (${s.spec})` : s.name;
+    if (seen.has(label)) continue; seen.add(label);
+    out.push({ value: ask ? { name: s.name, ask: s.spec.slice(1, -1) } : { name: s.name, spec: s.spec || "" }, label, cats: (s.tags || []).slice(0, 3), sub: ask ? "you name the specialty" : s.diff ? `${s.attr}/${s.diff}` : "", key: ask ? "" : lcs(BC.fullName(s.name, s.spec)) });
+  }
+  return out;
+});
+const traitItems = () => once("traits", () => {
+  const seen = new Set(), out = [];
+  for (const t of LIB.traits) {
+    if (seen.has(t.name)) continue; seen.add(t.name);
+    out.push({ value: t.name, label: t.name, cats: [t.kind[0].toUpperCase() + t.kind.slice(1), ...(t.tags || []).filter(x => !/^(advantage|disadvantage|perk|quirk)$/i.test(x)).slice(0, 2)], sub: t.house ? "house rule" : t.sub || "" });
+  }
+  return out;
+});
+const spellItems = () => once("spells", () => LIB.spells.map(s => ({ value: s.name, label: s.name, cats: s.college?.length ? s.college : ["Other"], sub: s.class || "" })));
+const equipItems = () => once("equipment", () => LIB.equipment.map(e => ({ value: e.name, label: e.name, cats: (e.tags || []).slice(0, 2), sub: [e.tl != null && e.tl !== "" ? `TL${e.tl}` : "", e.cost != null ? `$${e.cost}` : ""].filter(Boolean).join(" · ") })));
+const templateItems = () => once("templates", () => LIB.templates.map(t => ({ value: t.name, label: t.name, cats: [t.book || "Other"], sub: refTxt(t.ref) })));
+// specialties for a skill that needs one: the suggestion lists first, then the ones the book lists
+function specItems(name, ask) {
+  const seen = new Set(), out = [];
+  const add = (v, cat) => { const k = lcs(v); if (!v || seen.has(k)) return; seen.add(k); out.push({ value: v, label: v, cats: cat ? [cat] : [] }); };
+  for (const [v, c] of PICKS.bySkill?.[name] || PICKS.byAsk?.[lcs(ask)] || []) add(v, c);
+  for (const s of LIB.skills) if (s.name === name && s.spec && !s.spec.startsWith("@")) add(s.spec, "In the book");
+  return out;
+}
+// a skill picked from the add list, then its specialty if it needs one
+function chooseSkill(it, done) {
+  const v = it.value;
+  if (typeof v === "string") { const { name, spec } = BC.splitSpec(v); done(name, spec || ""); return; }
+  if (!v.ask) { done(v.name, v.spec); return; }
+  chooser({ title: `${v.name}: specialty`, sub: v.ask, placeholder: "search, or type your own", custom: true,
+    items: () => specItems(v.name, v.ask).map(x => ({ ...x, off: C().skills.some(s => sameSkill(s, { name: v.name, spec: x.value })) ? "already on the sheet" : null })), onPick: x => done(v.name, x.value) });
+}
+// a spell with prerequisite spells: offer to learn them too (several ways in = a choice of path)
+function addSpell(name) {
+  const ch = C(), rec = LIB.spells.find(s => s.name === name);
+  const push = names => { for (const n of names) if (!ch.spells.some(x => x.name === n)) ch.spells.push({ name: n, points: 10 }); change(); };
+  if (!rec) { push([name]); return; }
+  const res = BC.spellPaths(rec, ch.spells.filter(s => s.points >= 10).map(s => s.name), LIB);
+  if (res.paths.some(p => !p.length) && !res.unmet.length) { push([name]); return; }
+  if (res.paths.every(p => !p.length)) { toast(`${name} also needs ${res.unmet.join(", ")}`); push([name]); return; }
+  let at = 0;
+  const opts = res.paths.map((path, k) => el("label", { class: "kopt" }, res.paths.length > 1 ? el("input", { type: "radio", name: "spellpath", checked: k === 0, onchange: () => { at = k; } }) : null,
+    el("span", {}, path.length ? path.join(" → ") : "no prerequisite spells needed", el("small", {}, path.length ? `${path.length} spell${path.length === 1 ? "" : "s"} at 10 points each, then ${name}` : ""))));
+  kdialog({ title: `${name}: prerequisites`, sub: res.paths.length > 1 ? "There is more than one way to meet its prerequisites. Choose a path." : "You do not know the spells it needs.",
+    body: [...opts, res.unmet.length ? el("p", { class: "hint" }, `Also needs ${res.unmet.join(", ")}; add those by hand.`) : null],
+    buttons: [{ label: "cancel" }, { label: `add ${name} only`, run: () => push([name]) }, { label: "add with prerequisites", primary: true, run: () => push([...res.paths[at], name]) }] });
 }
 
 // ---------- render ----------
@@ -520,14 +651,55 @@ function profCost(o, p = {}) {
   const c = BC.profOptCost(o, p);
   return `${sgn(c)}${o.per != null && o.max !== o.min ? ` (${sgn(o.per)}/level)` : ""}`;
 }
+// what an option would put on the sheet, so duplicates can be seen: "t:name|notes", "s:name|spec", "sp:name". Null for
+// things that can be raised or repeated (levelled traits, upgrades) or whose specialty isn't chosen yet.
+function profKey(o, p = {}) {
+  if (o.upgrade || o.from != null || o.raise || o.type === "attr" || o.type === "note" || o.type === "bundle" || o.type === "group") return null;
+  if (o.type === "trait") return o.per != null || o.variable || o.levels != null || o.min != null || /@/.test(o.name) ? null : `t:${lcs(o.name)}|${lcs(p.notes ?? o.notes)}`;
+  if (o.type === "skill") { const sp = p.spec ?? o.spec ?? (o.choices?.includes(o.name) ? o.name : ""); return (o.ask || o.choices) && !sp ? null : `s:${lcs(o.name)}|${lcs(sp)}`; }
+  if (o.type === "spell") return `sp:${lcs(o.name)}`;
+  return null;
+}
+const needsSpec = o => o.type === "skill" && !o.spec && !!(o.ask || o.choices);
+// what is taken so far, from fixed items and every pick
+function profTaken() {
+  const m = new Map();
+  BC.profWalk(P.prof, P.picks, (o, p) => { const k = profKey(o, p); if (k) m.set(k, (m.get(k) || 0) + 1); });
+  P.taken = m;
+}
+// the sheet without this profession's own contributions: "dup" can't be taken again, "raise" adds to what is there
+function profHave(o, p = {}) {
+  const H = P.have; if (!H || o.upgrade) return null;
+  if (o.type === "trait" && !/@/.test(o.name)) {
+    const x = H.traits.find(y => sameTrait(y, { name: o.name, notes: p.notes ?? o.notes }));
+    if (!x) return null;
+    return o.per != null || o.levels != null || o.min != null ? { kind: "raise", text: `you have it${x.levels ? ` at level ${x.levels}` : ""}: levels add` } : { kind: "dup", text: "already on the sheet" };
+  }
+  if (o.type === "skill") {
+    const sp = p.spec ?? o.spec ?? (o.choices?.includes(o.name) ? o.name : "");
+    if ((o.ask || o.choices) && !sp) return null;
+    const x = H.skills.find(y => sameSkill(y, { name: o.name, spec: sp }));
+    return x ? { kind: "raise", text: `you have it (${x.points} pts): this raises it` } : null;
+  }
+  if (o.type === "spell") { const x = H.spells.find(y => y.name === o.name); return x ? { kind: "raise", text: `you know it (${x.points} pts): this raises it` } : null; }
+  return null;
+}
+const profMark = (o, p) => { const h = profHave(o, p); return h ? el("span", { class: "pmark" }, h.text) : null; };
 function specControl(o, pick, upd) {
   if (o.type !== "skill" || o.spec) return [];
+  const cur = pick.spec ?? (o.choices?.includes(o.name) ? o.name : "");
+  // another pick (or a fixed item) already has this specialty
+  const used = sp => (P.taken.get(`s:${lcs(o.name)}|${lcs(sp)}`) || 0) - (lcs(cur) === lcs(sp) ? 1 : 0) > 0;
+  const onSheet = sp => P.have?.skills.some(y => sameSkill(y, { name: o.name, spec: sp }));
   if (o.choices) {
-    const cur = pick.spec ?? (o.choices.includes(o.name) ? o.name : "");
     return [el("select", { "aria-label": `${o.name} specialty`, onchange: e => upd("spec", e.target.value || null) },
-      el("option", { value: "" }, "specialty…"), ...o.choices.map(c => el("option", { value: c, selected: c === cur }, c)))];
+      el("option", { value: "" }, "specialty…"),
+      ...o.choices.map(c => el("option", { value: c, selected: c === cur, disabled: used(c) && c !== cur }, `${c}${used(c) && c !== cur ? " (taken)" : onSheet(c) ? " (have)" : ""}`)))];
   }
-  if (o.ask) return [el("input", { type: "text", value: pick.spec ?? "", placeholder: `specialty (${o.ask})`, "aria-label": `${o.name} specialty`, onchange: e => upd("spec", e.target.value.trim() || null) })];
+  if (o.ask) return [el("button", { type: "button", class: "pick", "aria-label": `${o.name} specialty`, onclick: () => chooser({
+    title: `${o.name}: specialty`, sub: o.ask, placeholder: "search, or type your own", custom: true,
+    items: () => specItems(o.name, o.ask).map(it => ({ ...it, chosen: lcs(it.value) === lcs(cur), off: used(it.value) ? "already taken" : null, sub: onSheet(it.value) ? "you have it" : "" })),
+    onPick: it => upd("spec", it.value) }) }, cur || `${o.ask}…`)];
   return [];
 }
 // a fixed item: taken; a skill that needs a specialty records it as a pick at its own place
@@ -535,33 +707,45 @@ function profItem(o, path, byPath) {
   if (o.type === "group") return profGroup(o, path, byPath, null, true);
   const d = (P.picks[path] || [])[0] || {};
   const upd = (k, v) => { const x = { ...d, [k]: v }; if (v == null) delete x[k]; if (Object.keys(x).length) P.picks[path] = [x]; else delete P.picks[path]; renderProfModal(); };
-  return el("div", { class: "popt fixed" + (o.type === "note" ? " note" : "") }, el("span", { "aria-hidden": "true" }, "•"), el("span", {}, profLabel(o, d)), ...specControl(o, d, upd), el("span", { class: "pc" }, profCost(o, d)));
+  return el("div", { class: "popt fixed" + (o.type === "note" ? " note" : "") }, el("span", { "aria-hidden": "true" }, "•"), el("span", {}, profLabel(o, d)), ...specControl(o, d, upd), profMark(o, d), el("span", { class: "pc" }, profCost(o, d)));
 }
 function profChoice(g, path, o, i, gid, byPath) {
-  const list = P.picks[path] || [], at = list.findIndex(p => p.o === i && (p.g || null) === gid), pick = list[at];
-  const single = g.kind === "count" && g.n === 1;
-  const toggle = on => {
-    let l = single ? [] : (P.picks[path] || []).filter(p => !(p.o === i && (p.g || null) === gid));
+  const list = P.picks[path] || [], mine = list.filter(p => p.o === i && (p.g || null) === gid);
+  const single = g.kind === "count" && g.n === 1, multi = !single && needsSpec(o);
+  const dropNested = () => { for (const k of Object.keys(P.picks)) if (k.startsWith(`${path}.`) && (single || k.startsWith(`${path}.${i}.`) || k === `${path}.${i}`)) delete P.picks[k]; };
+  const toggle = (on, pk) => {
+    // a skill with a specialty can be taken again for another specialty: each tick is its own pick
+    const l = single ? [] : (P.picks[path] || []).filter(p => (multi ? p !== pk : !(p.o === i && (p.g || null) === gid)));
     if (on) l.push({ ...(gid ? { g: gid } : {}), o: i });
-    // choices made inside a dropped package go with it
-    for (const k of Object.keys(P.picks)) if (k.startsWith(`${path}.`) && (single || k.startsWith(`${path}.${i}.`) || k === `${path}.${i}`)) delete P.picks[k];
+    dropNested();
     if (l.length) P.picks[path] = l; else delete P.picks[path];
     renderProfModal();
   };
-  const row = el("label", { class: "popt" + (o.type === "note" ? " note" : "") },
-    el("input", { type: single ? "radio" : "checkbox", name: `p-${path}`, checked: at >= 0, onchange: e => toggle(e.target.checked) }), el("span", {}, profLabel(o, pick || {})));
-  const wrap = el("div", {}, row);
-  if (pick) {
-    const upd = (k, v) => { if (v == null) delete pick[k]; else pick[k] = v; renderProfModal(); };
-    if (o.per != null && o.max !== o.min) row.append(el("input", { type: "number", min: o.min ?? 1, max: o.max ?? 99, value: pick.levels ?? o.min ?? 1, "aria-label": `${o.name} level`, onchange: e => upd("levels", Math.max(o.min ?? 1, Math.min(o.max ?? 99, Math.round(+e.target.value) || 1))) }));
-    if (o.variable) row.append(el("input", { type: "number", step: 10, value: pick.cost ?? "", placeholder: "points", "aria-label": `${o.name} points`, onchange: e => upd("cost", e.target.value === "" ? null : Math.round(+e.target.value)) }));
-    if (o.noteChoices) row.append(el("select", { "aria-label": `${o.name} choice`, onchange: e => upd("notes", e.target.value) }, ...o.noteChoices.map(n => el("option", { value: n, selected: (pick.notes ?? o.notes) === n }, n))));
-    row.append(...specControl(o, pick, upd));
-    if (o.type === "bundle") { const nest = el("div", { class: "pnest" }); o.items.forEach((it, k) => nest.append(profItem(it, `${path}.${i}.${k}`, byPath))); wrap.append(nest); }
-    if (o.type === "group") wrap.append(profGroup(o, `${path}.${i}`, byPath, null, true));
-  }
-  row.append(el("span", { class: "pc" }, profCost(o, pick || {})));
-  return wrap;
+  const rowFor = (pick, another) => {
+    const k = profKey(o, {}), have = profHave(o, pick || {});
+    const dup = !pick && !another && ((k && P.taken.get(k) > 0) || have?.kind === "dup");
+    const row = el("label", { class: "popt" + (o.type === "note" ? " note" : "") + (dup ? " off" : "") },
+      el("input", { type: single ? "radio" : "checkbox", name: `p-${path}`, checked: !!pick, disabled: dup, onchange: e => toggle(e.target.checked, pick) }),
+      el("span", {}, (another ? "another: " : "") + profLabel(o, pick || {})));
+    const wrap = el("div", {}, row);
+    if (pick) {
+      const upd = (kk, v) => { if (v == null) delete pick[kk]; else pick[kk] = v; renderProfModal(); };
+      if (o.per != null && o.max !== o.min) row.append(el("input", { type: "number", min: o.min ?? 1, max: o.max ?? 99, value: pick.levels ?? o.min ?? 1, "aria-label": `${o.name} level`, onchange: e => upd("levels", Math.max(o.min ?? 1, Math.min(o.max ?? 99, Math.round(+e.target.value) || 1))) }));
+      if (o.variable) row.append(el("input", { type: "number", step: 10, value: pick.cost ?? "", placeholder: "points", "aria-label": `${o.name} points`, onchange: e => upd("cost", e.target.value === "" ? null : Math.round(+e.target.value)) }));
+      if (o.noteChoices) row.append(el("select", { "aria-label": `${o.name} choice`, onchange: e => upd("notes", e.target.value) }, ...o.noteChoices.map(n => el("option", { value: n, selected: (pick.notes ?? o.notes) === n }, n))));
+      row.append(...specControl(o, pick, upd));
+      if (o.type === "bundle") { const nest = el("div", { class: "pnest" }); o.items.forEach((it, kk) => nest.append(profItem(it, `${path}.${i}.${kk}`, byPath))); wrap.append(nest); }
+      if (o.type === "group") wrap.append(profGroup(o, `${path}.${i}`, byPath, null, true));
+    }
+    row.append(...[dup ? el("span", { class: "pmark" }, have?.kind === "dup" ? have.text : "already taken") : profMark(o, pick || {}), el("span", { class: "pc" }, profCost(o, pick || {}))].filter(Boolean));
+    return wrap;
+  };
+  const box = el("div", {});
+  if (!mine.length) { box.append(rowFor(null)); return box; }
+  mine.forEach(pk => box.append(rowFor(pk)));
+  // room for another: a new choice below, for a second specialty
+  if (multi && (g.kind === "points" || list.length < g.n)) box.append(rowFor(null, true));
+  return box;
 }
 // points spent outside the listed options: an open list ("25 points in Holy abilities") or raising earlier skills
 function profExtra(path, kind, label, opts) {
@@ -569,12 +753,16 @@ function profExtra(path, kind, label, opts) {
   const box = el("div", { class: "pnest" }, el("div", { class: "rule" }, label));
   if (mine.length) box.append(el("div", { class: "pchips" }, mine.map(p => el("span", {}, `${kind === "open" ? p.text : BC.fullName(p.skill, p.spec)} ${sgn(p.cost)}`,
     el("button", { type: "button", "aria-label": "remove", onclick: () => { const l = (P.picks[path] || []).filter(x => x !== p); if (l.length) P.picks[path] = l; else delete P.picks[path]; renderProfModal(); } }, "×")))));
-  const what = kind === "open" ? el("input", { type: "text", placeholder: "ability, e.g. True Faith (Turning)", "aria-label": label })
+  let text = "";
+  const what = kind === "open"
+    ? el("button", { type: "button", class: "pick", "aria-label": label, onclick: e => chooser({ title: label, placeholder: "search traits and skills, or type one", custom: true,
+        items: () => [...traitItems().map(it => ({ ...it, sub: it.cats[0] })), ...skillItems().filter(it => !it.value.ask).map(it => ({ ...it, sub: "skill" }))],
+        onPick: it => { text = it.custom ? it.value : it.label; e.target.textContent = text; } }) }, "ability…")
     : el("select", { "aria-label": label }, el("option", { value: "" }, "skill…"), ...opts.map(s => el("option", { value: JSON.stringify(s) }, BC.fullName(s.name, s.spec))));
-  const pts = el("input", { type: "number", step: 10, placeholder: "points", "aria-label": "points", style: "width:6em" });
+  const pts = el("input", { type: "number", step: 10, placeholder: "points", "aria-label": "points", style: "width:6em", inputmode: "numeric" });
   box.append(el("div", { class: "popt" }, what, pts, el("button", { type: "button", onclick: () => {
-    const c = Math.round(+pts.value); if (!c || !what.value) return;
-    const p = kind === "open" ? { text: what.value.trim(), cost: c } : (s => ({ skill: s.name, ...(s.spec ? { spec: s.spec } : {}), cost: c }))(JSON.parse(what.value));
+    const c = Math.round(+pts.value), w = kind === "open" ? text : what.value; if (!c || !w) return;
+    const p = kind === "open" ? { text: w.trim(), cost: c } : (s => ({ skill: s.name, ...(s.spec ? { spec: s.spec } : {}), cost: c }))(JSON.parse(w));
     (P.picks[path] ||= []).push(p); renderProfModal();
   } }, "add")));
   return box;
@@ -592,11 +780,14 @@ function profSpells(g, path) {
   box.append(el("div", { class: "pchips" }, list.map(p => { const lv = power ? LIB.piSpells[power][p.spell] : null;
     return el("span", { class: (lv != null && lv > pi) || offLimits(p.spell) ? "bad" : null, title: lv > pi ? `needs PI ${lv}` : offLimits(p.spell) ? "off-limits to dungeon fantasy wizards (DF1 p.20)" : null }, `${p.spell}${lv != null ? ` · PI ${lv}` : ""}`,
       el("button", { type: "button", "aria-label": `remove ${p.spell}`, onclick: () => { const l = (P.picks[path] || []).filter(x => x !== p); if (l.length) P.picks[path] = l; else delete P.picks[path]; renderProfModal(); } }, "×")); })));
-  const id = `dl-p-${path}`, inp = el("input", { type: "search", list: id, placeholder: `add a ${g.spellList} spell`, "aria-label": `add a ${g.spellList} spell` });
-  const dl = el("datalist", { id }, pool.filter(([n, lv]) => !list.some(p => p.spell === n) && (lv == null || lv <= pi) && !offLimits(n)).map(([n, lv]) => el("option", { value: n }, lv != null ? `PI ${lv}` : "")));
-  const addIt = () => { const n = pool.find(([x]) => x.toLowerCase() === inp.value.trim().toLowerCase())?.[0]; if (!n) { toast(`"${inp.value}" isn't on the list`); return; } (P.picks[path] ||= []).push({ spell: n }); renderProfModal(); };
-  inp.addEventListener("keydown", e => { if (e.key === "Enter") addIt(); });
-  box.append(el("div", { class: "popt" }, inp, dl, el("button", { type: "button", onclick: addIt }, "add")));
+  const items = () => pool.map(([n, lv]) => {
+    const s = LIB.spells.find(x => x.name === n), picked = (P.picks[path] || []).some(p => p.spell === n), elsewhere = (P.taken.get(`sp:${lcs(n)}`) || 0) > (picked ? 1 : 0);
+    const off = picked ? "chosen" : lv != null && lv > pi ? `needs PI ${lv}` : offLimits(n) ? "off-limits to wizards" : elsewhere ? "already taken" : null;
+    return { value: n, label: n, off, chosen: picked, cats: s?.college?.length ? s.college : lv != null ? [`PI ${lv}`] : [], sub: off ? "" : P.have?.spells.some(y => y.name === n) ? "you know it" : lv != null ? `PI ${lv}` : "" };
+  });
+  box.append(el("div", { class: "popt" }, el("button", { type: "button", class: "pick", onclick: () => chooser({
+    title: `Choose ${g.spellList} spells`, sub: `${list.length} of ${g.n} chosen`, placeholder: "search spells", stay: true, items,
+    onPick: it => { (P.picks[path] ||= []).push({ spell: it.value }); profTaken(); renderProfModal(); $("ksub").textContent = `${(P.picks[path] || []).length} of ${g.n} chosen`; } }) }, `add a ${g.spellList} spell…`)));
   return box;
 }
 function profGroup(g, path, byPath, title, nested) {
@@ -610,14 +801,22 @@ function profGroup(g, path, byPath, title, nested) {
   if (g.spellList) { opts.append(profSpells(g, path)); return box; }
   g.options.forEach((o, i) => opts.append(profChoice(g, path, o, i, null, byPath)));
   // "-20 points chosen from among the previous traits or ...": the earlier lists count too
+  // options already taken (or already on the sheet) are left out, so a pick can't duplicate one
   if (g.prev) { const idx = P.prof.groups.indexOf(g); for (const x of P.prof.groups.slice(Math.max(0, idx - g.prev), idx)) {
+    const rows = x.options.map((o, i) => ({ o, i })).filter(({ o, i }) => {
+      if ((P.picks[path] || []).some(p => p.g === x.id && p.o === i)) return true;
+      const k = profKey(o, {});
+      return !((k && P.taken.get(k) > 0) || profHave(o)?.kind === "dup");
+    });
+    if (!rows.length) continue;
     opts.append(el("div", { class: "rule", style: "margin-top:4px" }, `or from ${profSec(x).toLowerCase()} above:`));
-    x.options.forEach((o, i) => opts.append(profChoice(g, path, o, i, x.id, byPath))); } }
+    rows.forEach(({ o, i }) => opts.append(profChoice(g, path, o, i, x.id, byPath))); } }
   if (g.open) opts.append(profExtra(path, "open", `or points in ${g.open}`));
   if (g.prevSkills) opts.append(profExtra(path, "raise", "or points raising a skill above", BC.profStamp(P.prof, P.picks).skills.map(s => ({ name: s.name, spec: s.spec }))));
   return box;
 }
 function renderProfModal() {
+  profTaken();
   const { prof, picks } = P;
   $("pname").textContent = prof.name;
   $("psub").textContent = `${refTxt(prof.ref)} · ${prof.points * 10} points · ${Object.entries(prof.attributes).map(([k, v]) => `${k} ${sgn(v)}`).join(", ")}`;
@@ -631,7 +830,12 @@ function renderProfModal() {
 }
 let profFrom = null;
 function openProf(prof, picks) {
-  P = { prof, picks: structuredClone(picks || {}) };
+  P = { prof, picks: structuredClone(picks || {}), taken: new Map() };
+  // what the sheet has apart from this profession: its traits (and its templates' traits), skills and spells
+  const ch = C(), sheet = { attributes: { ...ch.attributes }, traits: structuredClone(ch.traits), skills: structuredClone(ch.skills), spells: structuredClone(ch.spells) };
+  const old = ch.profession && (LIB.professions || []).find(p => p.name === ch.profession.name && (!ch.profession.book || p.book === ch.profession.book));
+  if (old) unstampFrom(sheet, BC.profStamp(old, ch.profession.picks || {}));
+  P.have = { traits: [...sheet.traits, ...R.traits.filter(t => t.from).map(t => t.inst)], skills: sheet.skills, spells: sheet.spells };
   profFrom = document.activeElement;
   renderProfModal();
   $("pmodal").hidden = false; document.body.classList.add("locked");
@@ -1431,14 +1635,19 @@ function resolveRoll(r) {
 }
 
 // ---------- add pickers ----------
-function addFrom(input, fn) { const v = $(input).value.trim(); if (!v) return; if (fn(v) !== false) { $(input).value = ""; change(); } }
-const onEnter = (input, btn) => $(input).addEventListener("keydown", e => { if (e.key === "Enter") $(btn).click(); });
-$("addskill").addEventListener("click", () => addFrom("newskill", v => { const { name, spec } = BC.splitSpec(v); const s = { name, points: 10 }; if (spec) s.spec = spec; C().skills.push(s); }));
-$("addspell").addEventListener("click", () => addFrom("newspell", v => { C().spells.push({ name: v, points: 10 }); }));
-$("addtrait").addEventListener("click", () => addFrom("newtrait", v => { const rec = LIB.traits.find(t => t.name.toLowerCase() === v.toLowerCase()); const t = { name: rec ? rec.name : v }; if (rec?.canLevel) t.levels = 1; if (!rec) { const p = Math.round(+prompt(`"${v}" is not in the library. Points (×10) to record for it?`, "0") || 0); t.points = p; } C().traits.push(t); }));
-$("additem").addEventListener("click", () => addFrom("newitem", v => { const rec = LIB.equipment.find(e => e.name.toLowerCase() === v.toLowerCase()); C().equipment.push({ name: rec ? rec.name : v }); }));
-$("addtpl").addEventListener("click", () => addFrom("newtpl", v => { const rec = LIB.templates.find(t => t.name.toLowerCase() === v.toLowerCase()); if (!rec) { toast(`no template "${v}"`); return false; } C().templates.push(rec.name); }));
-[["newskill", "addskill"], ["newspell", "addspell"], ["newtrait", "addtrait"], ["newitem", "additem"], ["newtpl", "addtpl"]].forEach(([a, b]) => onEnter(a, b));
+$("addskill").addEventListener("click", () => chooser({ title: "Add a skill", placeholder: "search skills, or type one", custom: true,
+  items: () => skillItems().map(it => ({ ...it, off: it.key && C().skills.some(s => lcs(BC.fullName(s.name, s.spec)) === it.key) ? "already on the sheet" : null })),
+  onPick: it => chooseSkill(it, (name, spec) => { const s = { name, points: 10 }; if (spec) s.spec = spec; C().skills.push(s); change(); }) }));
+$("addspell").addEventListener("click", () => chooser({ title: "Add a spell", placeholder: "search spells", custom: true,
+  items: () => spellItems().map(it => ({ ...it, off: C().spells.some(s => s.name === it.value) ? "already learned" : null })),
+  onPick: it => addSpell(it.value) }));
+$("addtrait").addEventListener("click", () => chooser({ title: "Add a trait", placeholder: "search traits, or type one", custom: true, items: traitItems,
+  onPick: it => { const v = it.value, rec = LIB.traits.find(t => t.name.toLowerCase() === v.toLowerCase()); const t = { name: rec ? rec.name : v }; if (rec?.canLevel) t.levels = 1;
+    if (!rec) { const p = Math.round(+prompt(`"${v}" is not in the library. Points (×10) to record for it?`, "0") || 0); t.points = p; } C().traits.push(t); change(); } }));
+$("additem").addEventListener("click", () => chooser({ title: "Add equipment", placeholder: "search equipment, or type one", custom: true, items: equipItems,
+  onPick: it => { const rec = LIB.equipment.find(e => e.name.toLowerCase() === it.value.toLowerCase()); C().equipment.push({ name: rec ? rec.name : it.value }); change(); } }));
+$("addtpl").addEventListener("click", () => chooser({ title: "Add a template", sub: "a race or meta-trait", placeholder: "search templates", items: () => templateItems().map(it => ({ ...it, off: C().templates.includes(it.value) ? "already added" : null })),
+  onPick: it => { C().templates.push(it.value); change(); } }));
 
 // ---------- file and header events ----------
 const strip = ch => JSON.parse(JSON.stringify(ch));
@@ -1463,9 +1672,15 @@ $("notes").addEventListener("input", e => { C().notes = e.target.value; save(); 
 $("rclose").addEventListener("click", closeRoller);
 $("rtabs").addEventListener("click", e => { const b = e.target.closest("[data-rtab]"); if (!b) return; rtab = b.dataset.rtab; renderRules(target()); });
 $("rmodal").addEventListener("click", e => { if (e.target === e.currentTarget) closeRoller(); });
-document.addEventListener("keydown", e => { if (e.key === "Escape") { if (!$("pmodal").hidden) closeProf(); else closeRoller(); } });
+document.addEventListener("keydown", e => { if (e.key === "Escape") { if (K) closeK(); else if (!$("pmodal").hidden) closeProf(); else closeRoller(); } });
 $("debug").addEventListener("click", () => { UI.debug = !UI.debug; saveUI(); applyDebug(); roller(); });
 $("editmode").addEventListener("click", () => { editing = !editing; applyMode(); });
+// the name, concept and notes fields are read-only in the view, so a tap on a phone shows no keyboard: a tap on one turns editing on and focuses it
+for (const id of ["cname", "concept", "notes"]) $(id).addEventListener("click", e => {
+  if (editing) return;
+  editing = true; applyMode();
+  e.target.blur(); e.target.focus();
+});
 $("budget").addEventListener("change", e => { ROOT.budget = Math.max(0, Math.round(+e.target.value || 0)); change(); });
 $("mod").addEventListener("input", e => { mod = +e.target.value; roller(); });
 $("drminus").addEventListener("click", () => { targetDR = Math.max(0, targetDR - 1); roller(); });
@@ -1474,7 +1689,7 @@ $("roll").addEventListener("click", () => { const r = 1 + Math.floor(Math.random
 $("manual").addEventListener("change", e => { const r = Math.round(+e.target.value); if (r >= 1 && r <= 100) resolveRoll(r); });
 
 if (!LIB) document.body.prepend(el("p", { class: "box" }, "data/library.js is missing. Run node tools/gcs_convert.mjs <gcs_master_library>."));
-else { applyDebug(); fillLists(); norm(ROOT); render(); }
+else { applyDebug(); norm(ROOT); render(); }
 </script>
 </body>
 </html>

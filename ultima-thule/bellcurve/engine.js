@@ -392,6 +392,40 @@ function checkPrereq(p, st) {
   return { ok: pass, missing: pass ? [] : [(has ? "" : "not ") + label] };
 }
 
+// ---------------------------------------------------------------- spell prerequisite paths
+// The spells to learn before a spell. Returns { paths, unmet }: paths are the alternative ways to meet its spell
+// prerequisites, each a list of spell names in learning order (already-known spells left out; an empty path means nothing
+// is missing). unmet lists prerequisites that name no spell (a number of spells from a college) and are not yet met.
+function spellPaths(rec, known, lib) {
+  const unmet = [], knownRecs = known.map(n => (lib.spells || []).find(s => lc(s.name) === lc(n))).filter(Boolean);
+  const have = new Set(known.map(lc));
+  const merge = (a, b) => { const out = [...a]; for (const n of b) if (!out.includes(n)) out.push(n); return out; };
+  const uniq = alts => { const seen = new Set(), out = []; for (const a of alts) { const k = a.join("|"); if (!seen.has(k)) { seen.add(k); out.push(a); } } return out.sort((x, y) => x.length - y.length).slice(0, 8); };
+  const walk = (p, seen) => {
+    if (!p) return [[]];
+    if (p.type === "prereq_list") {
+      const kids = (p.prereqs || []).map(x => walk(x, seen));
+      if (!kids.length) return [[]];
+      if (p.all !== false) return uniq(kids.reduce((acc, k) => uniq(acc.flatMap(a => k.map(b => merge(a, b)))), [[]]));
+      return kids.some(k => k.some(a => !a.length)) ? [[]] : uniq(kids.flat());
+    }
+    if (p.type !== "spell_prereq" || p.has === false) return [[]];
+    if (p.sub_type === "name") {
+      const cands = (lib.spells || []).filter(s => strCmp(p.qualifier, s.name));
+      if (!cands.length || cands.some(s => have.has(lc(s.name)))) return [[]];
+      return uniq(cands.slice(0, 6).flatMap(c => seen.includes(c.name) ? [] : walk(c.prereqs, [...seen, c.name]).map(a => merge(a, [c.name]))));
+    }
+    const qty = p.quantity || { compare: "at_least", qualifier: 1 };
+    const match = s => p.sub_type === "college" ? (s.college || []).some(c => strCmp(p.qualifier, c)) : p.sub_type === "tag" ? (s.tags || []).some(c => strCmp(p.qualifier, c)) : true;
+    const n = p.sub_type === "college_count" ? new Set(knownRecs.flatMap(s => s.college || [])).size : knownRecs.filter(match).length;
+    if (!numCmp(qty, n)) unmet.push(p.sub_type === "college_count" ? `spells from ${qty.qualifier} colleges` : `${qty.qualifier} ${p.qualifier?.qualifier || ""} spell(s)`.replace("  ", " "));
+    return [[]];
+  };
+  // a path that contains another whole path teaches nothing extra the player would choose
+  const all = walk(rec.prereqs, [rec.name]), paths = all.filter((a, i) => !all.some((b, j) => j !== i && b.length < a.length && b.every(n => a.includes(n))));
+  return { paths, unmet: [...new Set(unmet)] };
+}
+
 // ---------------------------------------------------------------- weapons
 const NATURAL = lib => (lib.natural || []);
 function weaponModes(item, rec, st) {
@@ -1057,6 +1091,6 @@ G.BC = {
   CR_MULT, FR_MULT, parseAdj, traitCost, selectMods, modLabel, generalLabel, modRules, strCmp, numCmp, splitSpec, fullName,
   ENC, TL_WEALTH, WEALTH_MULT, lbs, basicLift, itemClass, itemQuality, spellEnergy,
   profOptCost, profWalk, profChoices, profCheck, profStamp,
-  indexLibrary, findSkill, checkPrereq, compute,
+  indexLibrary, findSkill, checkPrereq, spellPaths, compute,
 };
 })(typeof globalThis !== "undefined" ? globalThis : window);
