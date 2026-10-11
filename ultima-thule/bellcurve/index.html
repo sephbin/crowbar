@@ -34,6 +34,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visi
 button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
 button:disabled{opacity:.35;cursor:not-allowed}
 .col{display:grid;gap:18px;min-width:0;padding-top:8px}
+.pc.editable{cursor:pointer;text-decoration:underline dotted}
 .box{background:var(--card);border-radius:14px;box-shadow:0 0 0 1px var(--rule) inset;padding:14px;min-width:0}
 .bar{font:700 12px/1.4 var(--body);letter-spacing:.06em;text-transform:lowercase;border-bottom:2px solid var(--ink);padding-bottom:4px;margin:0 0 10px;
   display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
@@ -870,6 +871,27 @@ function profItem(o, path, byPath) {
   const row = el("div", { class: "popt fixed" + (o.type === "note" ? " note" : "") }, el("span", { "aria-hidden": "true" }, "•"), nameBtn, ...specControl(o, d, upd), profMark(o, d), el("span", { class: "pc" }, profCost(o, d)));
   return o.type === "note" || !P.det.has(`fixed:${path}`) ? row : el("div", {}, row, el("div", { class: "pdet" }, profDetail(o, d)));
 }
+// A "[Varies]" option (Signature Gear, a Patron, an Ally): the book gives no single price, so taking one opens a dialog that says
+// what the price depends on, what the library knows about it, the range where the book gives one, and takes the points and the subject.
+function varDialog(o, pick, then) {
+  const nm = o.name.replace(/:\s*@[^@]+@$/, ""), recs = LIB.traits.filter(t => lcs(t.name) === lcs(nm)), rec = recs.find(t => o.ref && String(t.ref || "").split(",").map(x => x.trim()).includes(o.ref)) || recs[0];
+  const pts = el("input", { type: "number", step: 10, inputmode: "numeric", style: "width:7em", value: pick.cost ?? "", "aria-label": `${nm} points` });
+  const what = el("input", { type: "text", style: "width:100%", value: pick.notes ?? (traitAsk(o) ? "" : o.notes ?? ""), placeholder: /gear/i.test(nm) ? "which item" : "what it is", "aria-label": `${nm}: what it is` });
+  const lo = o.range?.[0], hi = o.range?.[1];
+  const status = el("p", { class: "hint" });
+  const ok = () => { const v = Math.round(+pts.value); const bad = pts.value === "" || Number.isNaN(v) || (lo != null && (v < Math.min(lo, hi) || v > Math.max(lo, hi))); status.textContent = pts.value === "" ? "Enter the points." : bad ? `The book allows ${sgn(Math.min(lo, hi))} to ${sgn(Math.max(lo, hi))} here.` : v % 10 ? "Points are in steps of 10 (the ×10 scale)." : ""; return !bad && v % 10 === 0; };
+  pts.addEventListener("input", ok);
+  const guide = [
+    o.range ? `The book gives a range: ${sgn(lo)} to ${sgn(hi)} points. Pick the figure that matches what you are describing.` : "The book gives no single price for this. It depends on what you choose, and the GM can overrule it.",
+    rec?.variable ? `Library note: ${rec.variable}.` : "",
+    "Points are on the ×10 scale used by this builder (a book price of 5 is 50 here).",
+  ].filter(Boolean);
+  kdialog({ title: `${nm}: how many points?`, sub: refTxt(o.ref || rec?.ref || ""),
+    body: [el("div", {}, ...guide.map(t => el("p", { class: "desc" }, t))), rec && !rec.house ? describeBlock("traits", [rec.name], rec.ref, { kind: "trait", name: rec.name, ref: rec.ref }) : null,
+      el("div", { class: "popt" }, el("label", { class: "hint", style: "margin:0" }, "points "), pts), el("div", { class: "popt" }, el("label", { class: "hint", style: "margin:0" }, "what "), what), status],
+    buttons: [{ label: "cancel", run: () => then(null) }, { label: "use these points", primary: true, run: () => { if (!ok()) return then(false); pick.cost = Math.round(+pts.value); if (what.value.trim()) pick.notes = what.value.trim(); then(true); } }] });
+  setTimeout(() => pts.focus(), 0);
+}
 function profChoice(g, path, o, i, gid, byPath) {
   const list = P.picks[path] || [], mine = list.filter(p => p.o === i && (p.g || null) === gid);
   const single = g.kind === "count" && g.n === 1, multi = !single && needsSpec(o);
@@ -877,10 +899,13 @@ function profChoice(g, path, o, i, gid, byPath) {
   const toggle = (on, pk) => {
     // a skill with a specialty can be taken again for another specialty: each tick is its own pick
     const l = single ? [] : (P.picks[path] || []).filter(p => (multi ? p !== pk : !(p.o === i && (p.g || null) === gid)));
-    if (on) l.push({ ...(gid ? { g: gid } : {}), o: i });
+    const fresh = { ...(gid ? { g: gid } : {}), o: i };
+    if (on) l.push(fresh);
     dropNested();
     if (l.length) P.picks[path] = l; else delete P.picks[path];
     renderProfModal();
+    // a price the book leaves open: ask for it now; cancelling takes the pick back
+    if (on && o.variable && o.type !== "note") varDialog(o, fresh, r => { if (r === true) renderProfModal(); else if (r === null) { const rest = (P.picks[path] || []).filter(x => x !== fresh); if (rest.length) P.picks[path] = rest; else delete P.picks[path]; renderProfModal(); } else varDialog(o, fresh, () => renderProfModal()); });
   };
   const rowFor = (pick, another) => {
     const k = profKey(o, {}), have = profHave(o, pick || {});
@@ -901,7 +926,7 @@ function profChoice(g, path, o, i, gid, byPath) {
       if (o.type === "bundle") { const nest = el("div", { class: "pnest" }); o.items.forEach((it, kk) => nest.append(profItem(it, `${path}.${i}.${kk}`, byPath))); wrap.append(nest); }
       if (o.type === "group") wrap.append(profGroup(o, `${path}.${i}`, byPath, null, true));
     }
-    row.append(...[dup ? el("span", { class: "pmark" }, sibling ? "another level is chosen" : have?.kind === "dup" ? have.text : "already taken") : profMark(o, pick || {}), el("span", { class: "pc" }, profCost(o, pick || {})),
+    row.append(...[dup ? el("span", { class: "pmark" }, sibling ? "another level is chosen" : have?.kind === "dup" ? have.text : "already taken") : profMark(o, pick || {}), el("span", { class: "pc" + (pick && o.variable ? " editable" : ""), ...(pick && o.variable ? { role: "button", tabindex: "0", title: "set the points", onclick: () => varDialog(o, pick, () => renderProfModal()) } : {}) }, profCost(o, pick || {})),
       el("input", { type: single ? "radio" : "checkbox", class: "psel", name: `p-${path}`, checked: !!pick, disabled: dup, "aria-label": `${another ? "another " : ""}${profLabel(o, pick || {})}`, onchange: e => toggle(e.target.checked, pick) })].filter(Boolean));
     return wrap;
   };
