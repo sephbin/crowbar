@@ -908,6 +908,51 @@ function profExtra(path, kind, label, opts) {
   } }, "add")));
   return box;
 }
+// An open pool ("25 points in Holy abilities", "a 20-point lens"): the book names a kind of ability, not a list. The choices
+// come from the library list for the section (advantages, disadvantages, skills, spells); a library trait is priced by the
+// rules, with a level where it has levels. Anything the library lacks goes in by hand, marked as such.
+function profPool(path, g) {
+  const list = P.picks[path] || [], sec = g.section;
+  const TYPES = { advantages: ["Advantage", "Perk"], disadvantages: ["Disadvantage", "Quirk"] };
+  const box = el("div", { class: "pnest" });
+  box.append(el("div", { class: "rule" }, `Spend ${sgn(g.n)} points on: ${g.open}`));
+  const drop = p => { const l = (P.picks[path] || []).filter(x => x !== p); if (l.length) P.picks[path] = l; else delete P.picks[path]; renderProfModal(); };
+  const add = p => { (P.picks[path] ||= []).push(p); renderProfModal(); };
+  const priceOf = (rec, p) => BC.traitCost(rec, { name: rec.name, notes: p.notes, levels: rec.canLevel ? (p.levels ?? 1) : undefined }, LIB.modifiers).cost;
+  if (list.length) box.append(el("table", { class: "ptable" },
+    el("thead", {}, el("tr", {}, el("th", {}, "Chosen"), el("th", {}, "Level or points"), el("th", { class: "r" }, "Cost"), el("th", {}))),
+    el("tbody", {}, list.map(p => {
+      const rec = p.trait ? LIB.traits.find(t => t.name === p.trait) : null;
+      const name = p.trait ? BC.fullName(p.trait, p.notes) : p.skill ? BC.fullName(p.skill, p.spec) : p.spell || p.text;
+      const ctl = rec?.canLevel
+        ? el("input", { type: "number", min: 1, value: p.levels ?? 1, style: "width:4em", inputmode: "numeric", "aria-label": `${name} level`, onchange: e => { p.levels = Math.max(1, Math.round(+e.target.value) || 1); p.cost = priceOf(rec, p); renderProfModal(); } })
+        : p.trait ? "" : el("input", { type: "number", step: 10, min: 10, value: p.cost ?? "", style: "width:5em", inputmode: "numeric", "aria-label": `${name} points`, onchange: e => { p.cost = Math.round(+e.target.value) || 0; renderProfModal(); } });
+      return el("tr", {}, el("td", {}, name, p.text != null ? el("small", { class: "muted" }, " (by hand)") : ""), el("td", {}, ctl), el("td", { class: "r" }, sgn(p.cost ?? 0)),
+        el("td", { class: "r" }, el("button", { type: "button", "aria-label": `remove ${name}`, onclick: () => drop(p) }, "×")));
+    }))));
+  const mixed = !TYPES[sec] && sec !== "skills" && sec !== "spells";
+  const items = () => sec === "skills" ? skillItems().filter(it => !it.value.ask).map(it => ({ ...it, _k: "skill" }))
+    : sec === "spells" ? spellItems().map(it => ({ ...it, _k: "spell" }))
+    : TYPES[sec] ? traitItems().filter(it => TYPES[sec].some(k => it.facets?.Type?.includes(k))).map(it => ({ ...it, _k: "trait" }))
+    : [...traitItems().map(it => ({ ...it, _k: "trait", sub: it.sub || it.facets?.Type?.[0] })), ...skillItems().filter(it => !it.value.ask).map(it => ({ ...it, _k: "skill", sub: "skill" }))];
+  const noun = sec === "skills" ? "skill" : sec === "spells" ? "spell" : TYPES[sec] ? (sec === "advantages" ? "advantage" : "disadvantage") : "advantage or skill";
+  const pick = it => {
+    if (it._k === "skill") return chooseSkill(it, (name, spec) => add({ skill: name, ...(spec ? { spec } : {}), cost: 10 }));
+    if (it._k === "spell") return add({ spell: it.value, cost: 10 });
+    const rec = LIB.traits.find(t => t.name === it.value); if (!rec) return;
+    const done = notes => { const p = { trait: rec.name, ...(notes ? { notes } : {}), ...(rec.canLevel ? { levels: 1 } : {}) }; p.cost = priceOf(rec, p); add(p); };
+    if (rec.sub) chooser({ title: `${rec.name}: ${rec.sub}`, placeholder: "type it", custom: true, items: () => [], onPick: x => done(x.value) }); else done();
+  };
+  box.append(el("div", { class: "popt" }, el("button", { type: "button", class: "pick", onclick: () => chooser({ kind: mixed ? "traits" : sec === "skills" ? "skills" : sec === "spells" ? "spells" : "traits",
+    title: `Choose ${noun === "advantage or skill" ? "an ability" : "a " + noun}`, sub: g.open, placeholder: `search ${noun}s`, items, onPick: pick }) }, `choose ${noun === "advantage or skill" ? "an ability" : "a " + noun} from the library…`)));
+  // something the library doesn't have
+  let hand = "", pts = null;
+  box.append(el("details", { class: "byhand" }, el("summary", {}, "something not in the library"),
+    el("div", { class: "popt" }, el("input", { type: "text", placeholder: "what it is", "aria-label": "ability not in the library", oninput: e => { hand = e.target.value; } }),
+      pts = el("input", { type: "number", step: 10, placeholder: "points", "aria-label": "points", style: "width:6em", inputmode: "numeric" }),
+      el("button", { type: "button", onclick: () => { const c = Math.round(+pts.value); if (!c || !hand.trim()) return; add({ text: hand.trim(), cost: c }); } }, "add"))));
+  return box;
+}
 // the spells a spell names as prerequisites (any alternative), by name
 const NEEDS = new Map();
 function directNeeds(name) {
@@ -1007,7 +1052,7 @@ function profGroup(g, path, byPath, title, nested) {
     if (!rows.length) continue;
     opts.append(el("div", { class: "rule", style: "margin-top:4px" }, `or from ${profSec(x).toLowerCase()} above:`));
     rows.forEach(({ o, i }) => opts.append(profChoice(g, path, o, i, x.id, byPath))); } }
-  if (g.open) opts.append(profExtra(path, "open", `or points in ${g.open}`));
+  if (g.open) opts.append(profPool(path, g));
   if (g.prevSkills) opts.append(profExtra(path, "raise", "or points raising a skill above", BC.profStamp(P.prof, P.picks).skills.map(s => ({ name: s.name, spec: s.spec }))));
   return box;
 }

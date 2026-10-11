@@ -560,7 +560,8 @@ function profWalk(prof, picks, fn) {
   };
   const choose = (g, path) => {
     for (const p of picks?.[path] || []) {
-      if (p.spell) fn({ type: "spell", name: p.spell, cost: g.cost ?? 10, power: g.spellList && g.spellList !== "wizardly" ? g.spellList : null }, p, path);
+      if (p.spell) fn({ type: "spell", name: p.spell, cost: p.cost ?? g.cost ?? 10, power: g.spellList && g.spellList !== "wizardly" ? g.spellList : null }, p, path);
+      else if (p.trait) fn({ type: "trait", name: p.trait, notes: p.notes, levels: p.levels, cost: p.cost ?? 0 }, p, path);   // chosen from the library for an open pool
       else if (p.text != null) fn({ type: "note", name: p.text, cost: p.cost ?? 0 }, p, path);
       else if (p.skill) fn({ type: "skill", name: p.skill, spec: p.spec, cost: p.cost ?? 0, raise: true }, p, path);
       else { const o = profGroupOf(prof, g, p)?.options?.[p.o]; if (o) take(o, p, `${path}.${p.o}`); }
