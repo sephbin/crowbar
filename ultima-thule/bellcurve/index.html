@@ -135,10 +135,19 @@ button.danger{border-color:var(--bad);color:var(--bad)}
 .kmodal{z-index:60}
 .kmodal .roller{width:min(560px,100%)}
 .ksearch{width:100%;margin:8px 0 4px;font-size:16px}
-.kcats{display:flex;gap:6px;overflow-x:auto;padding:4px 0 8px;-webkit-overflow-scrolling:touch}
-.kcats button{flex:0 0 auto;font-size:12px;padding:6px 10px;min-height:30px}
-.kcats button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.kctl{display:flex;gap:10px;flex-wrap:wrap;padding:2px 0 8px}
+.kctl label{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--muted)}
+.kctl select{font:16px var(--body);background:var(--paper);border:1.5px solid var(--rule);border-radius:8px;padding:5px 6px;color:var(--ink);max-width:14em}
 .klist{display:flex;flex-direction:column;border-top:1px solid var(--rule);max-height:50vh;overflow:auto}
+.krow{display:flex;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--rule)}
+.krow.off{opacity:.5}
+.krow .kitem{flex:1 1 0;border-bottom:0}
+.kinfo{flex:0 0 auto;width:32px;height:32px;padding:0;min-height:0;border-radius:50%;font-size:13px;margin:0 4px}
+.kcheck{flex:0 0 auto;width:26px;height:26px;margin:0 10px;accent-color:var(--accent)}
+.kdet{flex:1 1 100%;padding:2px 6px 12px;font-size:13px}
+.kdet dl{margin:6px 0 0;display:grid;grid-template-columns:auto 1fr;gap:2px 10px}.kdet dt{color:var(--muted)}.kdet dd{margin:0}
+.kdet .desc{margin:4px 0}
+.kgroup{display:flex;justify-content:space-between;width:100%;text-align:left;border:0;border-bottom:1px solid var(--rule);border-radius:0;background:var(--wash);padding:8px 6px;min-height:36px;position:sticky;top:0;z-index:1}
 .kitem{display:flex;gap:8px;align-items:baseline;text-align:left;width:100%;border:0;border-bottom:1px solid var(--rule);border-radius:0;padding:10px 4px;min-height:44px;
   font:15px/1.3 var(--body);letter-spacing:0;text-transform:none;font-weight:400}
 .kitem .kl{flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
@@ -172,9 +181,13 @@ button.danger{border-color:var(--bad);color:var(--bad)}
 .popt input[type=number]{width:4.5em}
 .popt select,.popt input[type=text]{max-width:14em}
 .pnest{margin:4px 0 4px 22px;padding-left:10px;border-left:2px solid var(--rule)}
-.pchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-.pchips span{border:1px solid var(--rule);border-radius:999px;padding:2px 4px 2px 10px;font-size:13px;display:inline-flex;gap:4px;align-items:center}
-.pchips button{width:24px;height:24px;padding:0;border-radius:50%}
+.ptable{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+.ptable th{text-align:left;font-weight:700;color:var(--muted);border-bottom:2px solid var(--ink);padding:3px 6px}
+.ptable td{padding:5px 6px;border-bottom:1px solid var(--rule);vertical-align:top}
+.ptable .r{text-align:right;white-space:nowrap}
+.ptable small{display:block;color:var(--bad)}
+.ptable tr.bad td:first-child{color:var(--bad)}
+.ptable button{width:26px;height:26px;padding:0;min-height:0;border-radius:50%}
 .pstat{display:flex;flex-direction:column;gap:2px;font-size:13px;margin:6px 0}
 .pstat .ok{color:var(--good)} .pstat .bad{color:var(--bad)}
 .mtabs{display:flex;gap:6px;margin:4px 0 12px}
@@ -494,42 +507,91 @@ function closeK(refocus = true) {
   if (refocus && from?.isConnected) from.focus();
 }
 function chooser(o) {
-  openK({ q: "", cat: "", ...o });
+  openK({ q: "", ...o });
   $("kfoot").replaceChildren(el("button", { type: "button", onclick: () => closeK() }, o.stay ? "done" : "cancel"));
   buildChooser();
   if (matchMedia("(pointer:fine)").matches) $("kbody").querySelector("input")?.focus();   // on a phone the keyboard would hide the list
 }
+// A picker has facets: ways to organise its items (a spell's college, class; a skill's category, attribute). "group by" lays
+// the list out under headings, "show" narrows it to one value; the choice is remembered per kind of picker.
+// toggle: true makes each row a switch on the right (stay open, onPick(item, on)); a row with a detail also opens to show it.
 function buildChooser() {
-  const items = typeof K.items === "function" ? K.items() : K.items;
-  const counts = new Map();
-  for (const it of items) for (const c of it.cats || []) counts.set(c, (counts.get(c) || 0) + 1);
-  const cats = [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 40).map(x => x[0]);
-  const list = el("div", { class: "klist", role: "list" }), chips = el("div", { class: "kcats", role: "group", "aria-label": "Categories" });
-  const hit = it => { const q = lcs(K.q).split(/\s+/).filter(Boolean), hay = lcs(`${it.label} ${it.sub || ""} ${(it.cats || []).join(" ")}`);
-    return (!K.cat || (it.cats || []).includes(K.cat)) && q.every(w => hay.includes(w)); };
-  const pickIt = it => { if (it.off) return; const cb = K.onPick, stay = K.stay; if (stay) { cb(it); if (K?.stay) buildChooser(); } else { closeK(false); cb(it); } };
-  const fill = () => {
-    const q = lcs(K.q), found = items.filter(hit).sort((a, b) => (lcs(b.label).startsWith(q) - lcs(a.label).startsWith(q)) || 0);
-    list.replaceChildren();
-    const typed = K.q.trim();
-    if (K.custom && typed && !items.some(it => lcs(it.label) === q))
-      list.append(el("button", { type: "button", class: "kitem custom", onclick: () => pickIt({ value: typed, label: typed, custom: true }) }, el("span", { class: "kl" }, `use "${typed}"`)));
-    for (const it of found.slice(0, 150))
-      list.append(el("button", { type: "button", role: "listitem", class: "kitem" + (it.chosen ? " chosen" : ""), disabled: !!it.off, onclick: () => pickIt(it) },
-        el("span", { class: "kl" }, it.label), el("span", { class: "ks" }, it.off || it.sub || "")));
-    if (found.length > 150) list.append(el("div", { class: "kmore" }, `${found.length - 150} more: type to narrow the list`));
-    if (!found.length && !(K.custom && typed)) list.append(el("div", { class: "kmore" }, "Nothing matches."));
+  const facetOf = it => it.facets || (it.cats?.length ? { Category: it.cats } : {});
+  const input = el("input", { type: "search", class: "ksearch", placeholder: K.placeholder || "search", "aria-label": "Search", autocomplete: "off", autocapitalize: "off", spellcheck: "false", enterkeyhint: "search", value: K.q,
+    oninput: e => { K.q = e.target.value; K.fill?.(); },
+    onkeydown: e => { if (e.key !== "Enter") return; e.preventDefault(); K.list?.querySelector("[data-pick]:not(:disabled)")?.click(); } });
+  const controls = el("div", { class: "kctl" }), list = el("div", { class: "klist", role: "list" });
+  K.list = list; K.det ||= new Set(); K.open ||= new Set(); K.closed ||= new Set(); K.show ||= "";
+  $("kbody").replaceChildren(input, controls, list);
+  K.draw = () => {
+    const items = typeof K.items === "function" ? K.items() : K.items;
+    const names = []; for (const it of items) for (const f of Object.keys(facetOf(it))) if (!names.includes(f)) names.push(f);
+    const saved = UI.pickBy?.[K.kind];
+    if (K.group === undefined) K.group = saved === "" ? "" : names.includes(saved) ? saved : names[0] || "";
+    if (K.group && !names.includes(K.group)) K.group = "";
+    const valuesOf = it => { const v = [].concat(facetOf(it)[K.group] ?? []).filter(x => x !== "" && x != null); return v.length ? v : ["Other"]; };
+    const counts = new Map(); if (K.group) for (const it of items) for (const v of valuesOf(it)) counts.set(v, (counts.get(v) || 0) + 1);
+    if (K.show && !counts.has(K.show)) K.show = "";
+    const order = [...counts.keys()].sort((a, b) => a === "Other" ? 1 : b === "Other" ? -1 : a.localeCompare(b, undefined, { numeric: true }));
+    controls.replaceChildren();
+    if (names.length && items.length >= 12) {
+      controls.append(el("label", {}, "group by ", el("select", { "aria-label": "Group by", onchange: e => { K.group = e.target.value; K.show = ""; K.open.clear(); K.closed.clear(); (UI.pickBy ||= {})[K.kind || ""] = K.group; saveUI(); K.draw(); } },
+        el("option", { value: "" }, "none (A to Z)"), ...names.map(n => el("option", { value: n, selected: n === K.group }, n)))));
+      if (K.group) controls.append(el("label", {}, "show ", el("select", { "aria-label": "Show", onchange: e => { K.show = e.target.value; K.draw(); } },
+        el("option", { value: "" }, `all (${items.length})`), ...order.map(v => el("option", { value: v, selected: v === K.show }, `${v} (${counts.get(v)})`)))));
+    }
+    K.fill = () => {
+      const scroll = list.scrollTop, q = lcs(K.q), words = q.split(/\s+/).filter(Boolean), typed = K.q.trim();
+      const hit = it => words.every(w => lcs(`${it.label} ${it.sub || ""} ${Object.values(facetOf(it)).flat().join(" ")}`).includes(w));
+      let found = items.filter(hit);
+      list.replaceChildren();
+      if (K.custom && typed && !items.some(it => lcs(it.label) === q))
+        list.append(el("button", { type: "button", class: "kitem custom", "data-pick": "", onclick: () => pickIt({ value: typed, label: typed, custom: true }) }, el("span", { class: "kl" }, `use "${typed}"`)));
+      let shown = 0;
+      const row = it => { shown++; return chooserRow(it); };
+      if (K.group) {
+        const buckets = new Map(order.map(v => [v, []]));
+        for (const it of found) for (const v of valuesOf(it)) if (!K.show || v === K.show) buckets.get(v)?.push(it);
+        const live = order.filter(v => buckets.get(v).length);
+        for (const v of live) {
+          const open = K.open.has(v) || (!K.closed.has(v) && (!!q || !!K.show || live.length <= 6));
+          list.append(el("button", { type: "button", class: "kgroup", "aria-expanded": String(open),
+            onclick: () => { if (open) { K.open.delete(v); K.closed.add(v); } else { K.closed.delete(v); K.open.add(v); } K.fill(); } }, el("span", {}, `${open ? "▾" : "▸"} ${v}`), el("span", { class: "mut" }, String(buckets.get(v).length))));
+          if (open) for (const it of buckets.get(v)) { if (shown >= 150) break; list.append(row(it)); }
+        }
+      } else {
+        found = found.sort((a, b) => (lcs(b.label).startsWith(q) - lcs(a.label).startsWith(q)) || 0);
+        for (const it of found.slice(0, 150)) list.append(row(it));
+        if (found.length > 150) list.append(el("div", { class: "kmore" }, `${found.length - 150} more: type to narrow the list`));
+      }
+      if (shown >= 150) list.append(el("div", { class: "kmore" }, "Showing the first 150: search or narrow with “show” to see the rest."));
+      if (!found.length && !(K.custom && typed)) list.append(el("div", { class: "kmore" }, "Nothing matches."));
+      list.scrollTop = scroll;
+    };
+    K.fill();
   };
-  const drawChips = () => {
-    chips.replaceChildren();
-    if (cats.length < 2 || items.length < 12) return;
-    for (const c of ["", ...cats]) chips.append(el("button", { type: "button", "aria-pressed": String(K.cat === c), onclick: () => { K.cat = c; drawChips(); fill(); } }, c || "all"));
-  };
-  const inp = el("input", { type: "search", class: "ksearch", placeholder: K.placeholder || "search", "aria-label": "Search", autocomplete: "off", autocapitalize: "off", spellcheck: "false", enterkeyhint: "search", value: K.q,
-    oninput: e => { K.q = e.target.value; fill(); },
-    onkeydown: e => { if (e.key !== "Enter") return; e.preventDefault(); const first = list.querySelector(".kitem:not(:disabled)"); if (first) first.click(); } });
-  $("kbody").replaceChildren(inp, chips, list);
-  drawChips(); fill();
+  K.draw();
+}
+function pickIt(it, on) {
+  if (!K || (it.off && !K.toggle)) return;
+  const cb = K.onPick;
+  if (K.stay) { cb(it, on); if (K?.stay) K.draw(); }
+  else { closeK(false); cb(it); }
+}
+function chooserRow(it) {
+  const key = it.label, open = K.det.has(key) && !!it.detail, toggle = !!K.toggle;
+  const flip = () => { if (K.det.has(key)) K.det.delete(key); else K.det.add(key); K.fill(); };
+  const row = el("div", { class: "krow" + (it.chosen ? " chosen" : "") + (it.off && !it.chosen ? " off" : ""), role: "listitem" });
+  const text = [el("span", { class: "kl" }, it.label), el("span", { class: "ks" }, it.off || it.sub || "")];
+  if (toggle) {
+    row.append(el("button", { type: "button", class: "kitem", "aria-expanded": it.detail ? String(open) : null, onclick: () => it.detail ? flip() : row.querySelector(".kcheck:not(:disabled)")?.click() }, ...text),
+      el("input", { type: "checkbox", class: "kcheck", "data-pick": "", checked: !!it.chosen, disabled: !!it.off, "aria-label": `${it.chosen ? "Remove" : "Add"} ${it.label}`, onchange: e => pickIt(it, e.target.checked) }));
+  } else {
+    row.append(el("button", { type: "button", class: "kitem", "data-pick": "", disabled: !!it.off, onclick: () => pickIt(it, true) }, ...text));
+    if (it.detail) row.append(el("button", { type: "button", class: "kinfo", "aria-label": `About ${it.label}`, "aria-expanded": String(open), onclick: flip }, open ? "−" : "i"));
+  }
+  if (open) row.append(el("div", { class: "kdet" }, it.detail()));
+  return row;
 }
 // any other content in the panel
 function kdialog({ title, sub, body, buttons }) {
@@ -544,12 +606,29 @@ $("kmodal").addEventListener("click", e => { if (e.target === e.currentTarget) c
 const PICKS = globalThis.BC_PICKS || { byAsk: {}, bySkill: {} };
 const memo = {};
 const once = (k, f) => memo[k] ||= f();
+const DIFFW = { E: "easy", A: "average", H: "hard", VH: "very hard", W: "wildcard" };
+const knownSpells = () => C().spells.filter(s => s.points >= 10).map(s => s.name);
+// what a spell needs, in words, given what the sheet knows
+function spellNeeds(rec, known) {
+  const res = BC.spellPaths(rec, known, LIB);
+  if (res.paths.some(p => !p.length) && !res.unmet.length) return null;
+  const paths = res.paths.filter(p => p.length).map(p => p.join(" → "));
+  return [paths.length ? (paths.length > 1 ? "one of: " : "") + paths.join("  or  ") : "", res.unmet.length ? `also ${res.unmet.join(", ")}` : ""].filter(Boolean).join("; ");
+}
+function spellDetail(name, known = knownSpells(), extra = []) {
+  const r = LIB.spells.find(s => s.name === name); if (!r) return "";
+  const needs = spellNeeds(r, known);
+  return el("div", {}, descBlock("spells", [name], r.ref), dl([...extra, ["college", r.college.join(", ")], ["class", r.class], ["based on", `${r.attr}, ${DIFFW[r.diff] || r.diff}`], ["cost", r.cost], ["maintain", r.maint], ["time", r.time], ["duration", r.duration],
+    ["needs first", needs], ["page", refTxt(r.ref)]]));
+}
 const skillItems = () => once("skills", () => {
   const seen = new Set(), out = [];
   for (const s of LIB.skills) {
     const ask = s.spec?.startsWith("@"), label = ask ? `${s.name} (specialty…)` : s.spec ? `${s.name} (${s.spec})` : s.name;
     if (seen.has(label)) continue; seen.add(label);
-    out.push({ value: ask ? { name: s.name, ask: s.spec.slice(1, -1) } : { name: s.name, spec: s.spec || "" }, label, cats: (s.tags || []).slice(0, 3), sub: ask ? "you name the specialty" : s.diff ? `${s.attr}/${s.diff}` : "", key: ask ? "" : lcs(BC.fullName(s.name, s.spec)) });
+    out.push({ value: ask ? { name: s.name, ask: s.spec.slice(1, -1) } : { name: s.name, spec: s.spec || "" }, label, sub: ask ? "you name the specialty" : s.diff ? `${s.attr}/${s.diff}` : "", key: ask ? "" : lcs(BC.fullName(s.name, s.spec)),
+      facets: { Category: (s.tags || []).slice(0, 4), "Based on": s.attr ? [`${s.attr} ${DIFFW[s.diff] || s.diff}`] : [], Kind: [s.technique ? "Technique" : "Skill"] },
+      detail: () => el("div", {}, descBlock("skills", [BC.fullName(s.name, s.spec), s.name], s.ref), dl([["based on", s.attr ? `${s.attr}, ${DIFFW[s.diff] || s.diff}` : ""], ["categories", (s.tags || []).join(", ")], ["page", refTxt(s.ref)]])) });
   }
   return out;
 });
@@ -557,12 +636,18 @@ const traitItems = () => once("traits", () => {
   const seen = new Set(), out = [];
   for (const t of LIB.traits) {
     if (seen.has(t.name)) continue; seen.add(t.name);
-    out.push({ value: t.name, label: t.name, cats: [t.kind[0].toUpperCase() + t.kind.slice(1), ...(t.tags || []).filter(x => !/^(advantage|disadvantage|perk|quirk)$/i.test(x)).slice(0, 2)], sub: t.house ? "house rule" : t.sub || "" });
+    const kind = t.kind[0].toUpperCase() + t.kind.slice(1);
+    out.push({ value: t.name, label: t.name, sub: t.house ? "house rule" : t.sub || "",
+      facets: { Type: [kind], Category: (t.tags || []).filter(x => !/^(advantage|disadvantage|perk|quirk)$/i.test(x)).slice(0, 3) },
+      detail: () => el("div", {}, t.summary ? el("p", { class: "desc" }, t.summary) : null, dl([["type", kind], ["categories", (t.tags || []).join(", ")], ["levels", t.canLevel ? `up to ${t.maxLevels ?? "?"}` : ""], ["page", t.house ? "house rule" : refTxt(t.ref)]])) });
   }
   return out;
 });
-const spellItems = () => once("spells", () => LIB.spells.map(s => ({ value: s.name, label: s.name, cats: s.college?.length ? s.college : ["Other"], sub: s.class || "" })));
-const equipItems = () => once("equipment", () => LIB.equipment.map(e => ({ value: e.name, label: e.name, cats: (e.tags || []).slice(0, 2), sub: [e.tl != null && e.tl !== "" ? `TL${e.tl}` : "", e.cost != null ? `$${e.cost}` : ""].filter(Boolean).join(" · ") })));
+const spellItems = () => once("spells", () => LIB.spells.map(s => ({ value: s.name, label: s.name, sub: s.class || "",
+  facets: { College: s.college?.length ? s.college : ["Other"], Class: s.class ? [...new Set(s.class.split(/\s*(?:;|\/| or )\s*/).filter(Boolean))] : ["Other"], Power: [s.power || "Other"] } })));
+const equipItems = () => once("equipment", () => LIB.equipment.map(e => ({ value: e.name, label: e.name, sub: [e.tl != null && e.tl !== "" ? `TL${e.tl}` : "", e.cost != null ? `$${e.cost}` : ""].filter(Boolean).join(" · "),
+  facets: { Category: (e.tags || []).slice(0, 2), "Tech level": e.tl != null && e.tl !== "" ? [`TL${e.tl}`] : [] },
+  detail: () => dl([["tech level", e.tl != null && e.tl !== "" ? `TL${e.tl}` : ""], ["cost", e.cost != null ? `$${e.cost}` : ""], ["weight", e.weight != null ? `${e.weight} lb` : ""], ["notes", e.notes], ["page", refTxt(e.ref)]]) })));
 const templateItems = () => once("templates", () => LIB.templates.map(t => ({ value: t.name, label: t.name, cats: [t.book || "Other"], sub: refTxt(t.ref) })));
 // specialties for a skill that needs one: the suggestion lists first, then the ones the book lists
 function specItems(name, ask) {
@@ -578,7 +663,7 @@ function chooseSkill(it, done) {
   if (typeof v === "string") { const { name, spec } = BC.splitSpec(v); done(name, spec || ""); return; }
   if (!v.ask) { done(v.name, v.spec); return; }
   chooser({ title: `${v.name}: specialty`, sub: v.ask, placeholder: "search, or type your own", custom: true,
-    items: () => specItems(v.name, v.ask).map(x => ({ ...x, off: C().skills.some(s => sameSkill(s, { name: v.name, spec: x.value })) ? "already on the sheet" : null })), onPick: x => done(v.name, x.value) });
+    kind: "spec", items: () => specItems(v.name, v.ask).map(x => ({ ...x, off: C().skills.some(s => sameSkill(s, { name: v.name, spec: x.value })) ? "already on the sheet" : null })), onPick: x => done(v.name, x.value) });
 }
 // a spell with prerequisite spells: offer to learn them too (several ways in = a choice of path)
 // the dialog for a spell whose prerequisite spells are missing: apply(names) gets the spells to take (prerequisites first), or null for cancel
@@ -590,15 +675,21 @@ function prereqChoice(name, res, apply, each = "10 points each") {
     body: [...opts, res.unmet.length ? el("p", { class: "hint" }, `Also needs ${res.unmet.join(", ")}; add those by hand.`) : null],
     buttons: [{ label: "cancel", run: () => apply(null) }, { label: `add ${name} only`, run: () => apply([name]) }, { label: "add with prerequisites", primary: true, run: () => apply([...res.paths[at], name]) }] });
 }
-// a spell with prerequisite spells: offer to learn them too (several ways in = a choice of path)
-function addSpell(name) {
+// a spell with prerequisite spells: offer to learn them too (several ways in = a choice of path). reopen() runs afterwards.
+function addSpell(name, reopen) {
   const ch = C(), rec = LIB.spells.find(s => s.name === name);
-  const push = names => { if (!names) return; for (const n of names) if (!ch.spells.some(x => x.name === n)) ch.spells.push({ name: n, points: 10 }); change(); };
-  if (!rec) { push([name]); return; }
+  const push = names => { if (names) for (const n of names) if (!ch.spells.some(x => x.name === n)) ch.spells.push({ name: n, points: 10 }); if (names) change(); reopen?.(); };
+  if (!rec) { ch.spells.push({ name, points: 10 }); change(); return; }
   const res = BC.spellPaths(rec, ch.spells.filter(s => s.points >= 10).map(s => s.name), LIB);
-  if (res.paths.some(p => !p.length) && !res.unmet.length) { push([name]); return; }
-  if (res.paths.every(p => !p.length)) { toast(`${name} also needs ${res.unmet.join(", ")}`); push([name]); return; }
+  if (res.paths.some(p => !p.length) && !res.unmet.length) { ch.spells.push({ name, points: 10 }); change(); return; }
+  if (res.paths.every(p => !p.length)) { toast(`${name} also needs ${res.unmet.join(", ")}`); ch.spells.push({ name, points: 10 }); change(); return; }
   prereqChoice(name, res, push);
+}
+// the spell list on the magic tab: each spell is a switch on the right; its row opens to show what it is and what it needs
+function openSpellPicker() {
+  chooser({ kind: "spells", title: "Learn spells", sub: "Switch a spell on to learn it; you are offered its prerequisites.", placeholder: "search spells, or type one", custom: true, toggle: true, stay: true,
+    items: () => { const have = new Set(knownSpells()); return spellItems().map(it => ({ ...it, chosen: have.has(it.value), off: have.has(it.value) ? "learned" : null, detail: () => spellDetail(it.value) })); },
+    onPick: (it, on) => { if (on !== false) addSpell(it.value, openSpellPicker); } });
 }
 
 // ---------- render ----------
@@ -706,7 +797,7 @@ function specControl(o, pick, upd) {
   }
   if (o.ask) return [el("button", { type: "button", class: "pick", "aria-label": `${o.name} specialty`, onclick: () => chooser({
     title: `${o.name}: specialty`, sub: o.ask, placeholder: "search, or type your own", custom: true,
-    items: () => specItems(o.name, o.ask).map(it => ({ ...it, chosen: lcs(it.value) === lcs(cur), off: used(it.value) ? "already taken" : null, sub: onSheet(it.value) ? "you have it" : "" })),
+    kind: "spec", items: () => specItems(o.name, o.ask).map(it => ({ ...it, chosen: lcs(it.value) === lcs(cur), off: used(it.value) ? "already taken" : null, sub: onSheet(it.value) ? "you have it" : "" })),
     onPick: it => upd("spec", it.value) }) }, cur || `${o.ask}…`)];
   return [];
 }
@@ -759,8 +850,8 @@ function profChoice(g, path, o, i, gid, byPath) {
 function profExtra(path, kind, label, opts) {
   const list = P.picks[path] || [], mine = list.filter(p => kind === "open" ? p.text != null : p.skill);
   const box = el("div", { class: "pnest" }, el("div", { class: "rule" }, label));
-  if (mine.length) box.append(el("div", { class: "pchips" }, mine.map(p => el("span", {}, `${kind === "open" ? p.text : BC.fullName(p.skill, p.spec)} ${sgn(p.cost)}`,
-    el("button", { type: "button", "aria-label": "remove", onclick: () => { const l = (P.picks[path] || []).filter(x => x !== p); if (l.length) P.picks[path] = l; else delete P.picks[path]; renderProfModal(); } }, "×")))));
+  if (mine.length) box.append(ptable([kind === "open" ? "Ability" : "Skill raised", "Points"], mine.map(p => ({ cells: [kind === "open" ? p.text : BC.fullName(p.skill, p.spec), sgn(p.cost)], label: `remove ${kind === "open" ? p.text : p.skill}`,
+    remove: () => { const l = (P.picks[path] || []).filter(x => x !== p); if (l.length) P.picks[path] = l; else delete P.picks[path]; renderProfModal(); } }))));
   let text = "";
   const what = kind === "open"
     ? el("button", { type: "button", class: "pick", "aria-label": label, onclick: e => chooser({ title: label, placeholder: "search traits and skills, or type one", custom: true,
@@ -775,6 +866,12 @@ function profExtra(path, kind, label, opts) {
   } }, "add")));
   return box;
 }
+// a table of what has been chosen: rows { cells: [text or node], bad, label, remove }
+function ptable(head, rows) {
+  return el("table", { class: "ptable" }, el("thead", {}, el("tr", {}, ...head.map((h, i) => el("th", { class: i === head.length - 1 ? "r" : null }, h)), el("th", {}))),
+    el("tbody", {}, rows.map(r => el("tr", { class: r.bad ? "bad" : null }, ...r.cells.map((c, i) => el("td", { class: i === r.cells.length - 1 ? "r" : null }, c)),
+      el("td", { class: "r" }, el("button", { type: "button", "aria-label": r.label || "remove", onclick: r.remove }, "×"))))));
+}
 // "Choose 20 clerical spells": a searchable list; clerical and druidic spells show their Power Investiture level
 function profSpells(g, path) {
   const power = g.spellList === "wizardly" ? null : g.spellList;
@@ -785,27 +882,34 @@ function profSpells(g, path) {
   const box = el("div", {});
   const list = P.picks[path] || [];
   if (power) box.append(el("div", { class: "rule" }, `Power Investiture ${pi}: spells up to PI ${pi} (DF1 p.19)`));
-  box.append(el("div", { class: "pchips" }, list.map(p => { const lv = power ? LIB.piSpells[power][p.spell] : null;
-    return el("span", { class: (lv != null && lv > pi) || offLimits(p.spell) ? "bad" : null, title: lv > pi ? `needs PI ${lv}` : offLimits(p.spell) ? "off-limits to dungeon fantasy wizards (DF1 p.20)" : null }, `${p.spell}${lv != null ? ` · PI ${lv}` : ""}`,
-      el("button", { type: "button", "aria-label": `remove ${p.spell}`, onclick: () => { const l = (P.picks[path] || []).filter(x => x !== p); if (l.length) P.picks[path] = l; else delete P.picks[path]; renderProfModal(); } }, "×")); })));
+  const cost = g.cost ?? 10;
+  const rows = list.map(p => { const lv = power ? LIB.piSpells[power][p.spell] : null, s0 = LIB.spells.find(x => x.name === p.spell);
+    const why = lv != null && lv > pi ? `needs PI ${lv}` : offLimits(p.spell) ? "off-limits to dungeon fantasy wizards (DF1 p.20)" : "";
+    return { bad: !!why, cells: [el("span", {}, p.spell, why ? el("small", {}, why) : null), (s0?.college || []).join(", "), power ? `PI ${lv ?? "?"}` : s0?.class || "", sgn(cost)], label: `remove ${p.spell}`,
+      remove: () => { const l = (P.picks[path] || []).filter(x => x !== p); if (l.length) P.picks[path] = l; else delete P.picks[path]; renderProfModal(); } }; });
+  if (rows.length) box.append(ptable(["Spell", "College", power ? "PI" : "Class", "Points"], rows));
+  const knownNow = () => [...(P.have?.spells || []).filter(x => x.points >= 10).map(x => x.name), ...BC.profStamp(P.prof, P.picks).spells.map(x => x.name)];
   const items = () => pool.map(([n, lv]) => {
     const s = LIB.spells.find(x => x.name === n), picked = (P.picks[path] || []).some(p => p.spell === n), elsewhere = (P.taken.get(`sp:${lcs(n)}`) || 0) > (picked ? 1 : 0);
-    const off = picked ? "chosen" : lv != null && lv > pi ? `needs PI ${lv}` : offLimits(n) ? "off-limits to wizards" : elsewhere ? "already taken" : null;
-    return { value: n, label: n, off, chosen: picked, cats: s?.college?.length ? s.college : lv != null ? [`PI ${lv}`] : [], sub: off ? "" : P.have?.spells.some(y => y.name === n) ? "you know it" : lv != null ? `PI ${lv}` : "" };
+    const off = picked ? null : lv != null && lv > pi ? `needs PI ${lv}` : offLimits(n) ? "off-limits to wizards" : elsewhere ? "already taken" : null;
+    return { value: n, label: n, off, chosen: picked, sub: off ? "" : P.have?.spells.some(y => y.name === n) ? "you know it" : lv != null ? `PI ${lv}` : "",
+      facets: { ...(lv != null ? { "Power Investiture": [`PI ${lv}`] } : {}), College: s?.college?.length ? s.college : ["Other"], Class: [s?.class || "Other"] },
+      detail: () => spellDetail(n, knownNow(), lv != null ? [["power investiture", `PI ${lv}`]] : []) };
   });
   const listOpts = () => ({
-    title: `Choose ${g.spellList} spells`, sub: `${(P.picks[path] || []).length} of ${g.n} chosen`, placeholder: "search spells", stay: true, items,
-    onPick: it => {
+    kind: power ? "pi-spells" : "wizard-spells", title: `Choose ${g.spellList} spells`, sub: `${(P.picks[path] || []).length} of ${g.n} chosen`, placeholder: "search spells", stay: true, toggle: true, items,
+    onPick: (it, on) => {
       const take = names => { for (const n of names) if (!(P.picks[path] ||= []).some(p => p.spell === n)) P.picks[path].push({ spell: n }); renderProfModal(); };
+      const sub = () => { if (K?.stay) $("ksub").textContent = `${(P.picks[path] || []).length} of ${g.n} chosen`; };
+      if (on === false) { const l = (P.picks[path] || []).filter(p => p.spell !== it.value); if (l.length) P.picks[path] = l; else delete P.picks[path]; renderProfModal(); sub(); return; }
       const rec = LIB.spells.find(x => x.name === it.value);
       // wizardly spells need their prerequisite spells (clerical and druidic ones need only Power Investiture)
-      const known = [...(P.have?.spells || []).filter(x => x.points >= 10).map(x => x.name), ...BC.profStamp(P.prof, P.picks).spells.map(x => x.name)];
-      const res = power || !rec ? { paths: [[]], unmet: [] } : BC.spellPaths(rec, known, LIB);
-      if (res.paths.some(x => !x.length) || res.paths.every(x => !x.length)) { take([it.value]); if (K?.stay) $("ksub").textContent = `${(P.picks[path] || []).length} of ${g.n} chosen`; return; }
-      prereqChoice(it.value, res, names => { if (names) take(names); openList(); }, `${g.cost ?? 10} points each, from this list`);
+      const res = power || !rec ? { paths: [[]], unmet: [] } : BC.spellPaths(rec, knownNow(), LIB);
+      if (res.paths.some(x => !x.length) || res.paths.every(x => !x.length)) { take([it.value]); sub(); return; }
+      prereqChoice(it.value, res, names => { if (names) take(names); openList(); }, `${cost} points each, from this list`);
     } });
   const openList = () => chooser(listOpts());
-  box.append(el("div", { class: "popt" }, el("button", { type: "button", class: "pick", onclick: openList }, `add a ${g.spellList} spell…`)));
+  box.append(el("div", { class: "popt" }, el("button", { type: "button", class: "pick", onclick: openList }, `add ${g.spellList} spells…`)));
   return box;
 }
 function profGroup(g, path, byPath, title, nested) {
@@ -1653,18 +1757,16 @@ function resolveRoll(r) {
 }
 
 // ---------- add pickers ----------
-$("addskill").addEventListener("click", () => chooser({ title: "Add a skill", placeholder: "search skills, or type one", custom: true,
+$("addskill").addEventListener("click", () => chooser({ kind: "skills", title: "Add a skill", placeholder: "search skills, or type one", custom: true,
   items: () => skillItems().map(it => ({ ...it, off: it.key && C().skills.some(s => lcs(BC.fullName(s.name, s.spec)) === it.key) ? "already on the sheet" : null })),
   onPick: it => chooseSkill(it, (name, spec) => { const s = { name, points: 10 }; if (spec) s.spec = spec; C().skills.push(s); change(); }) }));
-$("addspell").addEventListener("click", () => chooser({ title: "Add a spell", placeholder: "search spells", custom: true,
-  items: () => spellItems().map(it => ({ ...it, off: C().spells.some(s => s.name === it.value) ? "already learned" : null })),
-  onPick: it => addSpell(it.value) }));
-$("addtrait").addEventListener("click", () => chooser({ title: "Add a trait", placeholder: "search traits, or type one", custom: true, items: traitItems,
+$("addspell").addEventListener("click", openSpellPicker);
+$("addtrait").addEventListener("click", () => chooser({ kind: "traits", title: "Add a trait", placeholder: "search traits, or type one", custom: true, items: traitItems,
   onPick: it => { const v = it.value, rec = LIB.traits.find(t => t.name.toLowerCase() === v.toLowerCase()); const t = { name: rec ? rec.name : v }; if (rec?.canLevel) t.levels = 1;
     if (!rec) { const p = Math.round(+prompt(`"${v}" is not in the library. Points (×10) to record for it?`, "0") || 0); t.points = p; } C().traits.push(t); change(); } }));
-$("additem").addEventListener("click", () => chooser({ title: "Add equipment", placeholder: "search equipment, or type one", custom: true, items: equipItems,
+$("additem").addEventListener("click", () => chooser({ kind: "equipment", title: "Add equipment", placeholder: "search equipment, or type one", custom: true, items: equipItems,
   onPick: it => { const rec = LIB.equipment.find(e => e.name.toLowerCase() === it.value.toLowerCase()); C().equipment.push({ name: rec ? rec.name : it.value }); change(); } }));
-$("addtpl").addEventListener("click", () => chooser({ title: "Add a template", sub: "a race or meta-trait", placeholder: "search templates", items: () => templateItems().map(it => ({ ...it, off: C().templates.includes(it.value) ? "already added" : null })),
+$("addtpl").addEventListener("click", () => chooser({ kind: "templates", title: "Add a template", sub: "a race or meta-trait", placeholder: "search templates", items: () => templateItems().map(it => ({ ...it, off: C().templates.includes(it.value) ? "already added" : null })),
   onPick: it => { C().templates.push(it.value); change(); } }));
 
 // ---------- file and header events ----------
