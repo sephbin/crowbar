@@ -110,5 +110,30 @@ const claws = tw([{ name: "Blunt Claws" }]);
 eq("Blunt Claws replace the plain punch", claws.some(w => w.name === "Punch"), false);
 eq("Innate Attack (Burn) 3: 3d", BC.diceTxt(tw([{ name: "Innate Attack (Burn)", levels: 3 }]).find(w => /Innate/.test(w.name)).modes[0].dice), "3d");
 
+// equipment: Basic Lift and encumbrance (B15, B17), Parry and Block (B375-B376), shields (B287), quality (B274-B280),
+// starting wealth (B25-B27), spell energy (M8)
+const ch = o => BC.compute({ attributes: {}, traits: [], skills: [], spells: [], equipment: [], ...o }, lib);
+eq("Basic Lift: ST 7 9.8, ST 10 20, ST 11 24", [BC.basicLift(7), BC.basicLift(10), BC.basicLift(11)], [9.8, 20, 24]);
+const sword = ch({ tl: 3, equipment: [{ name: "Broadsword", quality: "fine" }, { name: "Medium Shield" }, { name: "Boots" }], skills: [{ name: "Broadsword", points: 40 }, { name: "Shield", spec: "Shield", points: 20 }, { name: "Stealth", points: 20 }] });
+const bs = sword.weapons.find(w => w.name === "Broadsword").modes;
+eq("fine broadsword: sw+1 cut +1 = 1d+2, thrust crushing unchanged 1d-1", [BC.diceTxt(bs[0].dice), BC.diceTxt(bs[1].dice)], ["1d+2", "1d-1"]);
+eq("Broadsword-11: Parry 8", bs[0].parryLevel, 8);
+eq("Shield-11: Block 8, medium shield DB 2", [sword.weapons.find(w => w.name === "Medium Shield").modes[0].blockLevel, sword.db], [8, 2]);
+eq("boots: kick +1 (1d-1 at ST 10)", BC.diceTxt(sword.weapons.find(w => w.name === "Kick").modes[0].dice), "1d-1");
+eq("21 lb at ST 10: Light, Move 4, Dodge 8 -> 7", [sword.enc.name, sword.enc.move, sword.dodgeBase, sword.dodge], ["Light", 4, 8, 7]);
+eq("Stealth takes the encumbrance level", sword.skills.find(s => s.name === "Stealth").encPen, -1);
+eq("fine broadsword x4 + shield $60 + boots $80 = $2140, over $1000 at TL3", [sword.money.spent, sword.money.limit, sword.issues.some(x => x.sev === "ERROR" && /over/.test(x.msg))], [2140, 1000, true]);
+eq("Comfortable Wealth doubles starting wealth", ch({ tl: 3, traits: [{ name: "Comfortable Wealth" }], equipment: [{ name: "Leather Armor" }] }).money.limit, 2000);
+const tl8 = lib.equipment.find(e => e.tl === "8" && e.cost > 0);
+eq(`TL8 item in a TL3 campaign costs x32 (${tl8.name})`, ch({ tl: 3, equipment: [{ name: tl8.name }] }).gear[0].cost, tl8.cost * 32);
+eq("very fine axe is an error", BC.itemQuality(lib.equipment.find(e => e.name === "Axe"), "very fine", 3).error != null, true);
+eq("fine axe costs x10 at TL3 (it cuts), fine mace x3", [BC.itemQuality(lib.equipment.find(e => e.name === "Axe"), "fine", 3).mult, BC.itemQuality(lib.equipment.find(e => e.name === "Mace"), "fine", 3).mult], [10, 3]);
+eq("fine blade at TL2: no damage bonus (iron, B275)", BC.itemQuality(lib.equipment.find(e => e.name === "Broadsword"), "fine", 2).dmg, 0);
+const bow = ch({ equipment: [{ name: "Longbow", quality: "fine" }] }).weapons.find(w => w.name === "Longbow")?.modes[0];
+eq("fine longbow: range x15/x20 -> x18/x24", bow?.range, "x18/x24");
+eq("Summon Spirit (20) warns at FP 11 without a Powerstone", BC.compute(brock, lib).issues.some(x => /Summon Spirit: costs 20/.test(x.msg)), true);
+eq("a 10-point Powerstone covers it", BC.compute({ ...brock, equipment: [{ name: "10 pt Powerstone" }] }, lib).issues.some(x => /Summon Spirit: costs/.test(x.msg)), false);
+eq("spell cost: -1 at skill 15, -2 at 20, -3 at 25", [BC.spellEnergy("20", 14.9), BC.spellEnergy("20", 15), BC.spellEnergy("20", 20), BC.spellEnergy("20", 25)], [20, 19, 18, 17]);
+
 console.log(fail ? `${fail} failure(s)` : "all passed");
 process.exit(fail ? 1 : 0);

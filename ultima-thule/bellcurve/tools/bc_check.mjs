@@ -28,11 +28,13 @@ const f1 = BC.f1;
 let errors = 0;
 function report(res, indent = "") {
   const A = res.attrs;
-  console.log(`${indent}ST ${f1(A.ST)}  DX ${f1(A.DX)}  IQ ${f1(A.IQ)}  HT ${f1(A.HT)}  Will ${f1(A.Will)}  Per ${f1(A.Per)}  HP ${f1(A.HP)}  FP ${f1(A.FP)}  Speed ${f1(A.Speed)}  Move ${f1(A.Move)}  Dodge ${res.dodge}  thr ${BC.diceTxt(res.thr)}  sw ${BC.diceTxt(res.sw)}`);
+  const e = res.enc, mv = e.level ? `${e.move} (${e.name}; basic ${f1(A.Move)})` : f1(A.Move);
+  console.log(`${indent}ST ${f1(A.ST)}  DX ${f1(A.DX)}  IQ ${f1(A.IQ)}  HT ${f1(A.HT)}  Will ${f1(A.Will)}  Per ${f1(A.Per)}  HP ${f1(A.HP)}  FP ${f1(A.FP)}  Speed ${f1(A.Speed)}  Move ${mv}  Dodge ${res.dodge}${res.db ? ` (+${res.db} DB)` : ""}  thr ${BC.diceTxt(res.thr)}  sw ${BC.diceTxt(res.sw)}`);
   const b = res.breakdown;
   console.log(`${indent}points ${res.spent}/${res.budget}: template ${b.template}, attributes ${b.attributes}, advantages ${b.advantages}, disadvantages ${b.disadvantages}, quirks ${b.quirks}, skills ${b.skills}, spells ${b.spells}`);
+  if (res.gear.length) console.log(`${indent}carrying ${f1(e.carried)} lb of ${f1(e.bl)} Basic Lift${res.money ? `; spent $${res.money.spent} of $${res.money.limit}` : ""}${res.energy.largest ? `; Powerstone ${res.energy.largest}` : ""}`);
   for (const w of res.weapons) for (const m of w.modes)
-    if (!w.natural || m.level != null) console.log(`${indent}  weapon ${w.name} ${m.usage}: ${m.skillName} level ${f1(m.level)} (${m.level == null ? "—" : BC.succPct(m.level) + "%"}), ${BC.diceTxt(m.dice)} ${m.type}`);
+    if (!w.natural || m.level != null) console.log(`${indent}  weapon ${w.name} ${m.usage}: ${m.skillName} level ${f1(m.level)} (${m.level == null ? "—" : BC.succPct(m.level) + "%"}), ${BC.diceTxt(m.dice)} ${m.type}${m.parryLevel != null ? `, parry ${m.parryLevel}${m.parryFlags}` : ""}${m.blockLevel != null ? `, block ${m.blockLevel}` : ""}`);
 }
 
 for (const file of files) {

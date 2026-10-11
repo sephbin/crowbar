@@ -398,12 +398,90 @@ function weaponModes(item, rec, st) {
     // Striker limitation Weak removes
     if (w.dmg.leveled) { const l = parseDice(w.dmg.leveled), n = item.levels || 1; if (l) dice = { n: dice.n + l.n * n, add: dice.add + l.add * n }; }
     if (w.dmg.perDie && !item.noPerDie) dice = { n: dice.n, add: dice.add + w.dmg.perDie * dice.n };
+    // item quality (B274: a fine blade +1 cutting and impaling damage, very fine +2) and gear such as boots (+1 kick)
+    const q = item.qual || {};
+    if (q.dmg && /^(cut|imp)$/.test(w.dmg.type)) dice = { n: dice.n, add: dice.add + q.dmg };
+    const ub = item.usageBonus?.(w.usage) || 0;
+    if (ub) dice = { n: dice.n, add: dice.add + ub };
     const melee = !!w.reach && !w.range;
-    out.push({ usage: w.usage || (melee ? "melee" : "ranged"), dice, type: w.dmg.type, melee, reach: w.reach, range: w.range, parry: w.parry,
-      acc: w.acc, strength: w.strength, ratedST, defaults: w.defaults || [], dmgText: w.dmgText, unparsed: bad ? w.dmg.base : null });
+    let acc = w.acc, range = w.range;
+    if (q.acc && acc != null && acc !== "" && !isNaN(parseInt(acc, 10)) && (q.accAll || range)) acc = String(parseInt(acc, 10) + q.acc) + String(acc).replace(/^[+-]?\d+/, "");
+    if (q.range && range) range = String(range).replace(/(x?)(\d+(?:\.\d+)?)/g, (_, x, n) => x + String(Math.round(+n * q.range * 10) / 10));
+    out.push({ usage: w.usage || (melee ? "melee" : "ranged"), dice, type: w.dmg.type, melee, reach: w.reach, range, parry: w.parry, block: w.block,
+      acc, strength: w.strength, ratedST, defaults: w.defaults || [], dmgText: w.dmgText, unparsed: bad ? w.dmg.base : null });
   }
   return out;
 }
+
+// ---------------------------------------------------------------- equipment: weight, encumbrance, money, quality
+const TL_WEALTH = [250, 500, 750, 1000, 2000, 5000, 10000, 15000, 20000, 30000, 50000, 75000, 100000];   // B27, TL0-TL12+
+const WEALTH_MULT = { "dead broke": 0, poor: 0.2, struggling: 0.5, "average wealth": 1, "comfortable wealth": 2, wealthy: 5, "very wealthy": 20, "filthy rich": 100 };   // B25
+const ENC = [   // B17: weight up to bl x Basic Lift; Move x move; Dodge minus the level
+  { name: "None", bl: 1, move: 1 }, { name: "Light", bl: 2, move: 0.8 }, { name: "Medium", bl: 3, move: 0.6 },
+  { name: "Heavy", bl: 6, move: 0.4 }, { name: "Extra-Heavy", bl: 10, move: 0.2 }];
+const lbs = w => { const m = /^\s*(\d+(?:\.\d+)?)(?:\s*\/\s*(\d+))?\s*(lbs?|oz)?\b/i.exec(String(w ?? "")); if (!m) return 0; const v = +m[1] / (m[2] ? +m[2] : 1); return /^oz/i.test(m[3] || "") ? v / 16 : v; };
+const basicLift = st => { const b = st * st / 5; return b >= 10 ? Math.round(b) : b; };   // B15: ST x ST / 5, rounded once 10 or more
+const tlNum = t => { const m = /^\d+/.exec(String(t ?? "")); return m ? +m[0] : null; };
+const SWORD_SKILLS = /^(broadsword|force sword|jitte\/sai|knife|shortsword|two-handed sword|main-gauche|rapier|saber|smallsword)$/i;   // swords and fencing weapons, B208-B209
+const FENCING_SKILLS = /^(main-gauche|rapier|saber|smallsword)$/i;   // B208
+const POWERSTONE = /^(\d+) pt powerstone$/i;   // M20
+// the skills an item is used with at no penalty decide its quality rules
+function itemClass(rec) {
+  const tags = rec.tags || [];
+  if (tags.includes("Shield")) return "shield";
+  if (rec.dr?.length) return "armour";
+  if (tags.some(t => /^AmmoType:(Arrow|Bolt)$/.test(t))) return "melee";   // B277: arrows and bolts use melee quality
+  if (!rec.weapons?.length) return "gear";
+  const skills = rec.weapons.flatMap(w => (w.defaults || []).filter(d => d.type === "skill" && !d.modifier).map(d => d.name?.qualifier || ""));
+  if (skills.some(s => /^(guns|beam weapons|gunner|liquid projector)/i.test(s))) return "firearm";
+  if (skills.some(s => /^(bow|crossbow|blowpipe)$/i.test(s))) return "bow";
+  if (skills.some(s => FENCING_SKILLS.test(s))) return "fencing";
+  if (skills.some(s => SWORD_SKILLS.test(s))) return "sword";
+  return "melee";
+}
+// quality grades: B274 (melee, thrown, arrows and bolts), B277 (bows, crossbows, blowpipes), B280 (firearms), B345 (other gear).
+// Melee prices depend on TL: list price buys good quality at TL6 or less and fine at TL7+. tl is the campaign TL, else the item's.
+function itemQuality(rec, quality, tl) {
+  const q = lc(quality || "").replace(/-/g, " ");
+  const cls = itemClass(rec), lo = (tl ?? tlNum(rec.tl) ?? 3) <= 6;
+  const r = { cls, mult: 1, dmg: 0, acc: 0, range: 0, notes: [], error: null, ref: "B274" };
+  if (!q) return r;
+  const blade = (rec.weapons || []).some(w => /^(cut|imp)$/.test(w.dmg.type)), cuts = (rec.weapons || []).some(w => w.dmg.type === "cut");
+  if (cls === "melee" || cls === "sword" || cls === "fencing") {
+    const swordy = cls !== "melee";
+    if (q === "cheap") { r.mult = lo ? 0.4 : 0.2; r.acc = -1; r.notes.push("+2 to break", "-1 Acc thrown"); }
+    else if (q === "good") r.mult = lo ? 1 : 0.4;
+    else if (q === "fine") { r.mult = lo ? (swordy ? 4 : cuts ? 10 : 3) : 1; r.dmg = blade ? 1 : 0; r.notes.push("-1 to break"); }
+    else if (q === "very fine") {
+      if (!swordy) r.error = "only swords and fencing weapons can be very fine";
+      r.mult = lo ? 20 : 4; r.dmg = blade ? 2 : 0; r.notes.push("-2 to break");
+    } else r.error = `unknown quality "${quality}" (cheap, good, fine, very fine)`;
+    // B275: stone, bronze and iron blades (TL0-TL2) get no damage bonus for quality
+    if (r.dmg && tl != null && tl <= 2) { r.dmg = 0; r.notes.push("no damage bonus: blades are stone, bronze or iron below TL3 (B275)"); }
+  } else if (cls === "bow") {
+    r.ref = "B277";
+    if (q === "fine") { r.mult = 4; r.range = 1.2; r.notes.push("1/2D and Max +20%"); }
+    else if (q !== "good") r.error = "bows, crossbows and blowpipes come only good or fine";
+  } else if (cls === "firearm") {
+    r.ref = "B280"; r.accAll = true;
+    if (q === "fine") { r.mult = 2; r.acc = 1; r.notes.push("+1 Malf"); }
+    else if (q === "very fine") { r.mult = 5; r.acc = 2; r.notes.push("+1 Malf"); }
+    else if (q !== "good") r.error = "firearms come only good, fine or very fine";
+  } else if (cls === "gear") {
+    // B345 gives the equipment modifier and an approximate price ("about")
+    r.ref = "B345";
+    if (q === "good") { r.mult = 5; r.notes.push("+1 equipment modifier"); }
+    else if (q === "fine") { r.mult = 20; r.notes.push("+2 equipment modifier"); }
+    else if (q !== "basic") r.error = "gear comes basic, good or fine";
+  } else r.error = `the Basic Set gives no quality grades for ${cls === "armour" ? "armour" : "shields"}`;
+  return r;
+}
+// energy cost after high skill (M8: -1 at 15, -2 at 20, -1 more per full five levels past 20); null when the cost isn't a flat number
+const spellEnergy = (cost, level) => {
+  if (!/^\d+$/.test(String(cost ?? "").trim()) || level == null) return null;
+  const red = level < 15 ? 0 : level < 20 ? 1 : 2 + Math.floor((level - 20) / 5);
+  return Math.max(0, +cost - red);
+};
 
 // ---------------------------------------------------------------- compute
 function compute(ch, lib, opts = {}) {
@@ -490,13 +568,35 @@ function compute(ch, lib, opts = {}) {
   A.HP = A.ST + lvl("HP"); A.FP = A.HT + lvl("FP");
   A.Speed = (A.DX + A.HT) / 4 + lvl("Speed");
   A.Move = Math.floor(A.Speed) + lvl("Move");
-  const dodge = Math.floor(A.Speed) + 3 + extra.dodge;
   const thr = thrust(A.ST), sw = swing(A.ST);
   for (const k of ATTR_KEYS) {
     const v = ch.attributes?.[k] || 0;
     if (v % 10) add("WARN", `${k}: ${v} pts is not a 10-point step`, ATTR_REF[k], `attributes.${k}`);
   }
-  for (const f of limited) add("WARN", `${f.source}: ${f.attribute} ${f.amount > 0 ? "+" : ""}${f.amount} (${f.limitation.replace(/_/g, " ")}) not applied to the sheet`, "", "");
+  // Lifting ST counts for Basic Lift (B65); ST for striking only is not applied
+  const liftST = A.ST + limited.filter(f => f.attribute === "st" && f.limitation === "lifting_only").reduce((a, f) => a + f.amount, 0);
+  for (const f of limited) if (!(f.attribute === "st" && f.limitation === "lifting_only"))
+    add("WARN", `${f.source}: ${f.attribute} ${f.amount > 0 ? "+" : ""}${f.amount} (${f.limitation.replace(/_/g, " ")}) not applied to the sheet`, "", "");
+
+  // ---- equipment carried: weight and encumbrance (B17). An item with "carried": false is owned but left at home.
+  const ctl = ch.tl ?? opts.tl ?? null;
+  const gear = (ch.equipment || []).map((item, i) => {
+    const rec = findOne(ix.equipment, item.name), path = `equipment[${i}]`, qty = item.qty ?? 1;
+    const qual = rec ? itemQuality(rec, item.quality, ctl) : null;
+    return { item, rec, path, qty, qual, carried: item.carried !== false, weight: rec ? lbs(rec.weight) * qty : 0 };
+  });
+  const BL = basicLift(liftST);
+  const carriedLbs = Math.round(gear.filter(g => g.carried).reduce((a, g) => a + g.weight, 0) * 1000) / 1000;
+  let encLevel = ENC.findIndex(e => carriedLbs <= e.bl * BL);
+  const overloaded = encLevel < 0;
+  if (overloaded) encLevel = 4;
+  const enc = { level: encLevel, name: ENC[encLevel].name, carried: carriedLbs, bl: BL, liftST, overloaded,
+    limits: ENC.map(e => Math.round(e.bl * BL * 100) / 100), move: overloaded ? 0 : Math.max(1, Math.floor(A.Move * ENC[encLevel].move)) };
+  if (A.Move < 1 && !overloaded) enc.move = Math.max(0, Math.floor(A.Move * ENC[encLevel].move));
+  const dodgeBase = Math.floor(A.Speed) + 3 + extra.dodge;
+  const dodge = encLevel ? Math.max(Math.min(1, dodgeBase), dodgeBase - encLevel) : dodgeBase;
+  if (overloaded) add("ERROR", `carrying ${f1(carriedLbs)} lb, over 10 x Basic Lift (${f1(10 * BL)} lb): can't move`, "B17");
+  else if (gear.length) add(encLevel >= 3 ? "WARN" : "ok", `carrying ${f1(carriedLbs)} lb, Basic Lift ${f1(BL)} lb: ${ENC[encLevel].name} encumbrance (${encLevel})${encLevel ? `, Move ${enc.move}, Dodge -${encLevel}` : ""}`, "B17");
 
   // bonus lookups
   const skillBonus = (name, spec, tags) => features.filter(f => f.type === "skill_bonus" && (f.selection_type || "skills_with_name") === "skills_with_name"
@@ -570,6 +670,10 @@ function compute(ch, lib, opts = {}) {
     s.bonus = bonus; s.level = L == null ? null : L + bonus; s.source = src; s.defaultFrom = dflt.from;
     s.rel = s.level == null ? null : s.level - baseOf(s.attr);
   }
+  // encumbrance penalty (B17: Climbing, Stealth, Swimming x2; Judo and Karate), after defaults so it isn't counted twice
+  for (const s of skillRows) if (s.rec?.enc && s.level != null && encLevel) {
+    s.encPen = -s.rec.enc * encLevel; s.level += s.encPen; s.rel += s.encPen;
+  }
   const counted = new Map();
   for (const s of skillRows) {
     const k = lc(fullName(s.name, s.spec));
@@ -587,6 +691,7 @@ function compute(ch, lib, opts = {}) {
     const r = row.points >= 10 ? relLevel(row.points, rec.diff) : null;
     row.bonus = spellBonus(rec);
     row.level = r == null ? null : baseOf(rec.attr) + r + row.bonus;
+    row.energy = spellEnergy(rec.cost, row.level);
     // any point total from 10 up: levels interpolate between the steps, as for skills
     if (row.points < 10) add("ERROR", `spell ${inst.name}: spells have no default; needs at least 10 pts`, rec.ref, path);
     return row;
@@ -637,26 +742,69 @@ function compute(ch, lib, opts = {}) {
       if (m.unparsed) add("WARN", `${label} (${m.usage}): damage "${m.unparsed}" not parsed`, rec.ref, path);
       const skillName = via ? (via.type === "skill" ? fullName(via.name?.qualifier, via.specialization?.qualifier) : (FEATURE_ATTR[via.type] || via.type)) : "?";
       const hasSkill = via?.type === "skill" && !!skillRows.find(s => s.rec && s.points > 0 && strCmp(via.name, s.name) && strCmp(via.specialization, s.spec || ""));
-      return { ...m, level: best == null ? null : best + stPen, via, skillName: skillName + (via?.modifier ? (via.modifier > 0 ? "+" : "") + via.modifier : ""), hasSkill, stPen };
+      // fencing weapons: attacks and parries take the encumbrance level as a penalty (B208)
+      const fencing = via?.type === "skill" && FENCING_SKILLS.test(via.name?.qualifier || "");
+      const encPen = fencing && encLevel ? -encLevel : 0;
+      const raw = best == null ? null : best + stPen;
+      // Parry and Block: 3 + half skill, fractions dropped (B375-B376), plus the weapon's modifier and trait bonuses
+      const def = (s, bonus) => { const p = /^([+-]?\d+)\s*([A-Z]*)$/i.exec(String(s ?? "").trim()); return raw == null || !p ? null : Math.floor(3 + raw / 2) + +p[1] + bonus; };
+      const parryLevel = m.melee ? def(m.parry, extra.parry) : null;
+      return { ...m, level: raw == null ? null : raw + encPen, via, skillName: skillName + (via?.modifier ? (via.modifier > 0 ? "+" : "") + via.modifier : ""), hasSkill, stPen, encPen,
+        parryLevel: parryLevel == null ? null : parryLevel + encPen, parryFlags: /^[+-]?\d+\s*([A-Z]*)$/i.exec(String(m.parry ?? "").trim())?.[1] || "", blockLevel: def(m.block, extra.block), fencing };
     });
     if (modes.length) weaponOf.push({ name: label, rec, item, modes, natural: !!natural, path });
   };
-  (ch.equipment || []).forEach((item, i) => {
-    const rec = findOne(ix.equipment, item.name), path = `equipment[${i}]`;
-    if (!rec) { add("ERROR", `${item.name}: not in library`, "", path); return; }
-    for (const d of rec.dr || []) if (item.worn !== false) for (const loc of d.locations) for (const L of DR_LOC[loc] || []) dr[L] = Math.max(dr[L], d.amount);
-    addWeapon(item.label || item.name + (item.st ? ` (ST ${item.st})` : ""), rec, item, path);
-  });
+  // gear bonuses: boots add to kicks (weapon_bonus by name), kits add to a skill when used (B345, offered in the roller)
+  const ready = g => g.rec && g.carried && g.item.worn !== false;
+  const gearBonus = gear.filter(ready).flatMap(g => (g.rec.bonuses || []).map(b => ({ ...b, source: g.rec.name })));
+  const kickBonus = label => gearBonus.filter(b => b.type === "weapon_bonus" && b.selection_type === "weapons_with_name" && strCmp(b.specialization, label)).reduce((a, b) => Math.max(a, b.amount), 0);
+  const gearMods = gearBonus.filter(b => b.type === "skill_bonus" && b.amount > 0).map(b => ({ name: b.name, amount: b.amount, source: b.source }));
+  let db = 0, dbFrom = null;
+  for (const g of gear) {
+    const { item, rec, path, qual } = g;
+    if (!rec) { add("ERROR", `${item.name}: not in library`, "", path); continue; }
+    if (qual.error) add("ERROR", `${item.name}: ${qual.error}`, qual.ref, path);
+    else if (item.quality) add("ok", `${item.name}: ${lc(item.quality)} (cost x${qual.mult}${qual.notes.length ? "; " + qual.notes.join("; ") : ""})`, qual.ref, path);
+    if (!g.carried) continue;
+    if (item.worn !== false) for (const d of rec.dr || []) for (const loc of d.locations) for (const L of DR_LOC[loc] || []) dr[L] = Math.max(dr[L], d.amount);
+    // a shield or cloak in hand: its Defense Bonus goes on every active defence against attacks from the front or shield side (B287)
+    if (rec.db && item.worn !== false && rec.db > db) { db = rec.db; dbFrom = rec.name; }
+    addWeapon(item.label || item.name + (item.st ? ` (ST ${item.st})` : ""), rec, { ...item, qual }, path);
+  }
+  const gearConds = gear.filter(ready).flatMap(g => (g.rec.conds || []).map(c => ({ ...c, source: g.rec.name })));
   // weapons that come with traits: Strikers (horns, tails), Claws, Teeth, Hooves, Innate Attacks. Afflictions and
   // Binding do no injury, so the injury roller does not fit them; they are left out. A trait's punch or kick (Blunt
   // Claws) replaces the plain one.
   const traitWeapons = traits.map(t => ({ t, ws: (t.rec?.weapons || []).filter(w => !/^(aff|binding)$/.test(w.dmg.type) && (w.dmg.st || w.dmg.base || w.dmg.leveled)) })).filter(x => x.ws.length);
   const replaced = new Set(traitWeapons.flatMap(x => x.ws.map(w => lc(w.usage))).filter(Boolean));
-  for (const n of NATURAL(lib)) if (!n.weapons.every(w => replaced.has(lc(w.usage)))) addWeapon(n.name, n, {}, "natural", true);
+  for (const n of NATURAL(lib)) if (!n.weapons.every(w => replaced.has(lc(w.usage)))) addWeapon(n.name, n, { usageBonus: kickBonus }, "natural", true);
   for (const { t, ws } of traitWeapons) {
     const weak = (t.mods || []).some(m => /^weak$/i.test(m.name));
-    addWeapon(fullName(t.name, t.inst.notes), { ...t.rec, weapons: ws }, { levels: t.levels, noPerDie: weak }, t.path, true);
+    addWeapon(fullName(t.name, t.inst.notes), { ...t.rec, weapons: ws }, { levels: t.levels, noPerDie: weak, usageBonus: kickBonus }, t.path, true);
   }
+
+  // ---- money (B25-B27): starting wealth for the campaign TL ("tl"), times the Wealth level. Items above the campaign TL
+  // double in price per TL (B27). "free": true marks an item not bought from starting wealth (loot, Signature Gear).
+  let money = null;
+  const wealthT = traits.find(t => WEALTH_MULT[lc(t.name)] != null || /^multimillionaire$/i.test(t.name));
+  const wMult = !wealthT ? 1 : /^multimillionaire$/i.test(wealthT.name) ? 100 * 10 ** (wealthT.levels || 1) : WEALTH_MULT[lc(wealthT.name)];
+  const itemCost = g => { if (!g.rec) return 0; const it = tlNum(g.rec.tl), up = ctl != null && it != null && it > ctl ? 2 ** (it - ctl) : 1;
+    return Math.round(g.rec.cost * g.qual.mult * up * g.qty * 100) / 100; };
+  for (const g of gear) { g.cost = itemCost(g); if (g.rec && ctl != null && tlNum(g.rec.tl) > ctl) add("ok", `${g.item.name}: TL${g.rec.tl} in a TL${ctl} campaign, x${2 ** (tlNum(g.rec.tl) - ctl)} price`, "B27", g.path); }
+  if (ctl != null) {
+    const start = TL_WEALTH[Math.min(12, Math.max(0, ctl))] * wMult;
+    const limit = ch.settled ? start * 0.2 : start;
+    const spentCash = Math.round(gear.filter(g => !g.item.free).reduce((a, g) => a + g.cost, 0) * 100) / 100;
+    money = { tl: ctl, wealth: wealthT ? wealthT.name + (/^multimillionaire$/i.test(wealthT.name) ? " " + (wealthT.levels || 1) : "") : "Average", mult: wMult, start, settled: !!ch.settled, limit, spent: spentCash, left: Math.round((limit - spentCash) * 100) / 100 };
+    const txt = `$${spentCash} of $${limit}${ch.settled ? ` (20% of $${start}: settled lifestyle, B26)` : ""} starting wealth at TL${ctl}${wMult !== 1 ? `, ${money.wealth} x${wMult}` : ""}`;
+    add(spentCash > limit ? "ERROR" : "ok", spentCash > limit ? `equipment costs ${txt}: $${f1(spentCash - limit)} over` : `equipment: ${txt}, $${money.left} left`, "B27");
+  } else if (gear.some(g => !g.item.free && g.rec?.cost)) add("WARN", `no campaign TL ("tl"): starting wealth not checked`, "B27");
+
+  // ---- energy for spells: FP plus one Powerstone at a time (M20, M69); the rest of a spell's cost comes from HP (M8)
+  const stones = gear.filter(g => g.carried && g.rec && POWERSTONE.test(g.rec.name)).flatMap(g => Array(g.qty).fill(+POWERSTONE.exec(g.rec.name)[1])).sort((a, b) => b - a);
+  const energy = { FP: A.FP, stones, largest: stones[0] || 0 };
+  for (const s of spellRows) if (s.energy != null && s.energy > A.FP + energy.largest)
+    add("WARN", `spell ${s.name}: costs ${s.energy} energy; FP ${f1(A.FP)}${energy.largest ? ` + Powerstone ${energy.largest}` : ""} = ${f1(A.FP + energy.largest)}, the rest would come from HP, at -1 to the spell roll per HP`, "M8, B237", s.path);
   // natural DR from traits (Damage Resistance, Tough Skin etc.) stacks on armour
   const traitDR = features.filter(f => f.type === "dr_bonus");
   const natDR = {}; LOCS.forEach(l => natDR[l.name] = 0);
@@ -664,7 +812,7 @@ function compute(ch, lib, opts = {}) {
   for (const k in dr) dr[k] += natDR[k];
 
   // ---- conditionals and reactions, for the roller and the sheet
-  const conditionals = features.filter(f => f.type === "conditional_modifier").map(f => ({ situation: f.situation, amount: f.amount, source: f.source }));
+  const conditionals = [...features.filter(f => f.type === "conditional_modifier").map(f => ({ situation: f.situation, amount: f.amount, source: f.source })), ...gearConds];
   const reactions = features.filter(f => f.type === "reaction_bonus").map(f => ({ situation: f.situation, amount: f.amount, source: f.source }));
 
   // ---- points
@@ -693,7 +841,7 @@ function compute(ch, lib, opts = {}) {
     const pct = share ? +share[1] : null;
     if (pct == null) add("ERROR", `${fullName(t.name, t.notes)}: choose a point-total modifier (e.g. "100% of your starting points")`, "B37", t.path);
     const allyBudget = pct == null ? null : Math.round(budget * pct / 100);
-    const res = compute(t.inst.character, lib, { budget: allyBudget ?? t.inst.character.budget, depth: (opts.depth || 0) + 1 });
+    const res = compute(t.inst.character, lib, { budget: allyBudget ?? t.inst.character.budget, depth: (opts.depth || 0) + 1, tl: ctl });
     for (const x of res.issues) issues.push({ ...x, msg: `ally ${t.inst.character.name || t.notes}: ${x.msg}`, path: `${t.path}.character${x.path ? "." + x.path : ""}` });
     return { trait: t, pct, budget: allyBudget, result: res };
   });
@@ -704,7 +852,7 @@ function compute(ch, lib, opts = {}) {
   for (const s of spellRows) if (s.rec && s.level != null && s.prereqOk) add("ok", `spell ${s.name} ${s.attr}/${s.diff} ${s.points} pts: level ${f1(s.level)}, ${succPct(s.level)}%`, s.ref, s.path);
 
   return {
-    name: ch.name, budget, spent, breakdown, attrs: A, attrPoints: pts, attrBonus, extra, dodge, thr, sw,
+    name: ch.name, budget, spent, breakdown, attrs: A, attrPoints: pts, attrBonus, extra, dodge, dodgeBase, db, dbFrom, enc, gear, money, energy, gearMods, thr, sw,
     traits, templateRemoved: removed, skills: skillRows, spells: spellRows, weapons: weaponOf, dr, natDR, conditionals, reactions, allies, templates: tpl, issues,
     houseBackstab: traits.some(t => /^backstabber$/i.test(t.name)),
     sneakDice: traits.filter(t => /^sneak attack$/i.test(t.name)).reduce((a, t) => a + (t.levels || 1), 0),
@@ -716,6 +864,7 @@ G.BC = {
   ATTR_COST, ATTR_KEYS, ATTR_REF, DIFF_BASE, DEFAULT_PEN, DIFF_NAME, relLevel, thrust, swing, diceTxt, parseDice,
   LOCS, TYPE_NAME, locMult, typeKnown, GRADES, injuryDist, rollInjury,
   CR_MULT, FR_MULT, parseAdj, traitCost, selectMods, modLabel, generalLabel, modRules, strCmp, numCmp, splitSpec, fullName,
+  ENC, TL_WEALTH, WEALTH_MULT, lbs, basicLift, itemClass, itemQuality, spellEnergy,
   indexLibrary, findSkill, checkPrereq, compute,
 };
 })(typeof globalThis !== "undefined" ? globalThis : window);
