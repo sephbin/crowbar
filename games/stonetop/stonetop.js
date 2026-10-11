@@ -84,8 +84,10 @@ function blocks(list, ctx, c, opts = {}) {
   }
   return out;
 }
+// opts.only picks columns by index (the keys keep the column's own number, so saved ticks do not move)
 function columns(cols, region, c, opts) {
-  return h('div', { class: 'cols' + (opts && opts.two ? ' two' : '') }, cols.map((col, i) => h('div', { class: 'col' }, blocks(col, { prefix: region + i, n: 0 }, c, opts))));
+  const only = (opts && opts.only) || cols.map((_, i) => i);
+  return h('div', { class: 'cols' + (opts && opts.two ? ' two' : '') }, only.map(i => h('div', { class: 'col' }, blocks(cols[i], { prefix: region + i, n: 0 }, c, opts))));
 }
 function applyTaken(root, c) {
   const only = !!c.ui.takenOnly;
@@ -191,9 +193,16 @@ function playPage(c, pb) {
   page.append(columns(pb.moves, 'mv', c, { filter: true }));
   return page;
 }
-function createPage(c, pb) {
+// The paper is printed and folded like a book: the right half of page 1 comes first (the playbook itself), then page 2,
+// then the left half of page 1 last (the story prompts and the introductions).
+function startPage(c, pb) {
   const page = h('div', { class: 'page' }, header(c, pb));
-  page.append(columns(pb.page1, 'p1', c, { two: true }));
+  page.append(columns(pb.page1, 'p1', c, { two: true, only: [2, 3] }));
+  return page;
+}
+function storyPage(c, pb) {
+  const page = h('div', { class: 'page' }, header(c, pb));
+  page.append(columns(pb.page1, 'p1', c, { two: true, only: [0, 1] }));
   page.append(h('label', { class: 'field', style: 'margin-top:14px' }, h('span', null, 'Notes from character creation'),
     h('textarea', { class: 'in', data: { bind: 'createNotes' } }, c.createNotes || '')));
   return page;
@@ -283,7 +292,7 @@ function home() {
     const sel = h('select', { class: 'in', 'aria-label': 'Playbook', style: 'width:auto;min-width:12em' }, pack.playbooks.map(p => h('option', { value: p.id, text: p.name })));
     w.append(h('h2', { class: 'lbl hd', text: 'New character' }), h('div', { class: 'row' }, sel,
       h('button', { type: 'button', class: 'btn primary', text: 'Start', onclick: () => {
-        const c = newChar(pack.playbooks.find(p => p.id === sel.value)); chars[c.id] = c; touch(c); location.hash = `#/c/${c.id}/create`;
+        const c = newChar(pack.playbooks.find(p => p.id === sel.value)); chars[c.id] = c; touch(c); location.hash = `#/c/${c.id}/start`;
       } })));
     w.append(h('h2', { class: 'lbl hd', text: 'Your characters' }));
     if (!ids.length) w.append(h('p', { class: 'note', text: 'None yet.' }));
@@ -307,11 +316,12 @@ function sheet(id, tab) {
   if (!c) { message = 'That character is not in this browser.'; location.hash = '#/'; return; }
   const pb = pbOf(c);
   if (!pack || !pb) { message = 'Load the playbook pack to open this character.'; location.hash = '#/'; return; }
-  tab = ['play', 'create', 'gear'].includes(tab) ? tab : 'play';
+  if (tab === 'create') tab = 'start';
+  tab = ['start', 'play', 'story', 'gear'].includes(tab) ? tab : 'play';
   document.title = `${c.name || pb.name} · Stonetop`;
-  const tabs = [['play', 'Sheet'], ['create', 'Creation'], ['gear', 'Gear & notes']].map(([t, n]) =>
+  const tabs = [['start', 'Playbook'], ['play', 'Sheet'], ['story', 'Story'], ['gear', 'Gear & notes']].map(([t, n]) =>
     h('a', { class: 'tab', href: `#/c/${id}/${t}`, 'aria-current': t === tab ? 'page' : null, text: n }));
-  const page = { play: playPage, create: createPage, gear: gearPage }[tab](c, pb);
+  const page = { start: startPage, play: playPage, story: storyPage, gear: gearPage }[tab](c, pb);
   app.replaceChildren(
     bar(...tabs, h('button', { type: 'button', class: 'btn', text: 'Print', onclick: () => print() }),
       h('button', { type: 'button', class: 'btn', text: 'Export', onclick: () => download(`stonetop-${slug(c.name)}.json`, c) })),

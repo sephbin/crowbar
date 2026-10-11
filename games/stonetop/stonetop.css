@@ -51,11 +51,11 @@ input.in[type=number]{text-align:center;-moz-appearance:textfield}
 .cols{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0 22px}
 .col{min-width:0}
 .col+.col{border-left:1px solid var(--rule);padding-left:22px}
-/* creation page: two columns on a desktop, A|B above C|D, so each reads at a comfortable width */
+/* playbook and story pages: two columns each, like one half-spread of the folded paper */
 .cols.two{grid-template-columns:repeat(2,minmax(0,1fr));gap:0 36px}
 .cols.two .col:nth-child(odd){border-left:0;padding-left:0}
 .cols.two .col:nth-child(even){padding-left:36px}
-.cols.two .col:nth-child(n+3){border-top:1px solid var(--rule);margin-top:14px;padding-top:6px}
+
 @media (max-width:1100px){.cols{grid-template-columns:repeat(2,minmax(0,1fr))}.col:nth-child(3){border-left:0;padding-left:0}}
 @media (max-width:640px){.cols,.cols.two{grid-template-columns:minmax(0,1fr)}.cols.two .col:nth-child(even){padding-left:0;border-left:0}.col+.col{border-left:0;padding-left:0}.page{padding:14px 14px 18px;margin:8px 0}}
 h3.sec{font-size:19px;font-weight:800;margin:14px 0 4px;line-height:1.1;border-bottom:1px solid var(--rule);padding-bottom:2px}
@@ -137,7 +137,6 @@ h4.ih{margin:0;font-size:14px;letter-spacing:.05em;text-transform:uppercase;font
 .hist{font-size:13px;color:var(--muted);max-width:30ch;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 @media print{
-  .cols.two{grid-template-columns:repeat(4,minmax(0,1fr));gap:0 22px}.cols.two .col:nth-child(n+3){border-top:0;margin-top:0;padding-top:0}.cols.two .col:nth-child(odd):not(:first-child){padding-left:22px;border-left:1px solid var(--rule)}
   @page{size:letter landscape;margin:8mm}
   body{background:#fff;padding:0;font-size:9.5pt}
   .bar,.roll,.moves-head .seg,.noprint,.x,.btn{display:none!important}
