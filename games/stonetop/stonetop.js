@@ -85,7 +85,7 @@ function blocks(list, ctx, c, opts = {}) {
   return out;
 }
 function columns(cols, region, c, opts) {
-  return h('div', { class: 'cols' }, cols.map((col, i) => h('div', { class: 'col' }, blocks(col, { prefix: region + i, n: 0 }, c, opts))));
+  return h('div', { class: 'cols' + (opts && opts.two ? ' two' : '') }, cols.map((col, i) => h('div', { class: 'col' }, blocks(col, { prefix: region + i, n: 0 }, c, opts))));
 }
 function applyTaken(root, c) {
   const only = !!c.ui.takenOnly;
@@ -193,7 +193,7 @@ function playPage(c, pb) {
 }
 function createPage(c, pb) {
   const page = h('div', { class: 'page' }, header(c, pb));
-  page.append(columns(pb.page1, 'p1', c));
+  page.append(columns(pb.page1, 'p1', c, { two: true }));
   page.append(h('label', { class: 'field', style: 'margin-top:14px' }, h('span', null, 'Notes from character creation'),
     h('textarea', { class: 'in', data: { bind: 'createNotes' } }, c.createNotes || '')));
   return page;
