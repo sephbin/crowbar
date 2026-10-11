@@ -8,19 +8,19 @@ A local WYSIWYG markdown editor with Claude AI integration, built for managing T
 
 Table pages, hosted on GitHub Pages at https://sephbin.github.io/crowbar/
 
-- [Campaign index](ultima-thule/index.html)
-- [GM screen](ultima-thule/gm/tram-job.html): zealot trackers, stat blocks, the binding, rules quick reference
-- Player sheets: [Vesna Krall](ultima-thule/sheets/Vesna-Krall-Character-Sheet.html) · [Oskar Penn](ultima-thule/sheets/Oskar-Penn-Character-Sheet.html) · [Dr Imre Talvy](ultima-thule/sheets/Imre-Talvy-Character-Sheet.html)
+- [Campaign index](games/ultima-thule/index.html)
+- [GM screen](games/ultima-thule/gm/tram-job.html): zealot trackers, stat blocks, the binding, rules quick reference
+- Player sheets: [Vesna Krall](games/ultima-thule/sheets/Vesna-Krall-Character-Sheet.html) · [Oskar Penn](games/ultima-thule/sheets/Oskar-Penn-Character-Sheet.html) · [Dr Imre Talvy](games/ultima-thule/sheets/Imre-Talvy-Character-Sheet.html)
 
-Prep files (rules checker, NPC data, pregens) live in [`ultima-thule/`](ultima-thule/).
+Prep files (rules checker, NPC data, pregens) live in [`games/ultima-thule/`](games/ultima-thule/).
 
 ## Bell Curve GURPS
 
 GURPS 4e with costs ×10 and every roll shown as a d100 percentage on the 3d6 curve.
 
-- [Builder, sheet and roller](https://sephbin.github.io/crowbar/ultima-thule/bellcurve/index.html): open the examples menu for Oskar Penn and Brock Underhill
-- Characters: [Oskar Penn](ultima-thule/bellcurve/characters/oskar-penn.json) · [Brock Underhill](ultima-thule/bellcurve/characters/brock-underhill.json)
-- [Rules, tools and character format](ultima-thule/bellcurve/CLAUDE.md)
+- [Builder, sheet and roller](https://sephbin.github.io/crowbar/games/bellcurve/index.html): open the examples menu for Oskar Penn and Brock Underhill
+- Characters: [Oskar Penn](games/bellcurve/characters/oskar-penn.json) · [Brock Underhill](games/bellcurve/characters/brock-underhill.json)
+- [Rules, tools and character format](games/bellcurve/CLAUDE.md)
 
 ## Features
 
@@ -39,7 +39,7 @@ npm run dev
 
 Then open **http://localhost:5174**: a home page (`home/index.html`) linking everything below. The vault editor is at **http://localhost:5174/vault/**.
 
-The server also serves the `ultima-thule/` pages under `/pages`, e.g. `http://localhost:5174/pages/bellcurve/index.html`. The dev server listens on your network (`vite --host`), so a phone on the same Wi-Fi can open them at the Network address Vite prints (drop the `/vault/` it shows to reach the home page).
+The server also serves everything under `games/` at `/games`, e.g. `http://localhost:5174/games/bellcurve/index.html`. The dev server listens on your network (`vite --host`), so a phone on the same Wi-Fi can open them at the Network address Vite prints (drop the `/vault/` it shows to reach the home page).
 
 By default your vault is at `~/crowbar-vault`. Change it by creating a `.env` file:
 

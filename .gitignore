@@ -6,13 +6,16 @@ dist/
 Thumbs.db
 
 # copyrighted rulebook (Ultima Thule)
-ultima-thule/rules/*.pdf
-ultima-thule/rules/pages/
-ultima-thule/rules/brp_all.txt
+games/ultima-thule/rules/*.pdf
+games/ultima-thule/rules/pages/
+games/ultima-thule/rules/brp_all.txt
 # copyrighted GURPS books (Bell Curve): PDFs and extracted text stay local
-ultima-thule/bellcurve/rules/
+games/bellcurve/rules/
 # characters saved to the server from the builder (the player's own sheets)
-ultima-thule/bellcurve/saved/
+games/bellcurve/saved/
 
 # page comments collected by annotate/ (can name private pages)
 annotations/
+
+# scratch logs and exports
+temp/

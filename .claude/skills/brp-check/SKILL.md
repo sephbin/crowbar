@@ -5,7 +5,7 @@ description: Check BRP (Basic Roleplaying) characters, NPCs, weapons and spells 
 
 # BRP rules check
 
-All paths are relative to `ultima-thule/`; run commands from there.
+All paths are relative to `games/ultima-thule/`; run commands from there.
 
 1. Make sure the rulebook text exists: if `rules/pages/` is empty, run `python tools/extract_rules.py`. If the PDF is missing, ask Andrew to copy it to `rules/BRP_Core_Rulebook.pdf`.
 2. Put the character or NPC in a JSON file under `data/` using the existing files as the schema (`data/pcs/*.json` for PCs, `data/npcs/zealots.json` for NPC groups).

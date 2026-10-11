@@ -5,7 +5,7 @@ description: Build or check Bell Curve GURPS characters (Andrew's GURPS 4e varia
 
 # Bell Curve GURPS build and check
 
-All paths are relative to `ultima-thule/bellcurve/`; run commands from there. Read `CLAUDE.md` in that folder first.
+All paths are relative to `games/bellcurve/`; run commands from there. Read `CLAUDE.md` in that folder first.
 
 1. If `data/library.json` is missing, clone https://github.com/richardwilkes/gcs_master_library and run `node tools/gcs_convert.mjs <clone>`, then `node tools/bc_selftest.mjs`.
 2. For every trait, skill, technique, spell, item and template the description implies, run `node tools/bc_find.mjs "<regex>" [kind]` and use the library record. Never write a cost, damage, prerequisite or default from memory. Anything missing goes in `notes`, flagged for Andrew.

@@ -40,13 +40,13 @@ const projectScope = (req, res, next) => {
 app.use('/api/vault', projectScope, vaultRoutes);
 app.use('/api/claude', projectScope, claudeRoutes);
 
-// Static prep pages (Ultima Thule sheets, GM screen, Bell Curve builder, local review pages under the gitignored
-// bellcurve/rules/), e.g. /pages/bellcurve/rules/review.html. Vite proxies /pages in dev.
-app.use('/pages', express.static(join(__dirname, 'ultima-thule')));
+// Static game pages (games/<system>/: sheets, GM screens, Bell Curve builder, local review pages under the gitignored
+// bellcurve/rules/), e.g. /games/bellcurve/rules/review.html: the same URLs as on GitHub Pages. Vite proxies /games in dev.
+app.use('/games', express.static(join(__dirname, 'games')));
 
 // Book-text review marks from rules/review.html, kept in the gitignored rules/ folder so Claude can read them.
 // Entries are { v, note, at } (a removed mark is { at, del: true }); the newer `at` wins, so phone and desktop merge.
-const MARKS = join(__dirname, 'ultima-thule', 'bellcurve', 'rules', 'review-marks.json');
+const MARKS = join(__dirname, 'games', 'bellcurve', 'rules', 'review-marks.json');
 const readMarks = () => { try { return JSON.parse(readFileSync(MARKS, 'utf8')); } catch { return {}; } };
 app.get('/api/review-marks', (_req, res) => res.json(readMarks()));
 app.put('/api/review-marks', (req, res) => {
@@ -59,9 +59,9 @@ app.put('/api/review-marks', (req, res) => {
   res.json(marks);
 });
 
-// Bell Curve characters saved from the builder's "save to server" button: ultima-thule/bellcurve/saved/<id>.json
+// Bell Curve characters saved from the builder's "save to server" button: games/bellcurve/saved/<id>.json
 // (gitignored: they are the player's own sheets). The id is a slug of the character's name.
-const SAVED = join(__dirname, 'ultima-thule', 'bellcurve', 'saved');
+const SAVED = join(__dirname, 'games', 'bellcurve', 'saved');
 const savedId = s => (/^[a-z0-9][a-z0-9-]{0,79}$/.test(String(s)) ? String(s) : null);
 app.get('/api/bellcurve/characters', (_req, res) => {
   let files = [];
@@ -93,7 +93,7 @@ app.delete('/api/bellcurve/characters/:id', (req, res) => {
 // Book text for the Bell Curve builder's rules tab: rules/library-with-text.json (gitignored, this machine only),
 // indexed once and again whenever the file changes. GET /api/booktext?kind=skill|spell|trait|modifier|equipment&name=&spec=&ref=
 // (spec is a skill's specialization or a modifier's notes). 404 when the file or the entry is missing.
-const BOOKTEXT = join(__dirname, 'ultima-thule', 'bellcurve', 'rules', 'library-with-text.json');
+const BOOKTEXT = join(__dirname, 'games', 'bellcurve', 'rules', 'library-with-text.json');
 let bookIx = null, bookStamp = 0;
 function bookIndex() {
   const st = statSync(BOOKTEXT, { throwIfNoEntry: false });
