@@ -1088,7 +1088,7 @@ function lensBar() {
   });
   const l = BC.findLens(LIB, cur), pool = P.base.groups.find(g => g.lens);
   return el("div", { class: "pgrp" }, el("div", { class: "rule" }, "Lens"), el("div", { class: "popt" }, s),
-    el("p", { class: "hint" }, l ? `${l.name} (${refTxt(l.ref)}) ${l.plus ? "is added to the profession" : "takes the place of the profession's lens points"}.${l.incomplete ? ` Incomplete: ${l.incomplete.missing * 10} of its points weren't read from the book.` : ""}`
+    el("p", { class: "hint" }, l ? `${l.name} (${refTxt(l.ref)}) ${l.plus || !pool ? "is added to the profession" : "takes the place of the profession's lens points"}.${l.incomplete ? ` Incomplete: ${l.incomplete.missing * 10} of its points weren't read from the book.` : ""}`
       : pool ? `This profession has ${pool.n} points for a lens: ${pool.open}.` : "Optional. A lens adds a background to the profession."));
 }
 let profFrom = null;

@@ -97638,30 +97638,27 @@
     {
      "id": "g2",
      "section": "skills",
-     "kind": "fixed",
+     "kind": "points",
+     "n": 200,
      "options": [
       {
-       "type": "group",
-       "kind": "count",
-       "n": 1,
-       "options": [
-        {
-         "type": "note",
-         "name": "A total of 20 points chosen from Fast-Draw (Potion)"
-        },
-        {
-         "type": "skill",
-         "name": "Innate Attack",
-         "choices": [
-          "Beam",
-          "Breath",
-          "Gaze",
-          "Projectile"
-         ],
-         "cost": 10,
-         "diff": "E"
-        }
-       ]
+       "type": "skill",
+       "name": "Fast-Draw",
+       "spec": "Potion",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Innate Attack",
+       "choices": [
+        "Beam",
+        "Breath",
+        "Gaze",
+        "Projectile"
+       ],
+       "cost": 10,
+       "diff": "E"
       },
       {
        "type": "skill",
@@ -97670,154 +97667,126 @@
        "diff": "H"
       },
       {
-       "type": "group",
-       "kind": "count",
-       "n": 1,
-       "options": [
-        {
-         "type": "skill",
-         "name": "Hazardous Materials",
-         "spec": "Magical",
-         "cost": 10,
-         "diff": "A"
-        },
-        {
-         "type": "skill",
-         "name": "Hidden Lore",
-         "choices": [
-          "Demons",
-          "Elementals",
-          "Magic Items",
-          "Magical Writings",
-          "Secret Writings",
-          "Spirits",
-          "Undead"
-         ],
-         "cost": 10,
-         "diff": "A"
-        },
-        {
-         "type": "skill",
-         "name": "Occultism",
-         "cost": 10,
-         "diff": "A"
-        },
-        {
-         "type": "skill",
-         "name": "Research",
-         "cost": 10,
-         "diff": "A"
-        },
-        {
-         "type": "skill",
-         "name": "Speed-Reading",
-         "cost": 10,
-         "diff": "A"
-        },
-        {
-         "type": "skill",
-         "name": "Teaching",
-         "cost": 10,
-         "diff": "A"
-        },
-        {
-         "type": "skill",
-         "name": "Writing",
-         "cost": 10,
-         "diff": "A"
-        }
-       ]
+       "type": "skill",
+       "name": "Hazardous Materials",
+       "spec": "Magical",
+       "cost": 10,
+       "diff": "A"
       },
       {
-       "type": "group",
-       "kind": "count",
-       "n": 1,
-       "options": [
-        {
-         "type": "skill",
-         "name": "Expert Skill",
-         "choices": [
-          "Natural Philosophy",
-          "Thanatology"
-         ],
-         "cost": 10,
-         "diff": "H"
-        },
-        {
-         "type": "skill",
-         "name": "Philosophy",
-         "ask": "specialty",
-         "cost": 10,
-         "diff": "H"
-        },
-        {
-         "type": "skill",
-         "name": "Physiology",
-         "ask": "monster type",
-         "cost": 10,
-         "diff": "H"
-        },
-        {
-         "type": "skill",
-         "name": "Psychology",
-         "choices": [
-          "Demons",
-          "Elementals"
-         ],
-         "cost": 10,
-         "diff": "H"
-        },
-        {
-         "type": "skill",
-         "name": "Theology",
-         "choices": [
-          "Abrahamic",
-          "Shamanic OR Voodoo",
-          "Shamanic",
-          "Voodoo"
-         ],
-         "cost": 10,
-         "diff": "H"
-        }
-       ]
+       "type": "skill",
+       "name": "Hidden Lore",
+       "choices": [
+        "Demons",
+        "Elementals",
+        "Magic Items",
+        "Magical Writings",
+        "Secret Writings",
+        "Spirits",
+        "Undead"
+       ],
+       "cost": 10,
+       "diff": "A"
       },
       {
-       "type": "group",
-       "kind": "count",
-       "n": 1,
-       "options": [
-        {
-         "type": "skill",
-         "name": "Alchemy",
-         "cost": 10,
-         "diff": "VH"
-        },
-        {
-         "type": "skill",
-         "name": "Thaumatology",
-         "cost": 10,
-         "diff": "VH"
-        }
-       ]
+       "type": "skill",
+       "name": "Occultism",
+       "cost": 10,
+       "diff": "A"
       },
       {
-       "type": "group",
-       "kind": "count",
-       "n": 1,
-       "options": [
-        {
-         "type": "skill",
-         "name": "Exorcism",
-         "cost": 10,
-         "diff": "H"
-        },
-        {
-         "type": "skill",
-         "name": "Meditation",
-         "cost": 10,
-         "diff": "H"
-        }
-       ]
+       "type": "skill",
+       "name": "Research",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Speed-Reading",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Teaching",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Writing",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Expert Skill",
+       "choices": [
+        "Natural Philosophy",
+        "Thanatology"
+       ],
+       "cost": 10,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Philosophy",
+       "ask": "specialty",
+       "cost": 10,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Physiology",
+       "ask": "monster type",
+       "cost": 10,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Psychology",
+       "choices": [
+        "Demons",
+        "Elementals"
+       ],
+       "cost": 10,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Theology",
+       "choices": [
+        "Abrahamic",
+        "Shamanic OR Voodoo",
+        "Shamanic",
+        "Voodoo"
+       ],
+       "cost": 10,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Alchemy",
+       "cost": 10,
+       "diff": "VH"
+      },
+      {
+       "type": "skill",
+       "name": "Thaumatology",
+       "cost": 10,
+       "diff": "VH"
+      },
+      {
+       "type": "skill",
+       "name": "Exorcism",
+       "cost": 10,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Meditation",
+       "cost": 10,
+       "diff": "H"
       }
      ],
      "label": "Skills"
@@ -97826,16 +97795,16 @@
      "id": "g3",
      "section": "remainder",
      "kind": "points",
-     "n": 500,
-     "open": "50 points this app couldn't read from the lens (see DF15:34)",
+     "n": 350,
+     "open": "35 points this app couldn't read from the lens (see DF15:34)",
      "incomplete": true,
      "options": []
     }
    ],
    "points": 125,
    "incomplete": {
-    "parsed": 75,
-    "missing": 50
+    "parsed": 90,
+    "missing": 35
    }
   },
   {
@@ -97858,20 +97827,25 @@
      "n": 1,
      "options": [
       {
-       "type": "attr",
-       "key": "ST",
-       "name": "ST +1",
-       "min": 1,
-       "max": 1,
-       "per": 100
-      },
-      {
-       "type": "attr",
-       "key": "HT",
-       "name": "HT +1",
-       "min": 1,
-       "max": 1,
-       "per": 100
+       "type": "bundle",
+       "items": [
+        {
+         "type": "attr",
+         "key": "ST",
+         "name": "ST +1",
+         "min": 1,
+         "max": 1,
+         "per": 100
+        },
+        {
+         "type": "attr",
+         "key": "HT",
+         "name": "HT +1",
+         "min": 1,
+         "max": 1,
+         "per": 100
+        }
+       ]
       },
       {
        "type": "attr",
@@ -98090,22 +98064,9 @@
       }
      ],
      "label": "Skills"
-    },
-    {
-     "id": "g5",
-     "section": "remainder",
-     "kind": "points",
-     "n": 100,
-     "open": "10 points this app couldn't read from the lens (see DF15:34)",
-     "incomplete": true,
-     "options": []
     }
    ],
-   "points": 125,
-   "incomplete": {
-    "parsed": 115,
-    "missing": 10
-   }
+   "points": 125
   },
   {
    "name": "Champion",
@@ -98120,102 +98081,128 @@
    },
    "groups": [
     {
-     "id": "g1",
+     "id": "g8",
      "section": "advantages",
      "kind": "count",
      "n": 1,
      "options": [
       {
-       "type": "note",
-       "name": "these options: Holy: Higher Purpose (Slay Demons)",
-       "cost": 50
-      },
-      {
-       "type": "trait",
-       "name": "Holiness",
-       "cost": 100,
-       "levels": 2,
-       "cr": 12
-      },
-      {
-       "type": "trait",
-       "name": "Shtick",
-       "notes": "Foes slain personally can't rise as undead",
-       "cost": 10
-      }
-     ]
-    },
-    {
-     "id": "g2",
-     "section": "advantages",
-     "kind": "points",
-     "n": 250,
-     "open": "Holy abilities",
-     "options": []
-    },
-    {
-     "id": "g3",
-     "section": "advantages",
-     "kind": "note",
-     "text": "A further 5 points in additional Holy abilities or your template's advantage options. Unholy: Higher Purpose (Slay Servitors of Good) [5]; Legionary of the Damned (The Next Level, p. 27) [1]; and Unholiness 2* [10]."
-    },
-    {
-     "id": "g4",
-     "section": "advantages",
-     "kind": "points",
-     "n": 250,
-     "open": "Unholy abilities (The Next Level, p",
-     "options": []
-    },
-    {
-     "id": "g5",
-     "section": "advantages",
-     "kind": "points",
-     "n": 50,
-     "open": "additional Unholy abilities or your template's advantage options",
-     "options": []
-    },
-    {
-     "id": "g6",
-     "section": "disadvantages",
-     "kind": "fixed",
-     "options": [
-      {
-       "type": "note",
-       "name": "Change -10 points of existing disadvantages of any kind to one of Honesty (12)",
-       "cost": -100
-      },
-      {
-       "type": "trait",
-       "name": "Sense of Duty",
-       "notes": "Good entities",
-       "cost": -100,
-       "modifiers": [
-        "Large Group (-100)"
+       "type": "bundle",
+       "label": "Holy",
+       "items": [
+        {
+         "type": "trait",
+         "name": "Higher Purpose",
+         "choices": [
+          "Slay Demons",
+          "Slay Undead"
+         ],
+         "ask": "which foes",
+         "cost": 50
+        },
+        {
+         "type": "trait",
+         "name": "Holiness",
+         "levels": 2,
+         "cost": 100,
+         "cr": 12
+        },
+        {
+         "type": "trait",
+         "name": "Shtick",
+         "notes": "Foes slain personally can't rise as undead",
+         "cost": 10
+        },
+        {
+         "type": "group",
+         "kind": "points",
+         "n": 250,
+         "section": "advantages",
+         "open": "Holy abilities",
+         "options": []
+        },
+        {
+         "type": "group",
+         "kind": "points",
+         "n": 50,
+         "section": "advantages",
+         "open": "additional Holy abilities or your template's advantage options",
+         "options": []
+        }
        ]
       },
       {
-       "type": "note",
-       "name": "Vow (Own no more than horse can carry) [-10] if \"holy,\" or Social Stigma (Excommunicated)† [-10] if \"unholy,\" unless you already have a suitable trait",
-       "cost": -100
+       "type": "bundle",
+       "label": "Unholy",
+       "items": [
+        {
+         "type": "trait",
+         "name": "Higher Purpose",
+         "notes": "Slay Servitors of Good",
+         "cost": 50
+        },
+        {
+         "type": "trait",
+         "name": "Legionary of the Damned",
+         "ref": "The Next Level p.27",
+         "cost": 10
+        },
+        {
+         "type": "trait",
+         "name": "Unholiness",
+         "levels": 2,
+         "cost": 100
+        },
+        {
+         "type": "group",
+         "kind": "points",
+         "n": 250,
+         "section": "advantages",
+         "open": "Unholy abilities",
+         "options": []
+        },
+        {
+         "type": "group",
+         "kind": "points",
+         "n": 50,
+         "section": "advantages",
+         "open": "additional Unholy abilities or your template's advantage options",
+         "options": []
+        }
+       ]
       }
      ]
     },
     {
-     "id": "g7",
+     "id": "g6",
      "section": "skills",
      "kind": "fixed",
      "options": [
       {
-       "type": "note",
-       "name": "Esoteric Medicine (Holy) (H) Per-2 [1]-0 if \"holy\" or Poisons (H) IQ-2 [1]-0 if \"unholy.\"",
-       "cost": 10
+       "type": "group",
+       "kind": "count",
+       "n": 1,
+       "options": [
+        {
+         "type": "skill",
+         "name": "Esoteric Medicine",
+         "spec": "Holy",
+         "cost": 10,
+         "diff": "H"
+        },
+        {
+         "type": "skill",
+         "name": "Poisons",
+         "cost": 10,
+         "diff": "H"
+        }
+       ]
       }
      ],
      "label": "Skills"
     },
     {
-     "id": "g8",
+     "id": "g7",
      "section": "skills",
      "kind": "fixed",
      "options": [
@@ -98282,22 +98269,9 @@
       }
      ],
      "label": "Skills"
-    },
-    {
-     "id": "g9",
-     "section": "remainder",
-     "kind": "points",
-     "n": 160,
-     "open": "16 points this app couldn't read from the lens (see DF15:35)",
-     "incomplete": true,
-     "options": []
     }
    ],
-   "points": 125,
-   "incomplete": {
-    "parsed": 109,
-    "missing": 16
-   }
+   "points": 125
   },
   {
    "name": "Gadgeteer",
@@ -98639,32 +98613,6 @@
     },
     {
      "id": "g3",
-     "section": "disadvantages",
-     "kind": "fixed",
-     "options": [
-      {
-       "type": "note",
-       "name": "Change -15 points of existing disadvantages of any kind to Vow (Ninja Secrecy)",
-       "cost": -50
-      },
-      {
-       "type": "trait",
-       "name": "Vow",
-       "notes": "Own no more than what can be carried",
-       "cost": -100,
-       "modifiers": [
-        "Major (-100)"
-       ]
-      },
-      {
-       "type": "note",
-       "name": "unless you already have the trait in question",
-       "cost": null
-      }
-     ]
-    },
-    {
-     "id": "g4",
      "section": "skills",
      "kind": "fixed",
      "options": [
@@ -98702,122 +98650,117 @@
      "label": "Skills"
     },
     {
-     "id": "g5",
+     "id": "g4",
      "section": "skills",
-     "kind": "fixed",
+     "kind": "points",
+     "n": 80,
+     "prevSkills": true,
      "options": [
       {
-       "type": "group",
-       "kind": "count",
-       "n": 1,
-       "options": [
-        {
-         "type": "note",
-         "name": "Spend another 8 points total on at least two different skills from among Fast-Draw (any)"
-        },
-        {
-         "type": "skill",
-         "name": "Knife",
-         "cost": 10,
-         "diff": "E"
-        },
-        {
-         "type": "skill",
-         "name": "Thrown Weapon",
-         "choices": [
-          "Knife",
-          "Shuriken"
-         ],
-         "cost": 10,
-         "diff": "E"
-        }
-       ]
+       "type": "skill",
+       "name": "Fast-Draw",
+       "choices": [
+        "Arrow",
+        "Force Sword",
+        "Knife",
+        "Long Arm",
+        "Pistol",
+        "Sword",
+        "Two-Handed Sword",
+        "Ammo",
+        "Gizmo",
+        "Medical Gear"
+       ],
+       "cost": 10,
+       "diff": "E"
       },
       {
-       "type": "group",
-       "kind": "count",
-       "n": 1,
-       "options": [
-        {
-         "type": "skill",
-         "name": "Axe/Mace",
-         "cost": 10,
-         "diff": "A"
-        },
-        {
-         "type": "skill",
-         "name": "Bow",
-         "cost": 10,
-         "diff": "A"
-        },
-        {
-         "type": "skill",
-         "name": "Jitte/Sai",
-         "cost": 10,
-         "diff": "A"
-        },
-        {
-         "type": "skill",
-         "name": "Polearm",
-         "cost": 10,
-         "diff": "A"
-        },
-        {
-         "type": "skill",
-         "name": "Shortsword",
-         "cost": 10,
-         "diff": "A"
-        },
-        {
-         "type": "skill",
-         "name": "Spear",
-         "cost": 10,
-         "diff": "A"
-        },
-        {
-         "type": "skill",
-         "name": "Staff",
-         "cost": 10,
-         "diff": "A"
-        },
-        {
-         "type": "skill",
-         "name": "Throwing",
-         "cost": 10,
-         "diff": "A"
-        },
-        {
-         "type": "skill",
-         "name": "Tonfa",
-         "cost": 10,
-         "diff": "A"
-        }
-       ]
+       "type": "skill",
+       "name": "Knife",
+       "cost": 10,
+       "diff": "E"
       },
       {
-       "type": "group",
-       "kind": "count",
-       "n": 1,
-       "options": [
-        {
-         "type": "skill",
-         "name": "Blowpipe",
-         "cost": 10,
-         "diff": "H"
-        },
-        {
-         "type": "skill",
-         "name": "Kusari",
-         "cost": 10,
-         "diff": "H"
-        }
-       ]
+       "type": "skill",
+       "name": "Thrown Weapon",
+       "choices": [
+        "Knife",
+        "Shuriken"
+       ],
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Axe/Mace",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Bow",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Jitte/Sai",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Polearm",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Shortsword",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Spear",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Staff",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Throwing",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Tonfa",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Blowpipe",
+       "cost": 10,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Kusari",
+       "cost": 10,
+       "diff": "H"
       }
      ],
      "label": "Skills"
     },
     {
-     "id": "g6",
+     "id": "g5",
      "section": "skills",
      "kind": "count",
      "n": 2,
@@ -98847,28 +98790,16 @@
        "diff": "H"
       },
       {
-       "type": "note",
-       "name": "Mental Strength (E) Will+4 [4]-0. * All skills include +2 for Ninja Talent",
-       "cost": 40
+       "type": "skill",
+       "name": "Mental Strength",
+       "cost": 40,
+       "diff": "E"
       }
      ],
      "label": "Special Skills"
-    },
-    {
-     "id": "g7",
-     "section": "remainder",
-     "kind": "points",
-     "n": 210,
-     "open": "21 points this app couldn't read from the lens (see DF15:37)",
-     "incomplete": true,
-     "options": []
     }
    ],
-   "points": 125,
-   "incomplete": {
-    "parsed": 104,
-    "missing": 21
-   }
+   "points": 125
   },
   {
    "name": "Learned",
@@ -99278,23 +99209,6 @@
     },
     {
      "id": "g3",
-     "section": "disadvantages",
-     "kind": "fixed",
-     "options": [
-      {
-       "type": "note",
-       "name": "Change -10 points of existing disadvantages of any kind to Disciplines of Faith (Chi Rituals)",
-       "cost": -100
-      },
-      {
-       "type": "note",
-       "name": "unless you already have that trait",
-       "cost": null
-      }
-     ]
-    },
-    {
-     "id": "g4",
      "section": "skills",
      "kind": "fixed",
      "options": [
@@ -99308,7 +99222,7 @@
      "label": "Skills"
     },
     {
-     "id": "g5",
+     "id": "g4",
      "section": "skills",
      "kind": "fixed",
      "options": [
@@ -99321,7 +99235,7 @@
      "label": "Skills"
     },
     {
-     "id": "g6",
+     "id": "g5",
      "section": "skills",
      "kind": "count",
      "n": 7,
@@ -99425,27 +99339,428 @@
        "diff": "H"
       },
       {
-       "type": "note",
-       "name": "Blind Fighting (VH) Per [2]-0. * All skills include +2 for Chi Talent",
-       "cost": 20
+       "type": "skill",
+       "name": "Blind Fighting",
+       "cost": 20,
+       "diff": "VH"
       }
      ],
      "label": "Special Skills"
+    }
+   ],
+   "points": 125
+  },
+  {
+   "name": "Priest",
+   "book": "DF15",
+   "ref": "DF15:38",
+   "template": 125,
+   "plus": true,
+   "attributes": {
+    "IQ": 200,
+    "HT": 100
+   },
+   "groups": [
+    {
+     "id": "g1",
+     "section": "advantages",
+     "kind": "points",
+     "n": 300,
+     "prev": 0,
+     "options": [
+      {
+       "type": "note",
+       "name": "your template's advantage options or ST +1",
+       "cost": 100
+      },
+      {
+       "type": "attr",
+       "key": "IQ",
+       "name": "IQ +1",
+       "min": 1,
+       "max": 1,
+       "per": 200
+      },
+      {
+       "type": "attr",
+       "key": "HT",
+       "name": "HT +1",
+       "min": 1,
+       "max": 1,
+       "per": 100
+      },
+      {
+       "type": "attr",
+       "key": "Will",
+       "name": "Will +1 to +6",
+       "min": 1,
+       "max": 6,
+       "per": 50
+      },
+      {
+       "type": "attr",
+       "key": "FP",
+       "name": "FP +1 to +10",
+       "min": 1,
+       "max": 10,
+       "per": 30
+      },
+      {
+       "type": "trait",
+       "name": "Talent (Animal Friend)",
+       "cost": 50,
+       "min": 1,
+       "max": 4,
+       "per": 50
+      },
+      {
+       "type": "trait",
+       "name": "Autotrance",
+       "cost": 10
+      },
+      {
+       "type": "trait",
+       "name": "Channeling",
+       "cost": 100
+      },
+      {
+       "type": "trait",
+       "name": "Clerical Investment",
+       "cost": 50
+      },
+      {
+       "type": "trait",
+       "name": "Fearlessness",
+       "cost": 20,
+       "min": 1,
+       "max": null,
+       "per": 20
+      },
+      {
+       "type": "trait",
+       "name": "Talent (Green Thumb)",
+       "cost": 50,
+       "min": 1,
+       "max": 4,
+       "per": 50
+      },
+      {
+       "type": "trait",
+       "name": "Talent (Healer)",
+       "cost": 100,
+       "min": 1,
+       "max": 3,
+       "per": 100
+      },
+      {
+       "type": "trait",
+       "name": "Higher Purpose",
+       "notes": "Serve your people",
+       "cost": 50,
+       "noteChoices": [
+        "Serve your people",
+        "protect the spirit realm",
+        "etc."
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Language: @Language@",
+       "ask": "language",
+       "notes": "any",
+       "cost": 20,
+       "min": 1,
+       "max": null,
+       "per": 20
+      },
+      {
+       "type": "note",
+       "name": "Licensed Exorcist (Summoners)",
+       "cost": 10
+      },
+      {
+       "type": "trait",
+       "name": "Luck",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "Extraordinary Luck",
+       "cost": 300
+      },
+      {
+       "type": "trait",
+       "name": "Medium",
+       "cost": 100
+      },
+      {
+       "type": "trait",
+       "name": "Mind Shield",
+       "cost": 40,
+       "min": 1,
+       "max": null,
+       "per": 40
+      },
+      {
+       "type": "trait",
+       "name": "Talent (Outdoorsman)",
+       "cost": 100,
+       "min": 1,
+       "max": 3,
+       "per": 100
+      },
+      {
+       "type": "note",
+       "name": "Resistant to Evil Supernatural Powers (+3)",
+       "cost": 50
+      },
+      {
+       "type": "note",
+       "name": "Resistant to Evil Supernatural Powers (+8)",
+       "cost": 70
+      },
+      {
+       "type": "trait",
+       "name": "Signature Gear",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "note",
+       "name": "Spirit Badge (Summoners)",
+       "cost": 10
+      },
+      {
+       "type": "trait",
+       "name": "Spirit Empathy",
+       "cost": 100
+      },
+      {
+       "type": "trait",
+       "name": "Spirit Weapon",
+       "notes": "Summoners",
+       "cost": 10,
+       "noteChoices": [
+        "Summoners",
+        "p. 5"
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Comfortable Wealth",
+       "cost": 100
+      },
+      {
+       "type": "trait",
+       "name": "Wealthy",
+       "cost": 200
+      }
+     ]
     },
     {
-     "id": "g7",
+     "id": "g2",
+     "section": "skills",
+     "kind": "points",
+     "n": 200,
+     "options": [
+      {
+       "type": "skill",
+       "name": "Innate Attack",
+       "choices": [
+        "Beam",
+        "Breath",
+        "Gaze",
+        "Projectile"
+       ],
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "First Aid",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Panhandling",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Savoir-Faire",
+       "spec": "High Society",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Hidden Lore",
+       "choices": [
+        "Demons",
+        "Elementals",
+        "Faeries",
+        "Spirits",
+        "Undead"
+       ],
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Occultism",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Public Speaking",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Research",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Teaching",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Weather Sense",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Writing",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Diagnosis",
+       "cost": 10,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Diplomacy",
+       "cost": 10,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Naturalist",
+       "choices": [
+        "Earthlike",
+        "Gas Giants",
+        "Hostile Terrestrial",
+        "Ice Dwarfs",
+        "Ice Worlds",
+        "Rock Worlds"
+       ],
+       "cost": 10,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Pharmacy",
+       "spec": "Herbal",
+       "cost": 10,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Poisons",
+       "cost": 10,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Religious Ritual",
+       "ask": "any",
+       "cost": 10,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Theology",
+       "choices": [
+        "Abrahamic",
+        "Shamanic OR Voodoo",
+        "Shamanic",
+        "Voodoo"
+       ],
+       "cost": 10,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Veterinary",
+       "cost": 10,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Herb Lore",
+       "cost": 10,
+       "diff": "VH"
+      },
+      {
+       "type": "skill",
+       "name": "Surgery",
+       "cost": 10,
+       "diff": "VH"
+      },
+      {
+       "type": "skill",
+       "name": "Exorcism",
+       "cost": 10,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Meditation",
+       "cost": 10,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Detect Lies",
+       "cost": 10,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Esoteric Medicine",
+       "ask": "any",
+       "cost": 10,
+       "diff": "H"
+      }
+     ],
+     "label": "Skills"
+    },
+    {
+     "id": "g3",
      "section": "remainder",
      "kind": "points",
-     "n": 100,
-     "open": "10 points this app couldn't read from the lens (see DF15:37)",
+     "n": 450,
+     "open": "45 points this app couldn't read from the lens (see DF15:38)",
      "incomplete": true,
      "options": []
     }
    ],
    "points": 125,
    "incomplete": {
-    "parsed": 115,
-    "missing": 10
+    "parsed": 80,
+    "missing": 45
    }
   },
   {
@@ -99619,11 +99934,15 @@
     {
      "id": "g4",
      "section": "skills",
-     "kind": "fixed",
+     "kind": "points",
+     "n": 80,
      "options": [
       {
-       "type": "note",
-       "name": "A total of 8 points chosen from Innate Attack (Gaze)"
+       "type": "skill",
+       "name": "Innate Attack",
+       "spec": "Gaze",
+       "cost": 10,
+       "diff": "E"
       },
       {
        "type": "skill",
@@ -99632,86 +99951,72 @@
        "diff": "H"
       },
       {
-       "type": "group",
-       "kind": "count",
-       "n": 1,
-       "options": [
-        {
-         "type": "skill",
-         "name": "Acting",
-         "cost": 10,
-         "diff": "A"
-        },
-        {
-         "type": "skill",
-         "name": "Fast-Talk",
-         "cost": 10,
-         "diff": "A"
-        },
-        {
-         "type": "skill",
-         "name": "Gambling",
-         "cost": 10,
-         "diff": "A"
-        },
-        {
-         "type": "skill",
-         "name": "Hidden Lore",
-         "spec": "Elder Things",
-         "cost": 10,
-         "diff": "A"
-        },
-        {
-         "type": "skill",
-         "name": "Interrogation",
-         "cost": 10,
-         "diff": "A"
-        },
-        {
-         "type": "skill",
-         "name": "Occultism",
-         "cost": 10,
-         "diff": "A"
-        },
-        {
-         "type": "skill",
-         "name": "Research",
-         "cost": 10,
-         "diff": "A"
-        },
-        {
-         "type": "skill",
-         "name": "Teaching",
-         "cost": 10,
-         "diff": "A"
-        }
-       ]
+       "type": "skill",
+       "name": "Acting",
+       "cost": 10,
+       "diff": "A"
       },
       {
-       "type": "group",
-       "kind": "count",
-       "n": 1,
-       "options": [
-        {
-         "type": "skill",
-         "name": "Diplomacy",
-         "cost": 10,
-         "diff": "H"
-        },
-        {
-         "type": "skill",
-         "name": "Hypnotism",
-         "cost": 10,
-         "diff": "H"
-        },
-        {
-         "type": "skill",
-         "name": "Psychology",
-         "ask": "any",
-         "cost": 10,
-         "diff": "H"
-        }
-       ]
+       "type": "skill",
+       "name": "Fast-Talk",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Gambling",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Hidden Lore",
+       "spec": "Elder Things",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Interrogation",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Occultism",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Research",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Teaching",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Diplomacy",
+       "cost": 10,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Hypnotism",
+       "cost": 10,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Psychology",
+       "ask": "any",
+       "cost": 10,
+       "diff": "H"
       },
       {
        "type": "skill",
@@ -99732,44 +100037,37 @@
        "diff": "H"
       },
       {
-       "type": "group",
-       "kind": "count",
-       "n": 1,
-       "options": [
-        {
-         "type": "skill",
-         "name": "Body Language",
-         "cost": 10,
-         "diff": "A"
-        },
-        {
-         "type": "skill",
-         "name": "Lip Reading",
-         "cost": 10,
-         "diff": "A"
-        },
-        {
-         "type": "skill",
-         "name": "Observation",
-         "cost": 10,
-         "diff": "A"
-        },
-        {
-         "type": "skill",
-         "name": "Search",
-         "cost": 10,
-         "diff": "A"
-        },
-        {
-         "type": "skill",
-         "name": "Tracking",
-         "choices": [
-          "Autoteleport"
-         ],
-         "cost": 10,
-         "diff": "A"
-        }
-       ]
+       "type": "skill",
+       "name": "Body Language",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Lip Reading",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Observation",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Search",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Tracking",
+       "choices": [
+        "Autoteleport"
+       ],
+       "cost": 10,
+       "diff": "A"
       },
       {
        "type": "skill",
@@ -99795,6 +100093,527 @@
     "parsed": 85,
     "missing": 40
    }
+  },
+  {
+   "name": "Treasure-Hunter",
+   "book": "DF15",
+   "ref": "DF15:40",
+   "template": 125,
+   "plus": true,
+   "attributes": {
+    "DX": 400,
+    "IQ": 400
+   },
+   "groups": [
+    {
+     "id": "g1",
+     "section": "advantages",
+     "kind": "points",
+     "n": 300,
+     "prev": 0,
+     "options": [
+      {
+       "type": "note",
+       "name": "your template's advantage options or ST +1 to +3",
+       "cost": 100,
+       "min": 1,
+       "max": null,
+       "per": 100
+      },
+      {
+       "type": "attr",
+       "key": "DX",
+       "name": "DX +1",
+       "min": 1,
+       "max": 1,
+       "per": 200
+      },
+      {
+       "type": "attr",
+       "key": "IQ",
+       "name": "IQ +1",
+       "min": 1,
+       "max": 1,
+       "per": 200
+      },
+      {
+       "type": "attr",
+       "key": "HT",
+       "name": "HT +1 to +3",
+       "min": 1,
+       "max": 3,
+       "per": 100
+      },
+      {
+       "type": "attr",
+       "key": "HP",
+       "name": "HP +1 to +3",
+       "min": 1,
+       "max": 3,
+       "per": 20
+      },
+      {
+       "type": "attr",
+       "key": "Will",
+       "name": "Will +1 to +3",
+       "min": 1,
+       "max": 3,
+       "per": 50
+      },
+      {
+       "type": "attr",
+       "key": "Per",
+       "name": "Per +1 to +3",
+       "min": 1,
+       "max": 3,
+       "per": 50
+      },
+      {
+       "type": "attr",
+       "key": "Move",
+       "name": "Basic Move +1 to +2",
+       "min": 1,
+       "max": 2,
+       "per": 50
+      },
+      {
+       "type": "trait",
+       "name": "Acute Vision",
+       "choices": [
+        "Acute Hearing",
+        "Acute Taste & Smell",
+        "Acute Touch",
+        "Acute Vision"
+       ],
+       "cost": 20,
+       "min": 1,
+       "max": null,
+       "per": 20
+      },
+      {
+       "type": "trait",
+       "name": "Alcohol Tolerance",
+       "cost": 10
+      },
+      {
+       "type": "trait",
+       "name": "Combat Reflexes",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "Danger Sense",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "Daredevil",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "Eidetic Memory",
+       "cost": 50
+      },
+      {
+       "type": "trait",
+       "name": "Eidetic Memory",
+       "notes": "Photographic",
+       "cost": 100,
+       "modifiers": [
+        "Photographic (50)"
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Fearlessness",
+       "cost": 20,
+       "min": 1,
+       "max": null,
+       "per": 20
+      },
+      {
+       "type": "trait",
+       "name": "Language: @Language@",
+       "ask": "language",
+       "notes": "any",
+       "cost": 20,
+       "min": 1,
+       "max": null,
+       "per": 20
+      },
+      {
+       "type": "trait",
+       "name": "Lifting ST",
+       "cost": 30,
+       "min": 1,
+       "max": 3,
+       "per": 30
+      },
+      {
+       "type": "trait",
+       "name": "Luck",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "Extraordinary Luck",
+       "cost": 300
+      },
+      {
+       "type": "trait",
+       "name": "Serendipity",
+       "cost": 150,
+       "min": 1,
+       "max": null,
+       "per": 150
+      },
+      {
+       "type": "trait",
+       "name": "Signature Gear",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "trait",
+       "name": "Comfortable Wealth",
+       "cost": 100
+      },
+      {
+       "type": "trait",
+       "name": "Wealthy",
+       "cost": 200
+      },
+      {
+       "type": "trait",
+       "name": "Very Wealthy",
+       "cost": 300
+      },
+      {
+       "type": "trait",
+       "name": "Wild Talent",
+       "cost": 200,
+       "levels": 1
+      }
+     ]
+    },
+    {
+     "id": "g2",
+     "section": "skills",
+     "kind": "points",
+     "n": 150,
+     "options": [
+      {
+       "type": "skill",
+       "name": "Forced Entry",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Climbing",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Filch",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Riding",
+       "choices": [
+        "Camel",
+        "Dolphin",
+        "Dragon",
+        "Equines"
+       ],
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Stealth",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Pickpocket",
+       "cost": 40,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Sleight of Hand",
+       "cost": 40,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Current Affairs",
+       "choices": [
+        "Business",
+        "Headline News",
+        "High Culture",
+        "People",
+        "Politics",
+        "Popular Culture",
+        "Regional",
+        "Science & Technology",
+        "Sports",
+        "Travel",
+        "Supers"
+       ],
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "First Aid",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Gesture",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Panhandling",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Savoir-Faire",
+       "spec": "High Society",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Armoury",
+       "choices": [
+        "Battlesuits",
+        "Body Armor",
+        "Force Shields",
+        "Heavy Weapons",
+        "Melee Weapons",
+        "Missile Weapons",
+        "Small Arms",
+        "Vehicular Armor"
+       ],
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Cartography",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Connoisseur",
+       "choices": [
+        "Dance",
+        "Literature",
+        "Music",
+        "Visual Arts",
+        "Wine",
+        "Cars",
+        "Melee Weapons"
+       ],
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Fast-Talk",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Gambling",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Heraldry",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Hidden Lore",
+       "choices": [
+        "Magic Items",
+        "Magical Writings"
+       ],
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Holdout",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Merchant",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Lockpicking",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Propaganda",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Prospecting",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Research",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Smuggling",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Speed-Reading",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Streetwise",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Traps",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Writing",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Counterfeiting",
+       "cost": 40,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Forgery",
+       "cost": 40,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Carousing",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Hiking",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Intimidation",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Scrounging",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Observation",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Search",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Survival",
+       "choices": [
+        "Arctic",
+        "Bank",
+        "Deep Ocean Vent",
+        "Desert",
+        "Fresh-Water Lake",
+        "Island/Beach",
+        "Jungle",
+        "Mountain",
+        "Open Ocean",
+        "Plains",
+        "Reef",
+        "River/Stream",
+        "Salt-Water Sea",
+        "Swampland",
+        "Tropical Lagoon",
+        "Woodlands"
+       ],
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Urban Survival",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "note",
+       "name": "that same cost again to raise the skill by one level",
+       "cost": null
+      }
+     ],
+     "label": "Skills"
+    }
+   ],
+   "points": 125
   },
   {
    "name": "Troubadour",
@@ -100400,6 +101219,266 @@
     }
    ],
    "points": 125
+  },
+  {
+   "name": "Accidental Hero",
+   "book": "MH1",
+   "ref": "MH1:6",
+   "template": 15,
+   "plus": false,
+   "attributes": {},
+   "groups": [
+    {
+     "id": "g1",
+     "section": "advantages",
+     "kind": "points",
+     "n": 300,
+     "prev": 0,
+     "options": [
+      {
+       "type": "attr",
+       "key": "DX",
+       "name": "DX +1",
+       "min": 1,
+       "max": 1,
+       "per": 200
+      },
+      {
+       "type": "attr",
+       "key": "IQ",
+       "name": "IQ +1",
+       "min": 1,
+       "max": 1,
+       "per": 200
+      },
+      {
+       "type": "attr",
+       "key": "HT",
+       "name": "HT +1",
+       "min": 1,
+       "max": 1,
+       "per": 100
+      },
+      {
+       "type": "trait",
+       "name": "Common Sense",
+       "cost": 100
+      },
+      {
+       "type": "trait",
+       "name": "Danger Sense",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "Wild Talent",
+       "cost": 200,
+       "levels": 1
+      },
+      {
+       "type": "note",
+       "name": "upgrade Luck [15] to Ridiculous Luck [30] for 15 points",
+       "cost": 150
+      }
+     ]
+    },
+    {
+     "id": "g2",
+     "section": "disadvantages",
+     "kind": "count",
+     "n": 1,
+     "options": [
+      {
+       "type": "note",
+       "name": "Compulsive Thrill-Seeking (9)",
+       "cost": -150
+      },
+      {
+       "type": "trait",
+       "name": "Divine Curse (Monster Magnet)",
+       "cost": -150
+      },
+      {
+       "type": "trait",
+       "name": "Duty",
+       "cost": -150,
+       "cr": 12,
+       "notes": "12",
+       "noteChoices": [
+        "12",
+        "less; Extremely Hazardous"
+       ],
+       "modifiers": [
+        "Almost all the time (-150)"
+       ]
+      },
+      {
+       "type": "note",
+       "name": "Enemies (Monster of the week; 9)",
+       "cost": -150
+      },
+      {
+       "type": "trait",
+       "name": "Sense of Duty",
+       "notes": "Humanity",
+       "cost": -150,
+       "modifiers": [
+        "Entire Race (-150)"
+       ]
+      }
+     ]
+    }
+   ],
+   "points": 15
+  },
+  {
+   "name": "Avenger/Atoner",
+   "book": "MH1",
+   "ref": "MH1:6",
+   "template": 15,
+   "plus": false,
+   "attributes": {},
+   "groups": [
+    {
+     "id": "g1",
+     "section": "advantages",
+     "kind": "fixed",
+     "options": [
+      {
+       "type": "attr",
+       "key": "Will",
+       "name": "Will +1",
+       "min": 1,
+       "max": 1,
+       "per": 50
+      },
+      {
+       "type": "trait",
+       "name": "Fearlessness",
+       "cost": 40,
+       "levels": 2
+      },
+      {
+       "type": "trait",
+       "name": "Higher Purpose",
+       "notes": "Hunt one type of monster",
+       "cost": 50
+      }
+     ]
+    },
+    {
+     "id": "g2",
+     "section": "disadvantages",
+     "kind": "count",
+     "n": 1,
+     "options": [
+      {
+       "type": "note",
+       "name": "Enemies (Monster of the week; 9)",
+       "cost": -150
+      },
+      {
+       "type": "trait",
+       "name": "Fanaticism (The Mission)",
+       "cost": -150
+      },
+      {
+       "type": "trait",
+       "name": "Obsession",
+       "notes": "Rid the world of monsters) (9",
+       "cost": -150,
+       "modifiers": [
+        "Short term (-50)",
+        "Long term (-100)"
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Sense of Duty",
+       "notes": "Humanity",
+       "cost": -150,
+       "modifiers": [
+        "Entire Race (-150)"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "g7",
+     "section": "skills",
+     "kind": "count",
+     "n": 1,
+     "options": [
+      {
+       "type": "bundle",
+       "label": "Inhuman",
+       "items": [
+        {
+         "type": "group",
+         "kind": "points",
+         "n": 80,
+         "section": "skills",
+         "open": "+2 to one racial knowledge skill, or +1 to two of them",
+         "options": []
+        },
+        {
+         "type": "group",
+         "kind": "points",
+         "n": 80,
+         "section": "skills",
+         "open": "+2 to one combat skill, or +1 to two of them",
+         "options": []
+        }
+       ]
+      },
+      {
+       "type": "bundle",
+       "label": "Sage",
+       "items": [
+        {
+         "type": "group",
+         "kind": "points",
+         "n": 120,
+         "section": "skills",
+         "open": "+1 to Lore!",
+         "options": []
+        },
+        {
+         "type": "group",
+         "kind": "points",
+         "n": 40,
+         "section": "skills",
+         "open": "+1 to one combat skill",
+         "options": []
+        }
+       ]
+      },
+      {
+       "type": "bundle",
+       "label": "All others",
+       "items": [
+        {
+         "type": "group",
+         "kind": "points",
+         "n": 120,
+         "section": "skills",
+         "open": "skills from Know Thy Enemy (Champions, p. 16) that apply to your preferred foe",
+         "options": []
+        },
+        {
+         "type": "group",
+         "kind": "points",
+         "n": 40,
+         "section": "skills",
+         "open": "+1 to one combat skill",
+         "options": []
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "points": 15
   },
   {
    "name": "Chosen One",
@@ -101332,6 +102411,140 @@
       }
      ],
      "label": "Skills"
+    }
+   ],
+   "points": 15
+  },
+  {
+   "name": "Operative",
+   "book": "MH1",
+   "ref": "MH1:8",
+   "template": 15,
+   "plus": false,
+   "attributes": {},
+   "groups": [
+    {
+     "id": "g3",
+     "section": "advantages",
+     "kind": "points",
+     "n": 300,
+     "open": "a Patron (10 to 30 points); leftover points go to your template's advantage options",
+     "options": []
+    },
+    {
+     "id": "g4",
+     "section": "disadvantages",
+     "kind": "fixed",
+     "options": [
+      {
+       "type": "trait",
+       "name": "Duty",
+       "notes": "12 or less; Extremely Hazardous",
+       "cost": -150,
+       "modifiers": [
+        "Almost all the time (-150)"
+       ]
+      }
+     ]
+    }
+   ],
+   "points": 15
+  },
+  {
+   "name": "Philanthropist",
+   "book": "MH1",
+   "ref": "MH1:8",
+   "template": 15,
+   "plus": false,
+   "attributes": {},
+   "groups": [
+    {
+     "id": "g4",
+     "section": "advantages",
+     "kind": "count",
+     "n": 1,
+     "options": [
+      {
+       "type": "bundle",
+       "label": "Wealthy",
+       "items": [
+        {
+         "type": "trait",
+         "name": "Wealth",
+         "notes": "Wealthy",
+         "cost": 200
+        },
+        {
+         "type": "group",
+         "kind": "fixed",
+         "section": "skills",
+         "options": [
+          {
+           "type": "skill",
+           "name": "Research",
+           "cost": 20,
+           "diff": "A"
+          },
+          {
+           "type": "skill",
+           "name": "Intelligence Analysis",
+           "cost": 40,
+           "diff": "H"
+          },
+          {
+           "type": "skill",
+           "name": "Tactics",
+           "cost": 40,
+           "diff": "H"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Wealth",
+       "notes": "Very Wealthy",
+       "cost": 300
+      }
+     ]
+    },
+    {
+     "id": "g2",
+     "section": "disadvantages",
+     "kind": "count",
+     "n": 1,
+     "options": [
+      {
+       "type": "note",
+       "name": "Compulsive Thrill-Seeking (9)",
+       "cost": -150
+      },
+      {
+       "type": "trait",
+       "name": "Fanaticism (The Mission)",
+       "cost": -150
+      },
+      {
+       "type": "trait",
+       "name": "Obsession",
+       "notes": "Rid the world of monsters) (9",
+       "cost": -150,
+       "modifiers": [
+        "Short term (-50)",
+        "Long term (-100)"
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Sense of Duty",
+       "notes": "Humanity",
+       "cost": -150,
+       "modifiers": [
+        "Entire Race (-150)"
+       ]
+      }
+     ]
     }
    ],
    "points": 15
