@@ -906,6 +906,8 @@ function profSpells(g, path) {
   // the prerequisite tree among what is chosen: spells nothing else needs come first (safe to remove), what they need sits under them
   const names = list.map(p => p.spell), haveNames = new Set((P.have?.spells || []).filter(x => x.points >= 10).map(x => x.name));
   const needs = n => power ? [] : directNeeds(n), neededBy = n => names.filter(m => m !== n && needs(m).includes(n));
+  // height: how many levels of chosen prerequisites sit beneath a spell, so the top spell carries the most dots and a base spell none
+  const hMemo = new Map(), height = (n, stack = []) => { if (hMemo.has(n)) return hMemo.get(n); if (stack.includes(n)) return 0; const below = needs(n).filter(m => names.includes(m)); const h = below.length ? 1 + Math.max(...below.map(m => height(m, [...stack, n]))) : 0; hMemo.set(n, h); return h; };
   const order = [], seen = new Set();
   const visit = (n, depth) => { if (seen.has(n)) return; seen.add(n); order.push({ n, depth }); needs(n).filter(m => names.includes(m)).sort().forEach(m => visit(m, depth + 1)); };
   if (power) names.forEach(n => order.push({ n, depth: 0 }));
@@ -917,7 +919,7 @@ function profSpells(g, path) {
     const needCell = nd.length ? el("span", { class: met ? null : "bad" }, needsText(n), met ? null : el("small", {}, `missing ${gap[0].join(", ")}`)) : "";
     const byCell = by.length ? by.join(", ") : el("span", { class: "ok" }, nd.length || names.length > 1 ? "top: nothing needs it" : "nothing needs it");
     const cols = power ? [`PI ${lv ?? "?"}`] : [needCell, byCell];
-    return { bad: !!why, cells: [el("span", { class: "tree" }, depth ? el("span", { class: "dots", "aria-hidden": "true" }, "· ".repeat(depth)) : null, n, why ? el("small", {}, why) : null), ...cols, (s0?.college || []).join(", "), sgn(cost)], label: `remove ${n}`,
+    return { bad: !!why, cells: [el("span", { class: "tree" }, height(n) ? el("span", { class: "dots", "aria-hidden": "true" }, "· ".repeat(height(n))) : null, n, why ? el("small", {}, why) : null), ...cols, (s0?.college || []).join(", "), sgn(cost)], label: `remove ${n}`,
       remove: () => { const l = (P.picks[path] || []).filter(x => x !== p); if (l.length) P.picks[path] = l; else delete P.picks[path]; renderProfModal(); } }; });
   if (rows.length) box.append(el("div", { class: "pscroll" }, ptable(power ? ["Spell", "PI", "College", "Points"] : ["Spell", "Needs", "Needed by", "College", "Points"], rows)));
   const knownNow = () => [...(P.have?.spells || []).filter(x => x.points >= 10).map(x => x.name), ...BC.profStamp(P.prof, P.picks).spells.map(x => x.name)];
