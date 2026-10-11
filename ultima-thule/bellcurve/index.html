@@ -514,10 +514,14 @@ function closeK(refocus = true) {
   if ($("pmodal").hidden && $("rmodal").hidden) document.body.classList.remove("locked");
   if (refocus && from?.isConnected) from.focus();
 }
+// where a picker stands (search, grouping, open groups and details, scroll), so it can come back the same after a dialog
+const snapshotK = () => K && K.list ? { q: K.q, group: K.group, show: K.show, open: new Set(K.open), closed: new Set(K.closed), det: new Set(K.det), scroll: K.list.scrollTop } : null;
 function chooser(o) {
-  openK({ q: "", ...o });
+  const { state, ...rest } = o;
+  openK({ q: "", ...rest, ...(state || {}) });
   $("kfoot").replaceChildren(el("button", { type: "button", onclick: () => closeK() }, o.stay ? "done" : "cancel"));
   buildChooser();
+  if (state?.scroll) K.list.scrollTop = state.scroll;
   if (matchMedia("(pointer:fine)").matches) $("kbody").querySelector("input")?.focus();   // on a phone the keyboard would hide the list
 }
 // A picker has facets: ways to organise its items (a spell's college, class; a skill's category, attribute). "group by" lays
@@ -694,10 +698,10 @@ function addSpell(name, reopen) {
   prereqChoice(name, res, push);
 }
 // the spell list on the magic tab: each spell is a switch on the right; its row opens to show what it is and what it needs
-function openSpellPicker() {
-  chooser({ kind: "spells", title: "Learn spells", sub: "Switch a spell on to learn it; you are offered its prerequisites.", placeholder: "search spells, or type one", custom: true, toggle: true, stay: true,
+function openSpellPicker(state) {
+  chooser({ state, kind: "spells", title: "Learn spells", sub: "Switch a spell on to learn it; you are offered its prerequisites.", placeholder: "search spells, or type one", custom: true, toggle: true, stay: true,
     items: () => { const have = new Set(knownSpells()); return spellItems().map(it => ({ ...it, chosen: have.has(it.value), off: have.has(it.value) ? "learned" : null, detail: () => spellDetail(it.value) })); },
-    onPick: (it, on) => { if (on !== false) addSpell(it.value, openSpellPicker); } });
+    onPick: (it, on) => { if (on !== false) { const snap = snapshotK(); addSpell(it.value, () => openSpellPicker(snap)); } } });
 }
 
 // ---------- render ----------
@@ -965,8 +969,8 @@ function profSpells(g, path) {
       facets: { ...(lv != null ? { "Power Investiture": [`PI ${lv}`] } : {}), College: s?.college?.length ? s.college : ["Other"], Class: [s?.class || "Other"] },
       detail: () => spellDetail(n, knownNow(), lv != null ? [["power investiture", `PI ${lv}`]] : []) };
   });
-  const listOpts = () => ({
-    kind: power ? "pi-spells" : "wizard-spells", title: `Choose ${g.spellList} spells`, sub: `${(P.picks[path] || []).length} of ${g.n} chosen`, placeholder: "search spells", stay: true, toggle: true, items,
+  const listOpts = state => ({
+    state, kind: power ? "pi-spells" : "wizard-spells", title: `Choose ${g.spellList} spells`, sub: `${(P.picks[path] || []).length} of ${g.n} chosen`, placeholder: "search spells", stay: true, toggle: true, items,
     onPick: (it, on) => {
       const take = names => { for (const n of names) if (!(P.picks[path] ||= []).some(p => p.spell === n)) P.picks[path].push({ spell: n }); renderProfModal(); };
       const sub = () => { if (K?.stay) $("ksub").textContent = `${(P.picks[path] || []).length} of ${g.n} chosen`; };
@@ -975,10 +979,11 @@ function profSpells(g, path) {
       // wizardly spells need their prerequisite spells (clerical and druidic ones need only Power Investiture)
       const res = power || !rec ? { paths: [[]], unmet: [] } : BC.spellPaths(rec, knownNow(), LIB);
       if (res.paths.some(x => !x.length) || res.paths.every(x => !x.length)) { take([it.value]); sub(); return; }
-      prereqChoice(it.value, res, names => { if (names) take(names); openList(); }, `${cost} points each, from this list`);
+      const snap = snapshotK();
+      prereqChoice(it.value, res, names => { if (names) take(names); openList(snap); }, `${cost} points each, from this list`);
     } });
-  const openList = () => chooser(listOpts());
-  box.append(el("div", { class: "popt" }, el("button", { type: "button", class: "pick", onclick: openList }, `add ${g.spellList} spells…`)));
+  const openList = state => chooser(listOpts(state));
+  box.append(el("div", { class: "popt" }, el("button", { type: "button", class: "pick", onclick: () => openList() }, `add ${g.spellList} spells…`)));
   return box;
 }
 function profGroup(g, path, byPath, title, nested) {
@@ -1836,7 +1841,7 @@ function resolveRoll(r) {
 $("addskill").addEventListener("click", () => chooser({ kind: "skills", title: "Add a skill", placeholder: "search skills, or type one", custom: true,
   items: () => skillItems().map(it => ({ ...it, off: it.key && C().skills.some(s => lcs(BC.fullName(s.name, s.spec)) === it.key) ? "already on the sheet" : null })),
   onPick: it => chooseSkill(it, (name, spec) => { const s = { name, points: 10 }; if (spec) s.spec = spec; C().skills.push(s); change(); }) }));
-$("addspell").addEventListener("click", openSpellPicker);
+$("addspell").addEventListener("click", () => openSpellPicker());
 $("addtrait").addEventListener("click", () => chooser({ kind: "traits", title: "Add a trait", placeholder: "search traits, or type one", custom: true, items: traitItems,
   onPick: it => { const v = it.value, rec = LIB.traits.find(t => t.name.toLowerCase() === v.toLowerCase()); const t = { name: rec ? rec.name : v }; if (rec?.canLevel) t.levels = 1;
     if (!rec) { const p = Math.round(+prompt(`"${v}" is not in the library. Points (×10) to record for it?`, "0") || 0); t.points = p; } C().traits.push(t); change(); } }));
