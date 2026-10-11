@@ -37,7 +37,11 @@ const SOURCES = {
     "Reign of Steel Will to Live/Reign of Steel Will to Live Traits.adq", "Tales of the Solar Patrol/Solar Patrol Traits.adq"],
   spells: ["Magic/Magic Spells.spl", "Dungeon Fantasy/Dungeon Fantasy Spells.spl", "Bio-Tech/Bio-Tech Spells.spl"],
   equipment: ["Basic Set/Basic Set Equipment.eqp", "Magic/Magic Equipment.eqp"],
-  templates: ["Basic Set/Races", "Basic Set/Meta-Traits", "Fantasy/Races"],
+  // racial and meta-trait templates (no choices): the Basic Set and Fantasy first, then the books Andrew owns
+  templates: ["Basic Set/Races", "Basic Set/Meta-Traits", "Fantasy/Races", "Fantasy/Meta-Traits", "Magic/Meta-Traits",
+    "Dungeon Fantasy/Races", "Banestorm/Races", "Bio-Tech/Races", "Ultra Tech/Races", "Horror/Meta-Traits", "Lands Out of Time/Races",
+    "Reign of Steel Will to Live/Meta-Traits", "Fantasy Folk/Elves/Racial Templates", "Fantasy Folk/Goblins and Hobgoblins/Racial Templates",
+    "Fantasy Folk/Kobolds/Racial Templates"],
   modifiers: ["Basic Set/Basic Set Enhancement Modifiers.adm", "Basic Set/Basic Set Limitation Modifiers.adm"],
 };
 
@@ -84,6 +88,7 @@ function convMods(mods, group) {
     if (m.affects && m.affects !== "total") r.affects = m.affects;
     if (!m.disabled) r.on = true;
     if (m.levels) r.levels = m.levels;
+    if (m.use_level_from_trait) r.perTrait = true;
     if (m.reference) r.ref = m.reference;
     out.push(r);
   }
@@ -193,17 +198,27 @@ for (const f of SOURCES.equipment) for (const r of walk(read(L(f)).rows)) {
   push("equipment", rec.name.toLowerCase(), rec, f);
 }
 
+// every .gct under a folder, sub-folders included (Dungeon Fantasy's races sit in Elves/, Half-Spirits/ and so on)
+const gctFiles = dir => fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))
+  .flatMap(e => e.isDirectory() ? gctFiles(path.join(dir, e.name)) : e.name.endsWith(".gct") ? [path.join(dir, e.name)] : []);
 for (const dir of SOURCES.templates) {
   const full = L(dir);
   if (!fs.existsSync(full)) { console.error(`missing ${dir}`); continue; }
   const book = dir.split("/")[0];
-  for (const file of fs.readdirSync(full).filter(x => x.endsWith(".gct")).sort()) {
-    const d = read(path.join(full, file));
+  for (const fp of gctFiles(full)) {
+    const file = path.basename(fp);
+    const d = read(fp);
     const traits = [];
-    for (const r of walk(d.traits)) {
-      if (r.container_type || r.children) continue;
+    // a container's own percentage modifiers (a Power Modifier of -10%) apply to every trait inside it
+    const leaves = (rows, inherit = []) => (rows || []).flatMap(r => {
+      const mods = (r.modifiers || []).filter(m => !m.disabled && /%\s*$/.test(String(m.cost_adj ?? ""))).map(m => ({ name: stripAt(m.name), adj: String(m.cost_adj).trim(), container: true }));
+      return r.children ? leaves(r.children, [...inherit, ...(r.container_type || r.children ? mods : [])]) : [{ r, inherit }];
+    });
+    for (const { r, inherit } of leaves(d.traits)) {
+      if (r.container_type) continue;
       const rec = convTrait(r);
       const inst = { name: rec.name, rec };
+      if (inherit.length) inst.modifiers = inherit.map(x => ({ ...x }));
       if (r.can_level) inst.levels = r.levels ?? 0; // GCS omits zero levels
       if (r.cr) inst.cr = r.cr;
       if (rec.sub) inst.notes = rec.sub;

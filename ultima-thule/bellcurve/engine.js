@@ -189,7 +189,8 @@ function selectMods(rec, inst, general = []) {
     }
     const base = hits[0] || { name: o.name, kind: String(o.adj).startsWith("-") ? "limitation" : "enhancement", ref: "" };
     const m = { ...base, general: true, levels: o.levels ?? base.levels ?? 1, ...(o.adj != null ? { adj: o.adj } : {}) };
-    if (o.adj != null && o.adj !== base.adj) warns.push(`modifier ${label}: value set by hand to ${o.adj}${base.adj != null ? ` (library ${base.adj})` : ""}${base.ref ? `; check ${base.ref}` : ""}`);
+    // a template's own modifier on all its traits (a Power Modifier, -10%) is the template's, not a hand-set value
+    if (o.adj != null && o.adj !== base.adj && !o.container) warns.push(`modifier ${label}: value set by hand to ${o.adj}${base.adj != null ? ` (library ${base.adj})` : ""}${base.ref ? `; check ${base.ref}` : ""}`);
     out.push(m);
   }
   warns.push(...modRules(out));
@@ -237,7 +238,8 @@ function traitCost(rec, inst, general = []) {
   let mult = (cr != null ? (CR_MULT[cr] ?? 1) : 1) * (fr != null ? (FR_MULT[fr] ?? 1) : 1);
   const { mods, errors, warns } = selectMods(rec, inst, general);
   for (const m of mods) {
-    const a = parseAdj(m.adj), lv = m.levels || 1, affects = m.affects || "total";
+    // a modifier whose level is the trait's own ("Long" on Modified Arm: +1 point per level of the arm, GCS use_level_from_trait)
+    const a = parseAdj(m.adj), lv = m.perTrait ? Math.max(1, levels) : (m.levels || 1), affects = m.affects || "total";
     if (a.kind === "add") { if (affects === "levels_only") { if (canLevel) ppl += a.amount * lv; } else base += a.amount * lv; }
     else if (a.kind === "pct") {
       const v = a.amount * lv;
