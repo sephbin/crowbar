@@ -745,7 +745,7 @@ function renderIssues() {
 const NUMWORD = ["none", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
 const sgn = v => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v);
 let P = null;   // the open dialog: { prof, picks }
-const profSec = g => g.label || { advantages: "Advantages", disadvantages: "Disadvantages", spells: "Spells" }[g.section] || "Skills";
+const profSec = g => g.label || { advantages: "Advantages", disadvantages: "Disadvantages", spells: "Spells", remainder: "Not read from the book" }[g.section] || "Skills";
 function profLabel(o, p = {}) {
   if (o.type === "bundle") return o.items.map(it => profLabel(it)).join(" + ");
   if (o.type === "group") return `${NUMWORD[o.n] || o.n} of ${o.options.map(x => profLabel(x)).join(", ")}`;
@@ -1015,7 +1015,7 @@ function renderProfModal() {
   profTaken();
   const { prof, picks } = P;
   $("pname").textContent = prof.name;
-  $("psub").textContent = `${refTxt(prof.ref)} · ${prof.points * 10} points · ${Object.entries(prof.attributes).map(([k, v]) => `${k} ${sgn(v)}`).join(", ")}`;
+  $("psub").textContent = `${refTxt(prof.ref)} · ${prof.points * 10} points · ${Object.entries(prof.attributes).map(([k, v]) => `${k} ${sgn(v)}`).join(", ")}${prof.incomplete ? ` · incomplete: ${prof.incomplete.missing * 10} of ${prof.points * 10} points weren't read from the book` : ""}`;
   const checks = BC.profCheck(prof, picks), byPath = new Map(checks.filter(c => c.kind !== "spec").map(c => [c.path, c]));
   const body = $("pbody"), top = body.parentElement.scrollTop; body.innerHTML = "";
   for (const g of prof.groups) if (g.kind !== "note") body.append(profGroup(g, g.id, byPath, profSec(g)));
@@ -1079,7 +1079,10 @@ function renderProfession() {
   const ch = C(), box = $("profession"), pr = R.profession; box.innerHTML = "";
   if (!ch.profession) {
     box.append(el("div", { class: "list-note" }, "None."));
-    const s = el("select", { "aria-label": "Profession" }, el("option", { value: "" }, "choose a profession…"), ...(LIB.professions || []).map((p, k) => el("option", { value: k }, `${p.name} · ${refTxt(p.ref)} · ${p.template * 10} pts`)));
+    // grouped by book, in the order the library lists them
+    const books = [...new Set((LIB.professions || []).map(p => p.book))];
+    const s = el("select", { "aria-label": "Profession" }, el("option", { value: "" }, "choose a profession…"),
+      ...books.map(b => el("optgroup", { label: BOOKS[b] || b }, ...(LIB.professions || []).map((p, k) => p.book === b ? el("option", { value: k }, `${p.name} · ${p.template * 10} pts${p.incomplete ? " · incomplete" : ""}`) : null).filter(Boolean))));
     box.append(el("div", { class: "addrow ed", style: "margin-top:0" }, s, el("button", { type: "button", onclick: () => { const p = (LIB.professions || [])[+s.value]; if (s.value !== "" && p) openProf(p, {}); } }, "choose")));
     return;
   }
@@ -1094,6 +1097,7 @@ function renderProfession() {
   for (const c of pr.checks.filter(c => !c.ok)) stat.append(el("span", { class: "bad" }, c.kind === "spec" ? c.label : `${c.label}: ${c.have} of ${c.n}${c.kind === "points" ? " points" : " chosen"}`));
   for (const n of pr.stamp.notes) stat.append(el("span", { class: "muted" }, `by hand: ${n.text}${n.points ? ` (${sgn(n.points)})` : ""}`));
   if (stat.childNodes.length) box.append(stat);
+  if (pr.rec.incomplete) box.append(el("p", { class: "hint" }, `Incomplete: ${pr.rec.incomplete.missing * 10} of ${pr.rec.points * 10} points of this template weren't read from the book, so they are one open pool of points. Follow ${refTxt(pr.rec.ref)}${pr.rec.incomplete.unread.length ? `; not read: ${pr.rec.incomplete.unread.join("; ")}` : ""}.`));
   if (R.budget < pr.rec.points * 10) box.append(el("p", { class: "hint" }, `${pr.rec.name} is a ${pr.rec.points}-point template (${pr.rec.points * 10} here); this sheet's budget is ${R.budget}.`));
   box.append(el("div", { class: "ed", style: "display:flex;gap:8px;margin-top:6px" }, el("button", { type: "button", onclick: () => openProf(pr.rec, ch.profession.picks) }, "edit choices"), remove));
 }

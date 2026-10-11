@@ -572,7 +572,7 @@ function profWalk(prof, picks, fn) {
 // every choice that applies: the top-level ones, pick-ones inside fixed lists, and groups inside picked bundles
 function profChoices(prof, picks) {
   const out = [];
-  const label = g => g.label || (g.section === "advantages" ? "Advantages" : g.section === "disadvantages" ? "Disadvantages" : g.section === "spells" ? "Spells" : "Skills");
+  const label = g => g.label || (g.section === "advantages" ? "Advantages" : g.section === "disadvantages" ? "Disadvantages" : g.section === "spells" ? "Spells" : g.section === "remainder" ? "Template points not read from the book" : "Skills");
   const inside = (items, path, lab) => items.forEach((it, i) => {
     if (it.type === "group") { out.push({ g: it, path: `${path}.${i}`, label: lab }); fromPicks(it, `${path}.${i}`, lab); }
     else if (it.type === "bundle") inside(it.items, `${path}.${i}`, lab);
