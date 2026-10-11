@@ -580,7 +580,8 @@ function profStamp(prof, picks) {
       if (lv != null) t.levels = lv;
       if (o.cr) t.cr = o.cr;
       if (o.modifiers) t.modifiers = structuredClone(o.modifiers);
-      if (o.declare) t.points = cost;   // a trait the library can't price (Unusual Background): the book's cost
+      if (o.declare) t.points = cost;
+      if (o.ref) t.ref = o.ref;   // which of two same-named records (DF4's Equipment Bond, not Power-Ups')   // a trait the library can't price (Unusual Background): the book's cost
       st.traits.push(t);
     } else if (o.type === "skill") {
       const spec = profSpec(o, p), same = st.skills.find(s => s.name === o.name && (s.spec || "") === (spec || ""));

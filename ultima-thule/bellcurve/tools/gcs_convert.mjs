@@ -18,10 +18,24 @@ const L = p => path.join(libRoot, "Library", p);
 
 // Which books to take. Order matters: the first record with a given name wins.
 const SOURCES = {
-  skills: ["Basic Set/Basic Set Skills.skl", "Magic/Magic Skills.skl"],
+  // the Basic Set first: where two books share a name, the first record found is the one a plain name gets.
+  // The other books are for the professions they hold (see data/src/professions.json).
+  skills: ["Basic Set/Basic Set Skills.skl", "Magic/Magic Skills.skl", "Martial Arts/Martial Arts Skills.skl", "Action/Action Skills.skl",
+    "Monster Hunters/Monster Hunters Skills.skl", "Fantasy/Fantasy Skills.skl", "Supers/Supers Skills.skl", "Psionics/Psionics Skills.skl",
+    "Mysteries/Mysteries Skills.skl", "Infinite Worlds/Infinite Worlds Skills.skl", "High Tech/High Tech Skills.skl", "Gun Fu/Gun Fu Skills.skl",
+    "Power Ups/Power Ups Skills.skl", "Thaumatology/Thaumatology - RPM Skills.skl", "Thaumatology/Thaumatology - CEP Skills.skl",
+    "Reign of Steel Will to Live/Reign of Steel Will to Live Skills.skl", "Tales of the Solar Patrol/Solar Patrol Skills.skl"],
   traits: ["Basic Set/Basic Set Traits.adq", "Dungeon Fantasy/Dungeon Fantasy 1/Dungeon Fantasy 1 Traits.adq",
-    "Dungeon Fantasy/Dungeon Fantasy 3/Dungeon Fantasy 3 Traits.adq", "Dungeon Fantasy/Dungeon Fantasy 4/Dungeon Fantasy 4 Traits.adq"],
-  spells: ["Magic/Magic Spells.spl"],
+    "Dungeon Fantasy/Dungeon Fantasy 3/Dungeon Fantasy 3 Traits.adq", "Dungeon Fantasy/Dungeon Fantasy 4/Dungeon Fantasy 4 Traits.adq",
+    "Martial Arts/Martial Arts Traits.adq", "Powers/Powers Traits.adq", "Powers/Powers - Divine Favor Traits.adq", "Powers/Powers - Enhanced Senses Traits.adq",
+    "Power Ups/Power Ups Traits.adq", "Action/Action Traits.adq", "Monster Hunters/Monster Hunters Traits.adq", "Horror/Horror Traits.adq",
+    "Fantasy/Fantasy Traits.adq", "Banestorm/Banestorm Traits.adq", "Supers/Supers Traits.adq", "Psionics/Psionics Traits.adq",
+    "Mysteries/Mysteries Traits.adq", "Space/Space Traits.adq", "Bio-Tech/Bio-Tech Traits.adq", "Infinite Worlds/Infinite Worlds Traits.adq",
+    "High Tech/High Tech Traits.adq", "Ultra Tech/Ultra Tech Traits.adq", "Gun Fu/Gun Fu Traits.adq",
+    "Thaumatology/Thaumatology - Magical Styles Traits.adq", "Thaumatology/Thaumatology - Sorcery Traits.adq", "Thaumatology/Thaumatology - Threshold Magic Traits.adq",
+    "Thaumatology/Thaumatology - RPM Traits.adq", "Thaumatology/Thaumatology - CEP Traits.adq",
+    "Reign of Steel Will to Live/Reign of Steel Will to Live Traits.adq", "Tales of the Solar Patrol/Solar Patrol Traits.adq"],
+  spells: ["Magic/Magic Spells.spl", "Dungeon Fantasy/Dungeon Fantasy Spells.spl", "Bio-Tech/Bio-Tech Spells.spl"],
   equipment: ["Basic Set/Basic Set Equipment.eqp", "Magic/Magic Equipment.eqp"],
   templates: ["Basic Set/Races", "Basic Set/Meta-Traits", "Fantasy/Races"],
   modifiers: ["Basic Set/Basic Set Enhancement Modifiers.adm", "Basic Set/Basic Set Limitation Modifiers.adm"],
