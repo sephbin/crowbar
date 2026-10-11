@@ -11071,6 +11071,4571 @@
    ],
    "template": 250,
    "points": 250
+  },
+  {
+   "name": "Archer",
+   "book": "DF15",
+   "ref": "DF15:8",
+   "attributes": {
+    "ST": 300,
+    "DX": 600,
+    "HT": 100,
+    "Per": 100
+   },
+   "groups": [
+    {
+     "id": "g1",
+     "section": "advantages",
+     "kind": "points",
+     "n": 250,
+     "prev": 0,
+     "options": [
+      {
+       "type": "attr",
+       "key": "ST",
+       "name": "ST +1 to +2",
+       "min": 1,
+       "max": 2,
+       "per": 100
+      },
+      {
+       "type": "attr",
+       "key": "DX",
+       "name": "DX +1",
+       "min": 1,
+       "max": 1,
+       "per": 200
+      },
+      {
+       "type": "attr",
+       "key": "IQ",
+       "name": "IQ +1",
+       "min": 1,
+       "max": 1,
+       "per": 200
+      },
+      {
+       "type": "attr",
+       "key": "HT",
+       "name": "HT +1 to +2",
+       "min": 1,
+       "max": 2,
+       "per": 100
+      },
+      {
+       "type": "attr",
+       "key": "Per",
+       "name": "Per +1 to +5",
+       "min": 1,
+       "max": 5,
+       "per": 50
+      },
+      {
+       "type": "attr",
+       "key": "Speed",
+       "name": "Basic Speed +1",
+       "min": 1,
+       "max": 1,
+       "per": 200
+      },
+      {
+       "type": "attr",
+       "key": "Move",
+       "name": "Basic Move +1 to +3",
+       "min": 1,
+       "max": 3,
+       "per": 50
+      },
+      {
+       "type": "trait",
+       "name": "Absolute Direction",
+       "cost": 50
+      },
+      {
+       "type": "trait",
+       "name": "Acute Vision",
+       "cost": 20,
+       "min": 1,
+       "max": null,
+       "per": 20
+      },
+      {
+       "type": "trait",
+       "name": "Alcohol Tolerance",
+       "cost": 10
+      },
+      {
+       "type": "trait",
+       "name": "Talent (Born War-Leader)",
+       "cost": 50,
+       "min": 1,
+       "max": 4,
+       "per": 50
+      },
+      {
+       "type": "trait",
+       "name": "Combat Reflexes",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "Danger Sense",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "Fearlessness",
+       "cost": 20,
+       "min": 1,
+       "max": null,
+       "per": 20
+      },
+      {
+       "type": "trait",
+       "name": "Fit",
+       "cost": 50
+      },
+      {
+       "type": "trait",
+       "name": "Very Fit",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "Heroic Archer",
+       "cost": 200
+      },
+      {
+       "type": "trait",
+       "name": "High Pain Threshold",
+       "cost": 100
+      },
+      {
+       "type": "trait",
+       "name": "Luck",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "Night Vision",
+       "cost": 10,
+       "min": 1,
+       "max": 9,
+       "per": 10
+      },
+      {
+       "type": "trait",
+       "name": "Talent (Outdoorsman)",
+       "cost": 100,
+       "levels": 1
+      },
+      {
+       "type": "trait",
+       "name": "Talent (Outdoorsman)",
+       "cost": 200,
+       "levels": 2
+      },
+      {
+       "type": "trait",
+       "name": "Peripheral Vision",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "Rapid Healing",
+       "cost": 50
+      },
+      {
+       "type": "trait",
+       "name": "Signature Gear",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "trait",
+       "name": "Weapon Bond",
+       "cost": 10
+      },
+      {
+       "type": "trait",
+       "name": "Weapon Master",
+       "notes": "Bow",
+       "cost": 200,
+       "modifiers": [
+        "One weapon (200)"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "g2",
+     "section": "disadvantages",
+     "kind": "points",
+     "n": -150,
+     "prev": 0,
+     "options": [
+      {
+       "type": "trait",
+       "name": "Bloodlust",
+       "cost": -100,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Callous",
+       "cost": -50
+      },
+      {
+       "type": "trait",
+       "name": "Code of Honor (Pirate's)",
+       "cost": -50
+      },
+      {
+       "type": "trait",
+       "name": "Code of Honor (Soldier's)",
+       "cost": -100
+      },
+      {
+       "type": "trait",
+       "name": "Greed",
+       "cost": -150,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Honesty",
+       "cost": -100,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Overconfidence",
+       "cost": -50,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Sense of Duty",
+       "notes": "Adventuring companions",
+       "cost": -50,
+       "modifiers": [
+        "Friends and Companions (-50)"
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Sense of Duty",
+       "notes": "Nation",
+       "cost": -100,
+       "modifiers": [
+        "Large Group (-100)"
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Stubbornness",
+       "cost": -50
+      }
+     ]
+    },
+    {
+     "id": "g3",
+     "section": "disadvantages",
+     "kind": "points",
+     "n": -350,
+     "prev": 1,
+     "options": [
+      {
+       "type": "trait",
+       "name": "Bad Temper",
+       "cost": -100,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Compulsive Carousing",
+       "cost": -50,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Intolerance",
+       "notes": "Urbanites",
+       "cost": -50,
+       "modifiers": [
+        "Scope: Common (-50)"
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Loner",
+       "cost": -50,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "No Sense of Humor",
+       "cost": -100
+      },
+      {
+       "type": "trait",
+       "name": "Obsession",
+       "notes": "Slay some specific type of monster",
+       "cost": -50,
+       "cr": 12,
+       "modifiers": [
+        "Short term (-50)"
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Odious Personal Habit",
+       "cost": null,
+       "variable": true,
+       "range": [
+        -50,
+        -150
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Paranoia",
+       "cost": -100
+      },
+      {
+       "type": "trait",
+       "name": "Demophobia (Crowds)",
+       "cost": -150,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Vow",
+       "notes": "Never sleep indoors",
+       "cost": -100,
+       "modifiers": [
+        "Major (-100)"
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Struggling",
+       "cost": -100
+      },
+      {
+       "type": "trait",
+       "name": "Wounded",
+       "cost": -50
+      }
+     ]
+    },
+    {
+     "id": "g4",
+     "section": "skills",
+     "kind": "count",
+     "n": 1,
+     "options": [
+      {
+       "type": "bundle",
+       "items": [
+        {
+         "type": "skill",
+         "name": "Bow",
+         "cost": 120,
+         "diff": "A"
+        },
+        {
+         "type": "skill",
+         "name": "Fast-Draw",
+         "spec": "Arrow",
+         "cost": 40,
+         "diff": "E"
+        }
+       ]
+      },
+      {
+       "type": "bundle",
+       "items": [
+        {
+         "type": "skill",
+         "name": "Crossbow",
+         "cost": 120,
+         "diff": "E"
+        },
+        {
+         "type": "skill",
+         "name": "Fast-Draw",
+         "spec": "Arrow",
+         "cost": 40,
+         "diff": "E"
+        }
+       ]
+      },
+      {
+       "type": "bundle",
+       "items": [
+        {
+         "type": "skill",
+         "name": "Sling",
+         "cost": 160,
+         "diff": "H"
+        }
+       ]
+      }
+     ],
+     "label": "Primary Skills"
+    },
+    {
+     "id": "g5",
+     "section": "skills",
+     "kind": "count",
+     "n": 5,
+     "options": [
+      {
+       "type": "skill",
+       "name": "Climbing",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Stealth",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Camouflage",
+       "cost": 20,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Armoury",
+       "spec": "Missile Weapons",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Cartography",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Leadership",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Navigation",
+       "spec": "Land",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Shadowing",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Traps",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Mimicry",
+       "spec": "Bird Calls",
+       "cost": 20,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Tactics",
+       "cost": 20,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Hiking",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Observation",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Survival",
+       "choices": [
+        "Arctic",
+        "Bank",
+        "Deep Ocean Vent",
+        "Desert",
+        "Fresh-Water Lake",
+        "Island/Beach",
+        "Jungle",
+        "Mountain",
+        "Open Ocean",
+        "Plains",
+        "Reef",
+        "River/Stream",
+        "Salt-Water Sea",
+        "Swampland",
+        "Tropical Lagoon",
+        "Woodlands"
+       ],
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Tracking",
+       "choices": [
+        "Autoteleport"
+       ],
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "note",
+       "name": "2 points to raise one of those skills by a level",
+       "cost": null
+      }
+     ],
+     "label": "Secondary Skills"
+    },
+    {
+     "id": "g6",
+     "section": "skills",
+     "kind": "count",
+     "n": 1,
+     "options": [
+      {
+       "type": "bundle",
+       "items": [
+        {
+         "type": "group",
+         "kind": "count",
+         "n": 1,
+         "options": [
+          {
+           "type": "skill",
+           "name": "Axe/Mace",
+           "cost": 40,
+           "diff": "A"
+          },
+          {
+           "type": "skill",
+           "name": "Broadsword",
+           "cost": 40,
+           "diff": "A"
+          },
+          {
+           "type": "skill",
+           "name": "Shortsword",
+           "cost": 40,
+           "diff": "A"
+          },
+          {
+           "type": "skill",
+           "name": "Spear",
+           "cost": 40,
+           "diff": "A"
+          }
+         ]
+        },
+        {
+         "type": "skill",
+         "name": "Shield",
+         "choices": [
+          "Buckler",
+          "Force Shield",
+          "Shield"
+         ],
+         "cost": 40,
+         "diff": "E"
+        }
+       ]
+      },
+      {
+       "type": "bundle",
+       "items": [
+        {
+         "type": "group",
+         "kind": "count",
+         "n": 1,
+         "options": [
+          {
+           "type": "skill",
+           "name": "Axe/Mace",
+           "cost": 80,
+           "diff": "A"
+          },
+          {
+           "type": "skill",
+           "name": "Broadsword",
+           "cost": 80,
+           "diff": "A"
+          },
+          {
+           "type": "skill",
+           "name": "Polearm",
+           "cost": 80,
+           "diff": "A"
+          },
+          {
+           "type": "skill",
+           "name": "Shortsword",
+           "cost": 80,
+           "diff": "A"
+          },
+          {
+           "type": "skill",
+           "name": "Spear",
+           "cost": 80,
+           "diff": "A"
+          },
+          {
+           "type": "skill",
+           "name": "Staff",
+           "cost": 80,
+           "diff": "A"
+          }
+         ]
+        }
+       ]
+      }
+     ],
+     "label": "Secondary Skills"
+    },
+    {
+     "id": "g7",
+     "section": "skills",
+     "kind": "count",
+     "n": 6,
+     "options": [
+      {
+       "type": "skill",
+       "name": "Brawling",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Fast-Draw",
+       "choices": [
+        "Arrow",
+        "Force Sword",
+        "Knife",
+        "Long Arm",
+        "Pistol",
+        "Sword",
+        "Two-Handed Sword",
+        "Ammo",
+        "Gizmo",
+        "Medical Gear"
+       ],
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Jumping",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Knife",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Knot-Tying",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Thrown Weapon",
+       "choices": [
+        "Axe/Mace",
+        "Dart",
+        "Harpoon",
+        "Knife",
+        "Shuriken",
+        "Spear",
+        "Stick",
+        "Disc"
+       ],
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Boating",
+       "spec": "Unpowered",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Bolas",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Boxing",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Riding",
+       "spec": "Horse",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Spear Thrower",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Throwing",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Wrestling",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "First Aid",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Gesture",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Connoisseur",
+       "spec": "Weapons",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Gambling",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Weather Sense",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Carousing",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Swimming",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Running",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Intimidation",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Scrounging",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "note",
+       "name": "1 point to raise one of these skills by a level",
+       "cost": null
+      },
+      {
+       "type": "note",
+       "name": "1 point for another non-melee secondary skill at one level lower",
+       "cost": null
+      }
+     ],
+     "label": "Background Skills"
+    }
+   ],
+   "template": 125,
+   "points": 125
+  },
+  {
+   "name": "Killer",
+   "book": "DF15",
+   "ref": "DF15:14",
+   "attributes": {
+    "ST": 100,
+    "DX": 800,
+    "HT": 200,
+    "Per": 50,
+    "Speed": -100
+   },
+   "groups": [
+    {
+     "id": "g1",
+     "section": "advantages",
+     "kind": "points",
+     "n": 250,
+     "prev": 0,
+     "options": [
+      {
+       "type": "attr",
+       "key": "ST",
+       "name": "ST +1 to +2",
+       "min": 1,
+       "max": 2,
+       "per": 100
+      },
+      {
+       "type": "attr",
+       "key": "DX",
+       "name": "DX +1",
+       "min": 1,
+       "max": 1,
+       "per": 200
+      },
+      {
+       "type": "attr",
+       "key": "IQ",
+       "name": "IQ +1",
+       "min": 1,
+       "max": 1,
+       "per": 200
+      },
+      {
+       "type": "attr",
+       "key": "Will",
+       "name": "Will +1 to +5",
+       "min": 1,
+       "max": 5,
+       "per": 50
+      },
+      {
+       "type": "attr",
+       "key": "Per",
+       "name": "Per +1 to +5",
+       "min": 1,
+       "max": 5,
+       "per": 50
+      },
+      {
+       "type": "attr",
+       "key": "Speed",
+       "name": "Basic Speed +1",
+       "min": 1,
+       "max": 1,
+       "per": 200
+      },
+      {
+       "type": "attr",
+       "key": "Move",
+       "name": "Basic Move +1 to +3",
+       "min": 1,
+       "max": 3,
+       "per": 50
+      },
+      {
+       "type": "trait",
+       "name": "Ambidexterity",
+       "cost": 50
+      },
+      {
+       "type": "trait",
+       "name": "Combat Reflexes",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "Daredevil",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "Enhanced Dodge",
+       "cost": 150,
+       "levels": 1
+      },
+      {
+       "type": "trait",
+       "name": "Fit",
+       "cost": 50
+      },
+      {
+       "type": "trait",
+       "name": "Very Fit",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "Gizmo",
+       "cost": 50,
+       "min": 1,
+       "max": 3,
+       "per": 50
+      },
+      {
+       "type": "trait",
+       "name": "Luck",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "Magic Resistance",
+       "cost": 20,
+       "min": 1,
+       "max": null,
+       "per": 20
+      },
+      {
+       "type": "trait",
+       "name": "Night Vision",
+       "cost": 10,
+       "min": 1,
+       "max": 9,
+       "per": 10
+      },
+      {
+       "type": "trait",
+       "name": "Perfect Balance",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "Peripheral Vision",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "Resistant",
+       "modifiers": [
+        "Common: Poison, Sickness, etc.",
+        "+3 to all HT rolls to resist"
+       ],
+       "notes": "Poison",
+       "cost": 50
+      },
+      {
+       "type": "trait",
+       "name": "Serendipity",
+       "cost": 150,
+       "levels": 1
+      },
+      {
+       "type": "trait",
+       "name": "Signature Gear",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "trait",
+       "name": "Striking ST",
+       "cost": 50,
+       "levels": 1
+      },
+      {
+       "type": "trait",
+       "name": "Striking ST",
+       "cost": 100,
+       "levels": 2
+      },
+      {
+       "type": "trait",
+       "name": "Striking ST",
+       "cost": 20,
+       "min": 1,
+       "max": 4,
+       "per": 20,
+       "book": "Only on surprise attack, -60%",
+       "modifiers": [
+        {
+         "name": "Only on surprise attack",
+         "adj": "-60%"
+        }
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Comfortable Wealth",
+       "cost": 100
+      },
+      {
+       "type": "trait",
+       "name": "Wealthy",
+       "cost": 200
+      },
+      {
+       "type": "trait",
+       "name": "Weapon Bond",
+       "notes": "any",
+       "cost": 10
+      }
+     ]
+    },
+    {
+     "id": "g2",
+     "section": "disadvantages",
+     "kind": "points",
+     "n": -100,
+     "prev": 0,
+     "options": [
+      {
+       "type": "trait",
+       "name": "Bloodlust",
+       "cost": -100,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Callous",
+       "cost": -50
+      },
+      {
+       "type": "trait",
+       "name": "Code of Honor (Pirate's)",
+       "cost": -50,
+       "notes": "Pirate's",
+       "noteChoices": [
+        "Pirate's",
+        "Stays Bought"
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Social Stigma",
+       "notes": "Criminal",
+       "cost": -50
+      },
+      {
+       "type": "trait",
+       "name": "Social Stigma (Minority Group)",
+       "cost": -100
+      }
+     ]
+    },
+    {
+     "id": "g3",
+     "section": "disadvantages",
+     "kind": "points",
+     "n": -300,
+     "prev": 1,
+     "options": [
+      {
+       "type": "trait",
+       "name": "Bad Temper",
+       "cost": -100,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Compulsive Carousing",
+       "cost": -50,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Compulsive Gambling",
+       "cost": -50,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Greed",
+       "cost": -150,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Lecherousness",
+       "cost": -150,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Loner",
+       "cost": -50,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "No Sense of Humor",
+       "cost": -100
+      },
+      {
+       "type": "trait",
+       "name": "Odious Personal Habit",
+       "cost": null,
+       "variable": true,
+       "range": [
+        -50,
+        -150
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Overconfidence",
+       "cost": -50,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Paranoia",
+       "cost": -100
+      },
+      {
+       "type": "trait",
+       "name": "Sadism",
+       "cost": -150,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Sense of Duty",
+       "notes": "Adventuring companions",
+       "cost": -50,
+       "modifiers": [
+        "Friends and Companions (-50)"
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Skinny",
+       "cost": -50
+      },
+      {
+       "type": "trait",
+       "name": "Vow",
+       "notes": "Always complete the mission",
+       "cost": -100,
+       "modifiers": [
+        "Major (-100)"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "g4",
+     "section": "skills",
+     "kind": "fixed",
+     "options": [
+      {
+       "type": "skill",
+       "name": "Fast-Draw",
+       "spec": "Knife",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Garrote",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Knife",
+       "cost": 40,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Stealth",
+       "cost": 40,
+       "diff": "A"
+      }
+     ],
+     "label": "Primary Skills"
+    },
+    {
+     "id": "g5",
+     "section": "skills",
+     "kind": "count",
+     "n": 1,
+     "options": [
+      {
+       "type": "skill",
+       "name": "Crossbow",
+       "cost": 40,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Thrown Weapon",
+       "choices": [
+        "Knife",
+        "Shuriken"
+       ],
+       "cost": 40,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Bow",
+       "cost": 40,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Throwing",
+       "cost": 40,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Blowpipe",
+       "cost": 40,
+       "diff": "H"
+      }
+     ],
+     "label": "Primary Skills"
+    },
+    {
+     "id": "g6",
+     "section": "skills",
+     "kind": "fixed",
+     "options": [
+      {
+       "type": "skill",
+       "name": "Brawling",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Poisons",
+       "cost": 20,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Streetwise",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Urban Survival",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Wrestling",
+       "cost": 20,
+       "diff": "A"
+      }
+     ],
+     "label": "Secondary Skills"
+    },
+    {
+     "id": "g7",
+     "section": "skills",
+     "kind": "count",
+     "n": 1,
+     "options": [
+      {
+       "type": "skill",
+       "name": "Axe/Mace",
+       "cost": 40,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Broadsword",
+       "cost": 40,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Jitte/Sai",
+       "cost": 40,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Rapier",
+       "cost": 40,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Saber",
+       "cost": 40,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Shortsword",
+       "cost": 40,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Smallsword",
+       "cost": 40,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Tonfa",
+       "cost": 40,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Flail",
+       "cost": 40,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Kusari",
+       "cost": 40,
+       "diff": "H"
+      }
+     ],
+     "label": "Secondary Skills"
+    },
+    {
+     "id": "g8",
+     "section": "skills",
+     "kind": "points",
+     "n": 80,
+     "prevSkills": true,
+     "options": [
+      {
+       "type": "note",
+       "name": "Forced Entry (E) DX",
+       "cost": null
+      },
+      {
+       "type": "note",
+       "name": "Climbing or Whip, both (A) DX",
+       "cost": null
+      },
+      {
+       "type": "note",
+       "name": "First Aid, Gesture, Panhandling, or Seamanship, all (E) IQ",
+       "cost": null
+      },
+      {
+       "type": "note",
+       "name": "Cartography, Disguise, Fast-Talk, Gambling, Holdout, Interrogation, Merchant, Professional Skill (Torturer), Shadowing, Smuggling, or Traps, all (A) IQ",
+       "cost": null
+      },
+      {
+       "type": "note",
+       "name": "Carousing (E) HT",
+       "cost": null
+      },
+      {
+       "type": "note",
+       "name": "Hiking (A) HT",
+       "cost": null
+      },
+      {
+       "type": "note",
+       "name": "Intimidation (A) Will",
+       "cost": null
+      },
+      {
+       "type": "note",
+       "name": "Scrounging (E) Per",
+       "cost": null
+      },
+      {
+       "type": "note",
+       "name": "Observation or Search, both (A) Per",
+       "cost": null
+      }
+     ],
+     "label": "Background Skills"
+    }
+   ],
+   "template": 125,
+   "points": 125
+  },
+  {
+   "name": "Laborer",
+   "book": "DF15",
+   "ref": "DF15:22",
+   "attributes": {
+    "ST": 300,
+    "IQ": -200,
+    "HT": 200,
+    "Speed": 100
+   },
+   "groups": [
+    {
+     "id": "g1",
+     "section": "advantages",
+     "kind": "fixed",
+     "options": [
+      {
+       "type": "trait",
+       "name": "Fit",
+       "cost": 50
+      },
+      {
+       "type": "trait",
+       "name": "Lifting ST",
+       "cost": 60,
+       "levels": 2
+      }
+     ]
+    },
+    {
+     "id": "g2",
+     "section": "advantages",
+     "kind": "points",
+     "n": 100,
+     "prev": 0,
+     "options": [
+      {
+       "type": "attr",
+       "key": "ST",
+       "name": "ST +1",
+       "min": 1,
+       "max": 1,
+       "per": 100
+      },
+      {
+       "type": "attr",
+       "key": "HT",
+       "name": "HT +1",
+       "min": 1,
+       "max": 1,
+       "per": 100
+      },
+      {
+       "type": "attr",
+       "key": "HP",
+       "name": "HP +1 to +3",
+       "min": 1,
+       "max": 3,
+       "per": 20
+      },
+      {
+       "type": "attr",
+       "key": "Will",
+       "name": "Will +1 to +2",
+       "min": 1,
+       "max": 2,
+       "per": 50
+      },
+      {
+       "type": "attr",
+       "key": "Per",
+       "name": "Per +1 to +2",
+       "min": 1,
+       "max": 2,
+       "per": 50
+      },
+      {
+       "type": "attr",
+       "key": "Move",
+       "name": "Basic Move +1 to +2",
+       "min": 1,
+       "max": 2,
+       "per": 50
+      },
+      {
+       "type": "trait",
+       "name": "Alcohol Tolerance",
+       "cost": 10
+      },
+      {
+       "type": "trait",
+       "name": "Fearlessness",
+       "cost": 20,
+       "min": 1,
+       "max": null,
+       "per": 20
+      },
+      {
+       "type": "trait",
+       "name": "Hard to Kill",
+       "cost": 20,
+       "min": 1,
+       "max": null,
+       "per": 20
+      },
+      {
+       "type": "trait",
+       "name": "Hard to Subdue",
+       "cost": 20,
+       "min": 1,
+       "max": null,
+       "per": 20
+      },
+      {
+       "type": "trait",
+       "name": "High Pain Threshold",
+       "cost": 100
+      },
+      {
+       "type": "trait",
+       "name": "Lifting ST",
+       "cost": 30,
+       "min": 3,
+       "max": 5,
+       "per": 30,
+       "upgrade": true,
+       "from": 2
+      },
+      {
+       "type": "trait",
+       "name": "Magic Resistance",
+       "cost": 20,
+       "min": 1,
+       "max": null,
+       "per": 20
+      },
+      {
+       "type": "trait",
+       "name": "Night Vision",
+       "cost": 10,
+       "min": 1,
+       "max": 9,
+       "per": 10
+      },
+      {
+       "type": "trait",
+       "name": "Rapid Healing",
+       "cost": 50
+      },
+      {
+       "type": "trait",
+       "name": "Temperature Tolerance",
+       "cost": 10,
+       "levels": 1
+      },
+      {
+       "type": "trait",
+       "name": "Temperature Tolerance",
+       "cost": 20,
+       "levels": 2
+      },
+      {
+       "type": "note",
+       "name": "upgrade Fit to Very Fit [15] for 10 points",
+       "cost": 100
+      }
+     ]
+    },
+    {
+     "id": "g3",
+     "section": "disadvantages",
+     "kind": "points",
+     "n": -100,
+     "prev": 0,
+     "options": [
+      {
+       "type": "trait",
+       "name": "Appearance",
+       "notes": "Unattractive",
+       "cost": -40,
+       "modifiers": [
+        "Unattractive (-40)"
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Appearance",
+       "notes": "Ugly",
+       "cost": -80,
+       "modifiers": [
+        "Ugly (-80)"
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Bad Temper",
+       "cost": -100,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Bully",
+       "cost": -100,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Callous",
+       "cost": -50
+      },
+      {
+       "type": "trait",
+       "name": "Compulsive Carousing",
+       "cost": -50,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Compulsive Gambling",
+       "cost": -50,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Cowardice",
+       "cost": -100,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Easy to Read",
+       "cost": -100
+      },
+      {
+       "type": "trait",
+       "name": "Ham-Fisted",
+       "cost": -50,
+       "levels": 1
+      },
+      {
+       "type": "trait",
+       "name": "Ham-Fisted",
+       "cost": -100,
+       "levels": 2
+      },
+      {
+       "type": "trait",
+       "name": "Horrible Hangovers",
+       "cost": -10
+      },
+      {
+       "type": "trait",
+       "name": "Language: @Language@",
+       "notes": "Spoken (Native)/Written (None)",
+       "cost": -30
+      },
+      {
+       "type": "trait",
+       "name": "Low TL",
+       "cost": -50,
+       "levels": 1
+      },
+      {
+       "type": "trait",
+       "name": "Low TL",
+       "cost": -100,
+       "levels": 2
+      },
+      {
+       "type": "trait",
+       "name": "Odious Personal Habit",
+       "cost": -50
+      },
+      {
+       "type": "trait",
+       "name": "Odious Personal Habit",
+       "cost": -100,
+       "levels": 2
+      },
+      {
+       "type": "trait",
+       "name": "Overconfidence",
+       "cost": -50,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Sense of Duty",
+       "notes": "Adventuring companions",
+       "cost": -50,
+       "modifiers": [
+        "Friends and Companions (-50)"
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Social Stigma",
+       "notes": "Criminal",
+       "cost": -50
+      },
+      {
+       "type": "trait",
+       "name": "Social Stigma (Minority Group)",
+       "cost": -100
+      },
+      {
+       "type": "trait",
+       "name": "Stubbornness",
+       "cost": -50
+      },
+      {
+       "type": "trait",
+       "name": "Struggling",
+       "cost": -100
+      }
+     ]
+    },
+    {
+     "id": "g4",
+     "section": "skills",
+     "kind": "fixed",
+     "options": [
+      {
+       "type": "skill",
+       "name": "Brawling",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Lifting",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Wrestling",
+       "cost": 20,
+       "diff": "A"
+      }
+     ],
+     "label": "Primary Skills"
+    },
+    {
+     "id": "g5",
+     "section": "skills",
+     "kind": "fixed",
+     "options": [
+      {
+       "type": "skill",
+       "name": "Animal Handling",
+       "spec": "Equines",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Packing",
+       "cost": 10,
+       "diff": "A"
+      }
+     ],
+     "label": "Secondary Skills"
+    },
+    {
+     "id": "g6",
+     "section": "skills",
+     "kind": "count",
+     "n": 3,
+     "options": [
+      {
+       "type": "skill",
+       "name": "Forced Entry",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Knife",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Axe/Mace",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Climbing",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Spear",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Stealth",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Gesture",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Seamanship",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Armoury",
+       "choices": [
+        "Body Armor",
+        "Melee Weapons"
+       ],
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Gambling",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Streetwise",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Teamster",
+       "choices": [
+        "Equines"
+       ],
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Weather Sense",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Carousing",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Hiking",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Intimidation",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Observation",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Survival",
+       "choices": [
+        "Arctic",
+        "Bank",
+        "Deep Ocean Vent",
+        "Desert",
+        "Fresh-Water Lake",
+        "Island/Beach",
+        "Jungle",
+        "Mountain",
+        "Open Ocean",
+        "Plains",
+        "Reef",
+        "River/Stream",
+        "Salt-Water Sea",
+        "Swampland",
+        "Tropical Lagoon",
+        "Woodlands"
+       ],
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "note",
+       "name": "1 point to raise any 1-point skill (primary, secondary, or background) by a level",
+       "cost": null
+      }
+     ],
+     "label": "Background Skills"
+    }
+   ],
+   "template": 62,
+   "points": 62
+  },
+  {
+   "name": "Artist",
+   "book": "H",
+   "ref": "H:35",
+   "attributes": {
+    "DX": 200,
+    "IQ": 400,
+    "Per": 50,
+    "Speed": -50
+   },
+   "groups": [
+    {
+     "id": "g1",
+     "section": "advantages",
+     "kind": "points",
+     "n": 250,
+     "prev": 0,
+     "options": [
+      {
+       "type": "trait",
+       "name": "Appearance",
+       "cost": null,
+       "variable": true,
+       "range": [
+        40,
+        160
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Charisma",
+       "cost": 50,
+       "min": 1,
+       "max": null,
+       "per": 50
+      },
+      {
+       "type": "trait",
+       "name": "Fashion Sense",
+       "cost": 50
+      },
+      {
+       "type": "trait",
+       "name": "Fit",
+       "cost": 50
+      },
+      {
+       "type": "trait",
+       "name": "Talent (Gifted Artist)",
+       "cost": 50,
+       "min": 1,
+       "max": null,
+       "per": 50
+      },
+      {
+       "type": "trait",
+       "name": "Talent (Musical Ability)",
+       "cost": 50,
+       "min": 1,
+       "max": null,
+       "per": 50
+      },
+      {
+       "type": "trait",
+       "name": "Reputation",
+       "notes": "Brilliant or fashionable artist",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "note",
+       "name": "Sensitive",
+       "cost": 50
+      },
+      {
+       "type": "trait",
+       "name": "Single-Minded",
+       "cost": 50
+      },
+      {
+       "type": "trait",
+       "name": "Versatile",
+       "cost": 50
+      },
+      {
+       "type": "trait",
+       "name": "Voice",
+       "cost": 100
+      }
+     ]
+    },
+    {
+     "id": "g2",
+     "section": "disadvantages",
+     "kind": "points",
+     "n": -300,
+     "prev": 0,
+     "options": [
+      {
+       "type": "trait",
+       "name": "Addiction",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "trait",
+       "name": "Bad Temper",
+       "cost": -100,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Bully",
+       "cost": -100,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Compulsive Behavior",
+       "notes": "Attention-Seeking",
+       "cost": -50,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Jealousy",
+       "cost": -100
+      },
+      {
+       "type": "trait",
+       "name": "Laziness",
+       "cost": -100
+      },
+      {
+       "type": "trait",
+       "name": "Manic-Depressive",
+       "cost": -200
+      },
+      {
+       "type": "trait",
+       "name": "Nightmares",
+       "cost": -50,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Obsession",
+       "cost": -50,
+       "cr": 12,
+       "modifiers": [
+        "Short term (-50)"
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Obsession",
+       "cost": -100,
+       "cr": 12,
+       "modifiers": [
+        "Long term (-100)"
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Reputation",
+       "notes": "Unsavory or eccentric character",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "trait",
+       "name": "Selfish",
+       "cost": -50,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Skinny",
+       "cost": -50
+      },
+      {
+       "type": "trait",
+       "name": "Stubbornness",
+       "cost": -50
+      },
+      {
+       "type": "note",
+       "name": "Wealth",
+       "cost": null,
+       "variable": true,
+       "range": [
+        -100,
+        -250
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Workaholic",
+       "cost": -50
+      }
+     ]
+    },
+    {
+     "id": "g3",
+     "section": "skills",
+     "kind": "count",
+     "n": 1,
+     "options": [
+      {
+       "type": "skill",
+       "name": "Dancing",
+       "cost": 120,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Architecture",
+       "cost": 120,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Performance",
+       "cost": 120,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Photography",
+       "cost": 120,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Artist",
+       "choices": [
+        "Body Art",
+        "Calligraphy",
+        "Drawing",
+        "Illumination",
+        "Illusion",
+        "Interior Decorating",
+        "Painting",
+        "Pottery",
+        "Scene Design",
+        "Sculpting",
+        "Woodworking"
+       ],
+       "cost": 120,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Musical Composition",
+       "cost": 120,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Musical Instrument",
+       "ask": "any",
+       "cost": 120,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Group Performance",
+       "choices": [
+        "Choreography",
+        "Conducting",
+        "Directing",
+        "Fight Choreography"
+       ],
+       "cost": 40,
+       "diff": "A"
+      },
+      {
+       "type": "note",
+       "name": "8 points in relevant prerequisites",
+       "cost": null
+      },
+      {
+       "type": "skill",
+       "name": "Singing",
+       "cost": 120,
+       "diff": "E"
+      }
+     ],
+     "label": "Primary Skills"
+    },
+    {
+     "id": "g4",
+     "section": "skills",
+     "kind": "count",
+     "n": 1,
+     "options": [
+      {
+       "type": "skill",
+       "name": "Stage Combat",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Current Affairs",
+       "spec": "High Culture",
+       "cost": 20,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Makeup",
+       "cost": 20,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Acting",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Connoisseur",
+       "spec": "of related art",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Electronics Operation",
+       "spec": "Media",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Public Speaking",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Body Language",
+       "cost": 20,
+       "diff": "A"
+      }
+     ],
+     "label": "Secondary Skills"
+    },
+    {
+     "id": "g5",
+     "section": "skills",
+     "kind": "count",
+     "n": 1,
+     "options": [
+      {
+       "type": "skill",
+       "name": "Gesture",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Savoir-Faire",
+       "spec": "High Society",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Fast-Talk",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Streetwise",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Carousing",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Scrounging",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Urban Survival",
+       "cost": 10,
+       "diff": "A"
+      }
+     ],
+     "label": "Background Skills"
+    }
+   ],
+   "template": 70,
+   "points": 70
+  },
+  {
+   "name": "Cultist",
+   "book": "MOM",
+   "ref": "MOM:11",
+   "attributes": {
+    "HT": -100,
+    "FP": 60
+   },
+   "groups": [
+    {
+     "id": "g1",
+     "section": "advantages",
+     "kind": "points",
+     "n": 300,
+     "prev": 0,
+     "options": [
+      {
+       "type": "trait",
+       "name": "Increased Will",
+       "cost": 50,
+       "min": 1,
+       "max": null,
+       "per": 50
+      },
+      {
+       "type": "trait",
+       "name": "Ally",
+       "notes": "Fellow cultist",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "trait",
+       "name": "Blessed",
+       "cost": 100
+      },
+      {
+       "type": "trait",
+       "name": "Very Blessed",
+       "cost": 200
+      },
+      {
+       "type": "trait",
+       "name": "Channeling",
+       "cost": 100
+      },
+      {
+       "type": "trait",
+       "name": "Claim to Hospitality",
+       "cost": null,
+       "variable": true,
+       "range": [
+        10,
+        100
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Fearlessness",
+       "cost": 20,
+       "min": 1,
+       "max": null,
+       "per": 20
+      },
+      {
+       "type": "trait",
+       "name": "Higher Purpose",
+       "cost": 50
+      },
+      {
+       "type": "trait",
+       "name": "Illuminated",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "Less Sleep",
+       "cost": 20,
+       "min": 1,
+       "max": null,
+       "per": 20
+      },
+      {
+       "type": "trait",
+       "name": "Magery",
+       "cost": 50,
+       "min": 1,
+       "max": null,
+       "per": 50
+      },
+      {
+       "type": "trait",
+       "name": "Patron",
+       "notes": "Cult",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "trait",
+       "name": "Patron",
+       "notes": "Cult leader",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "trait",
+       "name": "Power Investiture",
+       "cost": 100,
+       "min": 1,
+       "max": null,
+       "per": 100
+      },
+      {
+       "type": "trait",
+       "name": "Rank",
+       "notes": "Cult",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "trait",
+       "name": "Single-Minded",
+       "cost": 50
+      },
+      {
+       "type": "trait",
+       "name": "True Faith",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "Unfazeable",
+       "cost": 150
+      }
+     ]
+    },
+    {
+     "id": "g2",
+     "section": "disadvantages",
+     "kind": "points",
+     "n": -300,
+     "prev": 0,
+     "options": [
+      {
+       "type": "trait",
+       "name": "Delusions",
+       "cost": -50
+      },
+      {
+       "type": "trait",
+       "name": "Delusions",
+       "cost": -100
+      },
+      {
+       "type": "trait",
+       "name": "Delusions",
+       "cost": -150
+      },
+      {
+       "type": "note",
+       "name": "Disciplines of Faith",
+       "cost": -50
+      },
+      {
+       "type": "note",
+       "name": "Disciplines of Faith",
+       "cost": -100
+      },
+      {
+       "type": "note",
+       "name": "Disciplines of Faith",
+       "cost": -150
+      },
+      {
+       "type": "trait",
+       "name": "Duty",
+       "notes": "Cult",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "trait",
+       "name": "Enemy",
+       "notes": "Foes of the cult",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "trait",
+       "name": "Fanaticism",
+       "cost": -150
+      },
+      {
+       "type": "trait",
+       "name": "Gullibility",
+       "cost": -100,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Intolerance",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "trait",
+       "name": "Paranoia",
+       "cost": -100
+      },
+      {
+       "type": "trait",
+       "name": "Reputation",
+       "notes": "Cultist",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "trait",
+       "name": "Secret",
+       "cost": null,
+       "variable": true,
+       "range": [
+        -50,
+        -300
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Secret Identity",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "trait",
+       "name": "Sense of Duty",
+       "notes": "Cult",
+       "cost": -50,
+       "modifiers": [
+        "Friends and Companions (-50)"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "g3",
+     "section": "skills",
+     "kind": "fixed",
+     "options": [
+      {
+       "type": "skill",
+       "name": "Religious Ritual",
+       "spec": "Cult",
+       "cost": 40,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Theology",
+       "spec": "Cult",
+       "cost": 40,
+       "diff": "H"
+      }
+     ],
+     "label": "Primary Skills"
+    },
+    {
+     "id": "g4",
+     "section": "skills",
+     "kind": "count",
+     "n": 2,
+     "options": [
+      {
+       "type": "skill",
+       "name": "Gesture",
+       "cost": 20,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Acting",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Fast-Talk",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Hidden Lore",
+       "choices": [
+        "Conspiracies",
+        "Demon Lore",
+        "Earth",
+        "Faerie Lore",
+        "Spirit Lore",
+        "Cryptozoology",
+        "Demons",
+        "Free Spirits",
+        "Restless Undead",
+        "Lycanthropes",
+        "Mummies",
+        "Angels",
+        "Sacred Places",
+        "Vampires",
+        "Supers"
+       ],
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Interrogation",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Occultism",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Public Speaking",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "note",
+       "name": "Brainwashing/TL8"
+      },
+      {
+       "type": "note",
+       "name": "Cryptography/TL8"
+      },
+      {
+       "type": "skill",
+       "name": "Hypnotism",
+       "cost": 20,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Ritual Magic",
+       "ask": "any",
+       "cost": 20,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Intimidation",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Observation",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Detect Lies",
+       "cost": 20,
+       "diff": "H"
+      }
+     ],
+     "label": "Secondary Skills"
+    },
+    {
+     "id": "g5",
+     "section": "skills",
+     "kind": "count",
+     "n": 1,
+     "options": [
+      {
+       "type": "skill",
+       "name": "Brawling",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Garrote",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "note",
+       "name": "Guns/TL8 (Pistol or Shotgun)"
+      },
+      {
+       "type": "skill",
+       "name": "Knife",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "note",
+       "name": "Driving/TL8 (any)"
+      },
+      {
+       "type": "skill",
+       "name": "Staff",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Area Knowledge",
+       "ask": "any",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "note",
+       "name": "Computer Operation/TL8"
+      }
+     ],
+     "label": "Background Skills"
+    }
+   ],
+   "template": 9,
+   "points": 9
+  },
+  {
+   "name": "Pickpocket",
+   "book": "MOM",
+   "ref": "MOM:13",
+   "attributes": {
+    "DX": 400,
+    "HT": 100,
+    "Per": 150,
+    "FP": 50,
+    "Speed": 50
+   },
+   "groups": [
+    {
+     "id": "g1",
+     "section": "advantages",
+     "kind": "points",
+     "n": 150,
+     "prev": 0,
+     "options": [
+      {
+       "type": "attr",
+       "key": "Per",
+       "name": "Per +1 to +3",
+       "min": 1,
+       "max": 3,
+       "per": 50
+      },
+      {
+       "type": "trait",
+       "name": "Acute Vision",
+       "cost": 20,
+       "min": 1,
+       "max": null,
+       "per": 20
+      },
+      {
+       "type": "note",
+       "name": "Contacts (Fences or fellow pickpockets)",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "trait",
+       "name": "Danger Sense",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "High Manual Dexterity",
+       "cost": 50,
+       "min": 1,
+       "max": null,
+       "per": 50
+      },
+      {
+       "type": "trait",
+       "name": "Luck",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "Night Vision",
+       "cost": 10,
+       "min": 1,
+       "max": null,
+       "per": 10
+      },
+      {
+       "type": "trait",
+       "name": "Rapid Healing",
+       "cost": 50
+      },
+      {
+       "type": "trait",
+       "name": "Talent (Smooth Operator)",
+       "cost": 150,
+       "levels": 1
+      }
+     ]
+    },
+    {
+     "id": "g2",
+     "section": "disadvantages",
+     "kind": "points",
+     "n": -300,
+     "prev": 0,
+     "options": [
+      {
+       "type": "note",
+       "name": "ST -1",
+       "cost": -100
+      },
+      {
+       "type": "trait",
+       "name": "Addiction",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "trait",
+       "name": "Alcoholism",
+       "cost": -150
+      },
+      {
+       "type": "trait",
+       "name": "Compulsive Gambling",
+       "cost": -50,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Compulsive Gambling",
+       "cost": -100,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Compulsive Gambling",
+       "cost": -150,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Compulsive Lying",
+       "cost": -50,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Compulsive Lying",
+       "cost": -100,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Compulsive Lying",
+       "cost": -150,
+       "cr": 12
+      },
+      {
+       "type": "note",
+       "name": "Dependents",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "trait",
+       "name": "Enemy",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "trait",
+       "name": "Greed",
+       "cost": -150,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Kleptomania",
+       "cost": -150,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Secret",
+       "cost": null,
+       "variable": true,
+       "range": [
+        -50,
+        -300
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Social Stigma (Criminal Record)",
+       "cost": -50
+      },
+      {
+       "type": "trait",
+       "name": "Struggling",
+       "cost": -100
+      }
+     ]
+    },
+    {
+     "id": "g3",
+     "section": "skills",
+     "kind": "fixed",
+     "options": [
+      {
+       "type": "skill",
+       "name": "Pickpocket",
+       "cost": 40,
+       "diff": "H"
+      }
+     ],
+     "label": "Primary Skills"
+    },
+    {
+     "id": "g4",
+     "section": "skills",
+     "kind": "count",
+     "n": 2,
+     "options": [
+      {
+       "type": "skill",
+       "name": "Filch",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Stealth",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Sleight of Hand",
+       "cost": 20,
+       "diff": "H"
+      },
+      {
+       "type": "note",
+       "name": "Disguise/TL8"
+      },
+      {
+       "type": "skill",
+       "name": "Fast-Talk",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Shadowing",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Streetwise",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Observation",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Detect Lies",
+       "cost": 20,
+       "diff": "H"
+      }
+     ],
+     "label": "Secondary Skills"
+    },
+    {
+     "id": "g5",
+     "section": "skills",
+     "kind": "count",
+     "n": 1,
+     "options": [
+      {
+       "type": "skill",
+       "name": "Brawling",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "note",
+       "name": "Guns/TL8 (Pistol)"
+      },
+      {
+       "type": "skill",
+       "name": "Knife",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Thrown Weapon",
+       "choices": [
+        "Axe/Mace",
+        "Dart",
+        "Harpoon",
+        "Knife",
+        "Shuriken",
+        "Spear",
+        "Stick",
+        "Disc"
+       ],
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Climbing",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "note",
+       "name": "Driving/TL8 (any)"
+      },
+      {
+       "type": "skill",
+       "name": "Area Knowledge",
+       "ask": "any",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "note",
+       "name": "Computer Operation/TL8"
+      },
+      {
+       "type": "note",
+       "name": "Current Affairs/TL8 (any)"
+      },
+      {
+       "type": "skill",
+       "name": "Carousing",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Running",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Sex Appeal",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Urban Survival",
+       "cost": 10,
+       "diff": "A"
+      }
+     ],
+     "label": "Background Skills"
+    }
+   ],
+   "template": 69,
+   "points": 69
+  },
+  {
+   "name": "Urban Explorer",
+   "book": "MOM",
+   "ref": "MOM:15",
+   "attributes": {
+    "DX": 200,
+    "IQ": 200,
+    "HT": 100,
+    "Per": 100,
+    "FP": 30
+   },
+   "groups": [
+    {
+     "id": "g1",
+     "section": "advantages",
+     "kind": "points",
+     "n": 150,
+     "prev": 0,
+     "options": [
+      {
+       "type": "trait",
+       "name": "Absolute Direction",
+       "cost": 50
+      },
+      {
+       "type": "trait",
+       "name": "Acute Sense",
+       "cost": 20,
+       "min": 1,
+       "max": null,
+       "per": 20
+      },
+      {
+       "type": "note",
+       "name": "Contact Group (Urban-explorer community)",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "trait",
+       "name": "Danger Sense",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "Eidetic Memory",
+       "cost": 50
+      },
+      {
+       "type": "trait",
+       "name": "Eidetic Memory",
+       "notes": "Photographic",
+       "cost": 100,
+       "modifiers": [
+        "Photographic (50)"
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Fearlessness",
+       "cost": 20,
+       "min": 1,
+       "max": null,
+       "per": 20
+      },
+      {
+       "type": "trait",
+       "name": "Less Sleep",
+       "cost": 20,
+       "min": 1,
+       "max": null,
+       "per": 20
+      },
+      {
+       "type": "trait",
+       "name": "Luck",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "Night Vision",
+       "cost": 10,
+       "min": 1,
+       "max": null,
+       "per": 10
+      },
+      {
+       "type": "trait",
+       "name": "Perfect Balance",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "Reputation",
+       "notes": "Among urban explorers",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "trait",
+       "name": "Single-Minded",
+       "cost": 50
+      }
+     ]
+    },
+    {
+     "id": "g2",
+     "section": "disadvantages",
+     "kind": "points",
+     "n": -300,
+     "prev": 0,
+     "options": [
+      {
+       "type": "trait",
+       "name": "Careful",
+       "cost": -10
+      },
+      {
+       "type": "trait",
+       "name": "Curious",
+       "cost": -50,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Imaginative",
+       "cost": -10
+      },
+      {
+       "type": "trait",
+       "name": "Impulsiveness",
+       "cost": -100,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Insomniac",
+       "cost": -100
+      },
+      {
+       "type": "trait",
+       "name": "Insomniac",
+       "cost": -150
+      },
+      {
+       "type": "trait",
+       "name": "Light Sleeper",
+       "cost": -50
+      },
+      {
+       "type": "trait",
+       "name": "Loner",
+       "cost": -50,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Obsession",
+       "cost": -50,
+       "cr": 12,
+       "modifiers": [
+        "Short term (-50)"
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Obsession",
+       "cost": null,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Overconfidence",
+       "cost": -50,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Shyness",
+       "cost": -50,
+       "modifiers": [
+        "Mild (-50)"
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Shyness",
+       "cost": -100,
+       "modifiers": [
+        "Severe (-100)"
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Stubbornness",
+       "cost": -50
+      }
+     ]
+    },
+    {
+     "id": "g3",
+     "section": "skills",
+     "kind": "fixed",
+     "options": [
+      {
+       "type": "skill",
+       "name": "Urban Survival",
+       "cost": 40,
+       "diff": "A"
+      }
+     ],
+     "label": "Primary Skills"
+    },
+    {
+     "id": "g4",
+     "section": "skills",
+     "kind": "count",
+     "n": 2,
+     "options": [
+      {
+       "type": "skill",
+       "name": "Climbing",
+       "cost": 40,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Area Knowledge",
+       "spec": "City",
+       "cost": 40,
+       "diff": "E"
+      },
+      {
+       "type": "note",
+       "name": "Cartography/TL8"
+      },
+      {
+       "type": "skill",
+       "name": "Hidden Lore",
+       "spec": "any city-related",
+       "cost": 40,
+       "diff": "A"
+      },
+      {
+       "type": "note",
+       "name": "Navigation/TL8 (Land)"
+      },
+      {
+       "type": "note",
+       "name": "Geography/TL8 (Regional)"
+      },
+      {
+       "type": "skill",
+       "name": "Hiking",
+       "cost": 40,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Observation",
+       "cost": 40,
+       "diff": "A"
+      }
+     ],
+     "label": "Primary Skills"
+    },
+    {
+     "id": "g5",
+     "section": "skills",
+     "kind": "count",
+     "n": 2,
+     "options": [
+      {
+       "type": "skill",
+       "name": "Forced Entry",
+       "cost": 20,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Jumping",
+       "cost": 20,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Stealth",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "note",
+       "name": "Electronics Operation/TL8 (Security)"
+      },
+      {
+       "type": "skill",
+       "name": "Fast-Talk",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "note",
+       "name": "Lockpicking/TL8"
+      },
+      {
+       "type": "skill",
+       "name": "Occultism",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "note",
+       "name": "Photography/TL8"
+      },
+      {
+       "type": "note",
+       "name": "Research/TL8"
+      },
+      {
+       "type": "skill",
+       "name": "Artist",
+       "spec": "Graffiti",
+       "cost": 20,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Swimming",
+       "cost": 20,
+       "diff": "E"
+      }
+     ],
+     "label": "Secondary Skills"
+    },
+    {
+     "id": "g6",
+     "section": "skills",
+     "kind": "count",
+     "n": 1,
+     "options": [
+      {
+       "type": "skill",
+       "name": "Brawling",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "note",
+       "name": "Driving/TL8 (any)"
+      },
+      {
+       "type": "note",
+       "name": "Computer Operation/TL8"
+      },
+      {
+       "type": "note",
+       "name": "Current Affairs/TL8 (any)"
+      },
+      {
+       "type": "note",
+       "name": "First Aid/TL8"
+      },
+      {
+       "type": "skill",
+       "name": "Running",
+       "cost": 10,
+       "diff": "A"
+      }
+     ],
+     "label": "Background Skills"
+    }
+   ],
+   "template": 65,
+   "points": 65
+  },
+  {
+   "name": "Exorcist",
+   "book": "TUM",
+   "ref": "TUM:12",
+   "attributes": {
+    "IQ": 400,
+    "HT": 200,
+    "Will": 100
+   },
+   "groups": [
+    {
+     "id": "g1",
+     "section": "advantages",
+     "kind": "points",
+     "n": 150,
+     "prev": 0,
+     "options": [
+      {
+       "type": "trait",
+       "name": "Blessed",
+       "cost": 100
+      },
+      {
+       "type": "trait",
+       "name": "Charisma",
+       "cost": 50,
+       "min": 1,
+       "max": null,
+       "per": 50
+      },
+      {
+       "type": "trait",
+       "name": "Clerical Investment",
+       "cost": 50
+      },
+      {
+       "type": "trait",
+       "name": "Higher Purpose",
+       "notes": "Oppose supernatural evil",
+       "cost": 50
+      },
+      {
+       "type": "trait",
+       "name": "Indomitable",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "Legal Immunity",
+       "cost": 50,
+       "modifiers": [
+        "UN Observer (50)"
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Magic Resistance",
+       "cost": 20,
+       "min": 1,
+       "max": null,
+       "per": 20
+      },
+      {
+       "type": "trait",
+       "name": "Patron",
+       "notes": "Religious hierarchy",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "note",
+       "name": "Resistant to Possession (+3)",
+       "cost": 20
+      },
+      {
+       "type": "note",
+       "name": "Resistant to Possession (+8)",
+       "cost": 30
+      },
+      {
+       "type": "note",
+       "name": "Immunity to Possession",
+       "cost": 50
+      },
+      {
+       "type": "note",
+       "name": "Religious Rank",
+       "cost": 50,
+       "min": 1,
+       "max": null,
+       "per": 50
+      },
+      {
+       "type": "trait",
+       "name": "Security Clearance",
+       "notes": "Records of supernatural threats",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "note",
+       "name": "Sensitive",
+       "cost": 50
+      },
+      {
+       "type": "trait",
+       "name": "Empathy",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "Single-Minded",
+       "cost": 50
+      },
+      {
+       "type": "trait",
+       "name": "Social Regard",
+       "notes": "Respected",
+       "cost": 50,
+       "min": 1,
+       "max": null,
+       "per": 50
+      },
+      {
+       "type": "trait",
+       "name": "Spirit Empathy",
+       "cost": 100
+      },
+      {
+       "type": "trait",
+       "name": "Tenure",
+       "cost": 50
+      },
+      {
+       "type": "trait",
+       "name": "True Faith",
+       "cost": 150
+      }
+     ]
+    },
+    {
+     "id": "g2",
+     "section": "disadvantages",
+     "kind": "points",
+     "n": -250,
+     "prev": 0,
+     "options": [
+      {
+       "type": "trait",
+       "name": "Callous",
+       "cost": -50
+      },
+      {
+       "type": "trait",
+       "name": "Charitable",
+       "cost": -150,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Code of Honor (Professional)",
+       "cost": -50
+      },
+      {
+       "type": "note",
+       "name": "Disciplines of Faith (Any)",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "trait",
+       "name": "Duty",
+       "notes": "Often Extremely Hazardous",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "note",
+       "name": "Enemies (Demons; Hunter)",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "trait",
+       "name": "Fanaticism",
+       "cost": -150
+      },
+      {
+       "type": "trait",
+       "name": "Guilt Complex",
+       "cost": -50
+      },
+      {
+       "type": "trait",
+       "name": "Nightmares",
+       "cost": -50,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "No Sense of Humor",
+       "cost": -100
+      },
+      {
+       "type": "trait",
+       "name": "Obsession",
+       "cost": -50,
+       "cr": 12,
+       "modifiers": [
+        "Short term (-50)"
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Obsession",
+       "cost": -100,
+       "cr": 12,
+       "modifiers": [
+        "Long term (-100)"
+       ]
+      },
+      {
+       "type": "note",
+       "name": "Pacifism (Any except Total Nonviolence)",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "trait",
+       "name": "Phantom Voices",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "trait",
+       "name": "Selfless",
+       "cost": -50,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Sense of Duty",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "trait",
+       "name": "Social Stigma (Excommunicated)",
+       "cost": -50
+      },
+      {
+       "type": "trait",
+       "name": "Supernatural Features",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "trait",
+       "name": "Vow",
+       "cost": null,
+       "variable": true
+      },
+      {
+       "type": "trait",
+       "name": "Weirdness Magnet",
+       "cost": -150
+      }
+     ]
+    },
+    {
+     "id": "g3",
+     "section": "skills",
+     "kind": "fixed",
+     "options": [
+      {
+       "type": "skill",
+       "name": "Exorcism",
+       "cost": 120,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Occultism",
+       "cost": 120,
+       "diff": "A"
+      }
+     ],
+     "label": "Primary Skills"
+    },
+    {
+     "id": "g4",
+     "section": "skills",
+     "kind": "fixed",
+     "options": [
+      {
+       "type": "skill",
+       "name": "Research",
+       "cost": 20,
+       "diff": "A"
+      }
+     ],
+     "label": "Secondary Skills"
+    },
+    {
+     "id": "g5",
+     "section": "skills",
+     "kind": "count",
+     "n": 1,
+     "options": [
+      {
+       "type": "skill",
+       "name": "Hidden Lore",
+       "choices": [
+        "Demon Lore",
+        "Spirit Lore"
+       ],
+       "cost": 20,
+       "diff": "A"
+      }
+     ],
+     "label": "Secondary Skills"
+    },
+    {
+     "id": "g6",
+     "section": "skills",
+     "kind": "count",
+     "n": 2,
+     "options": [
+      {
+       "type": "skill",
+       "name": "Anthropology",
+       "ask": "specialty",
+       "cost": 40,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Expert Skill",
+       "spec": "Thanatology",
+       "cost": 40,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Theology",
+       "choices": [
+        "Abrahamic",
+        "Shamanic OR Voodoo",
+        "Shamanic",
+        "Voodoo"
+       ],
+       "cost": 40,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Singing",
+       "cost": 40,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Autohypnosis",
+       "cost": 40,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Esoteric Medicine",
+       "spec": "Shamanistic",
+       "cost": 40,
+       "diff": "H"
+      }
+     ],
+     "label": "Secondary Skills"
+    },
+    {
+     "id": "g7",
+     "section": "skills",
+     "kind": "count",
+     "n": 1,
+     "options": [
+      {
+       "type": "skill",
+       "name": "Shortsword",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Staff",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Wrestling",
+       "cost": 20,
+       "diff": "A"
+      }
+     ],
+     "label": "Background Skills"
+    },
+    {
+     "id": "g8",
+     "section": "skills",
+     "kind": "count",
+     "n": 2,
+     "options": [
+      {
+       "type": "skill",
+       "name": "Acting",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Administration",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Fast-Talk",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Hazardous Materials",
+       "spec": "Magical",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Interrogation",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Streetwise",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Diplomacy",
+       "cost": 10,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Religious Ritual",
+       "ask": "specialty",
+       "cost": 10,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Intimidation",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Mind Block",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Meditation",
+       "cost": 10,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Body Language",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Detect Lies",
+       "cost": 10,
+       "diff": "A"
+      }
+     ],
+     "label": "Background Skills"
+    }
+   ],
+   "template": 100,
+   "points": 100
+  },
+  {
+   "name": "Caver",
+   "book": "UA",
+   "ref": "UA:15",
+   "attributes": {
+    "DX": 200,
+    "IQ": 200,
+    "HT": 100
+   },
+   "groups": [
+    {
+     "id": "g1",
+     "section": "advantages",
+     "kind": "fixed",
+     "options": [
+      {
+       "type": "trait",
+       "name": "Fit",
+       "cost": 50
+      }
+     ]
+    },
+    {
+     "id": "g2",
+     "section": "advantages",
+     "kind": "points",
+     "n": 150,
+     "prev": 0,
+     "options": [
+      {
+       "type": "trait",
+       "name": "Absolute Direction",
+       "notes": "p. 18",
+       "cost": 50
+      },
+      {
+       "type": "note",
+       "name": "3D Spatial Sense",
+       "cost": 100
+      },
+      {
+       "type": "trait",
+       "name": "Claim to Hospitality",
+       "notes": "Other Cavers",
+       "cost": 40
+      },
+      {
+       "type": "trait",
+       "name": "Daredevil",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "Fearlessness",
+       "cost": 20,
+       "min": 1,
+       "max": null,
+       "per": 20
+      },
+      {
+       "type": "trait",
+       "name": "Flexibility",
+       "cost": 50
+      },
+      {
+       "type": "trait",
+       "name": "Flexibility (Double-Jointed)",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "Gizmo",
+       "cost": 50
+      },
+      {
+       "type": "trait",
+       "name": "Night Vision",
+       "cost": 10,
+       "min": 1,
+       "max": null,
+       "per": 10
+      },
+      {
+       "type": "trait",
+       "name": "Perfect Balance",
+       "cost": 150
+      },
+      {
+       "type": "note",
+       "name": "Resistant to Respiratory Poison (+3)",
+       "cost": 30
+      },
+      {
+       "type": "note",
+       "name": "Resistant to Respiratory Poison (+8)",
+       "cost": 50
+      },
+      {
+       "type": "trait",
+       "name": "Talent (Survivor)",
+       "notes": "p. 19",
+       "cost": 50,
+       "min": 1,
+       "max": null,
+       "per": 50
+      },
+      {
+       "type": "trait",
+       "name": "Temperature Tolerance",
+       "cost": 10,
+       "min": 1,
+       "max": null,
+       "per": 10
+      },
+      {
+       "type": "note",
+       "name": "increase Fit [5] to Very Fit",
+       "cost": 150
+      }
+     ]
+    },
+    {
+     "id": "g3",
+     "section": "disadvantages",
+     "kind": "points",
+     "n": -100,
+     "prev": 0,
+     "options": [
+      {
+       "type": "trait",
+       "name": "Code of Honor",
+       "notes": "Caver's; p. 20",
+       "cost": -10
+      },
+      {
+       "type": "trait",
+       "name": "Curious",
+       "cost": -50,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Overconfidence",
+       "cost": -50,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Agoraphobia (Open Spaces)",
+       "cost": -100,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Sense of Duty",
+       "notes": "Fellow cavers",
+       "cost": -50,
+       "modifiers": [
+        "Friends and Companions (-50)"
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Sense of Duty",
+       "notes": "Anyone in danger underground",
+       "cost": -100,
+       "modifiers": [
+        "Large Group (-100)"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "g4",
+     "section": "skills",
+     "kind": "fixed",
+     "options": [
+      {
+       "type": "skill",
+       "name": "Climbing",
+       "cost": 40,
+       "diff": "A"
+      },
+      {
+       "type": "note",
+       "name": "Navigation (Underground; p. 21) IQ+1 [4]-12",
+       "cost": 40
+      }
+     ],
+     "label": "Primary Skills"
+    },
+    {
+     "id": "g5",
+     "section": "skills",
+     "kind": "fixed",
+     "options": [
+      {
+       "type": "skill",
+       "name": "Survival",
+       "spec": "Underground; p. 21",
+       "cost": 20,
+       "diff": "A"
+      }
+     ],
+     "label": "Secondary Skills"
+    },
+    {
+     "id": "g6",
+     "section": "skills",
+     "kind": "count",
+     "n": 1,
+     "options": [
+      {
+       "type": "skill",
+       "name": "Escape",
+       "cost": 40,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Hiking",
+       "cost": 40,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Swimming",
+       "cost": 20,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Scuba",
+       "cost": 20,
+       "diff": "A"
+      }
+     ],
+     "label": "Secondary Skills"
+    },
+    {
+     "id": "g7",
+     "section": "skills",
+     "kind": "count",
+     "n": 1,
+     "options": [
+      {
+       "type": "skill",
+       "name": "Knot-Tying",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Area Knowledge",
+       "spec": "Specific Cave Complex",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "First Aid",
+       "cost": 10,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Leadership",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Photography",
+       "cost": 10,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Scrounging",
+       "cost": 10,
+       "diff": "E"
+      }
+     ],
+     "label": "Background Skills"
+    }
+   ],
+   "template": 75,
+   "points": 75
+  },
+  {
+   "name": "Lurker",
+   "book": "UA",
+   "ref": "UA:16",
+   "attributes": {
+    "DX": 400,
+    "IQ": 200,
+    "HT": 200,
+    "Per": 50
+   },
+   "groups": [
+    {
+     "id": "g1",
+     "section": "advantages",
+     "kind": "points",
+     "n": 200,
+     "prev": 0,
+     "options": [
+      {
+       "type": "trait",
+       "name": "Acute Hearing",
+       "cost": 20,
+       "min": 1,
+       "max": null,
+       "per": 20
+      },
+      {
+       "type": "trait",
+       "name": "Combat Reflexes",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "Danger Sense",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "Eidetic Memory",
+       "cost": 50
+      },
+      {
+       "type": "trait",
+       "name": "Fearlessness",
+       "cost": 20,
+       "min": 1,
+       "max": null,
+       "per": 20
+      },
+      {
+       "type": "trait",
+       "name": "Fit",
+       "cost": 50
+      },
+      {
+       "type": "trait",
+       "name": "Very Fit",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "Flexibility",
+       "cost": 50
+      },
+      {
+       "type": "trait",
+       "name": "Flexibility (Double-Jointed)",
+       "cost": 150
+      },
+      {
+       "type": "trait",
+       "name": "Night Vision",
+       "cost": 10,
+       "min": 1,
+       "max": null,
+       "per": 10
+      },
+      {
+       "type": "trait",
+       "name": "Talent (Strangler)",
+       "notes": "p. 19",
+       "cost": 50,
+       "min": 1,
+       "max": null,
+       "per": 50
+      }
+     ]
+    },
+    {
+     "id": "g2",
+     "section": "disadvantages",
+     "kind": "points",
+     "n": -150,
+     "prev": 0,
+     "options": [
+      {
+       "type": "trait",
+       "name": "Code of Honor (Pirate's)",
+       "cost": -50,
+       "notes": "Pirate's",
+       "noteChoices": [
+        "Pirate's",
+        "Professional"
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Delusions",
+       "notes": "Minor",
+       "cost": -50
+      },
+      {
+       "type": "trait",
+       "name": "Greed",
+       "cost": -150,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Loner",
+       "cost": -50,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "No Sense of Humor",
+       "cost": -100
+      },
+      {
+       "type": "trait",
+       "name": "Agoraphobia (Open Spaces)",
+       "cost": -100,
+       "cr": 12
+      },
+      {
+       "type": "trait",
+       "name": "Social Stigma (Criminal Record)",
+       "cost": -50,
+       "notes": "Criminal Record",
+       "noteChoices": [
+        "Criminal Record",
+        "Uneducated"
+       ]
+      },
+      {
+       "type": "trait",
+       "name": "Xenophilia",
+       "cost": -100,
+       "cr": 12
+      }
+     ]
+    },
+    {
+     "id": "g3",
+     "section": "skills",
+     "kind": "fixed",
+     "options": [
+      {
+       "type": "skill",
+       "name": "Navigation",
+       "spec": "Underground; p. 21",
+       "cost": 80,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Stealth",
+       "cost": 80,
+       "diff": "A"
+      }
+     ],
+     "label": "Primary Skills"
+    },
+    {
+     "id": "g4",
+     "section": "skills",
+     "kind": "count",
+     "n": 2,
+     "options": [
+      {
+       "type": "skill",
+       "name": "Garrote",
+       "cost": 40,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Knife",
+       "cost": 40,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Shield",
+       "spec": "Buckler",
+       "cost": 40,
+       "diff": "E"
+      },
+      {
+       "type": "skill",
+       "name": "Axe/Mace",
+       "cost": 40,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Cloak",
+       "cost": 40,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Shortsword",
+       "cost": 40,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Wrestling",
+       "cost": 40,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Net",
+       "cost": 40,
+       "diff": "H"
+      }
+     ],
+     "label": "Primary Skills"
+    },
+    {
+     "id": "g5",
+     "section": "skills",
+     "kind": "fixed",
+     "options": [
+      {
+       "type": "skill",
+       "name": "Climbing",
+       "cost": 20,
+       "diff": "A"
+      },
+      {
+       "type": "skill",
+       "name": "Escape",
+       "cost": 40,
+       "diff": "H"
+      },
+      {
+       "type": "skill",
+       "name": "Survival",
+       "spec": "Underground; p. 21",
+       "cost": 20,
+       "diff": "A"
+      }
+     ],
+     "label": "Secondary Skills"
+    },
+    {
+     "id": "g6",
+     "section": "skills",
+     "kind": "points",
+     "n": 30,
+     "options": [
+      {
+       "type": "note",
+       "name": "Breath Control (HT/H), Cartography/TL (IQ/A), First Aid/TL (IQ/E), Fishing (Per/E), Forced Entry (DX/E), Leadership (IQ/A), Naturalist (IQ/H), Scrounging (Per/E), Tactics (IQ/H), or Traps/TL (IQ/A)",
+       "cost": null
+      }
+     ],
+     "label": "Background Skills"
+    }
+   ],
+   "template": 125,
+   "points": 125
   }
  ],
  "piSpells": {

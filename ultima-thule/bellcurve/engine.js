@@ -884,7 +884,8 @@ function compute(ch, lib, opts = {}) {
   // changed in play, so a missing part is a warning.
   let profession = null;
   if (ch.profession?.name) {
-    const prof = (lib.professions || []).find(p => lc(p.name) === lc(ch.profession.name));
+    // names repeat across books (Assassin: Fantasy, Martial Arts, Banestorm), so the book is matched when recorded
+    const prof = (lib.professions || []).find(p => lc(p.name) === lc(ch.profession.name) && (!ch.profession.book || p.book === ch.profession.book));
     if (!prof) add("ERROR", `profession "${ch.profession.name}" not in library`, "", "profession");
     else {
       const picks = ch.profession.picks || {}, checks = profCheck(prof, picks), stamp = profStamp(prof, picks);

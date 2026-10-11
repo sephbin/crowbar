@@ -261,7 +261,7 @@ body:not(.debug) .g{display:none!important}
       </section>
 
       <section class="box" data-tab="base">
-        <h3 class="bar">profession <small>Dungeon Fantasy · 250-point templates, 2500 here</small></h3>
+        <h3 class="bar">profession <small>character templates from the GURPS books · costs ×10</small></h3>
         <div id="profession"></div>
       </section>
 
@@ -659,7 +659,7 @@ function unstampFrom(ch, st) {
   for (const s of st.spells) { const i = ch.spells.findIndex(y => y.name === s.name); if (i < 0) continue; ch.spells[i].points -= s.points; if (ch.spells[i].points < 10) ch.spells.splice(i, 1); }
 }
 function takeOffProfession(ch) {
-  const prof = (LIB.professions || []).find(p => p.name === ch.profession?.name);
+  const prof = (LIB.professions || []).find(p => p.name === ch.profession?.name && (!ch.profession.book || p.book === ch.profession.book));
   if (prof) unstampFrom(ch, BC.profStamp(prof, ch.profession.picks || {}));
   delete ch.profession;
 }
@@ -669,7 +669,7 @@ $("papply").addEventListener("click", () => {
   for (const k of Object.keys(picks)) if (!picks[k]?.length) delete picks[k];
   if (ch.profession) takeOffProfession(ch);
   stampInto(ch, BC.profStamp(prof, picks));
-  ch.profession = { name: prof.name, picks };
+  ch.profession = { name: prof.name, book: prof.book, picks };
   closeProf(); change(); toast(`${prof.name} applied`);
 });
 $("pcancel").addEventListener("click", closeProf);
@@ -679,8 +679,8 @@ function renderProfession() {
   const ch = C(), box = $("profession"), pr = R.profession; box.innerHTML = "";
   if (!ch.profession) {
     box.append(el("div", { class: "list-note" }, "None."));
-    const s = el("select", { "aria-label": "Profession" }, el("option", { value: "" }, "choose a profession…"), ...(LIB.professions || []).map(p => el("option", { value: p.name }, `${p.name} · ${refTxt(p.ref)}`)));
-    box.append(el("div", { class: "addrow ed", style: "margin-top:0" }, s, el("button", { type: "button", onclick: () => { const p = (LIB.professions || []).find(x => x.name === s.value); if (p) openProf(p, {}); } }, "choose")));
+    const s = el("select", { "aria-label": "Profession" }, el("option", { value: "" }, "choose a profession…"), ...(LIB.professions || []).map((p, k) => el("option", { value: k }, `${p.name} · ${refTxt(p.ref)} · ${p.template * 10} pts`)));
+    box.append(el("div", { class: "addrow ed", style: "margin-top:0" }, s, el("button", { type: "button", onclick: () => { const p = (LIB.professions || [])[+s.value]; if (s.value !== "" && p) openProf(p, {}); } }, "choose")));
     return;
   }
   const remove = el("button", { type: "button", class: "danger", onclick: () => { if (confirm(`Remove ${ch.profession.name} and take its traits, skills and spells off the sheet?`)) { takeOffProfession(ch); change(); } } }, "remove profession");
@@ -694,7 +694,7 @@ function renderProfession() {
   for (const c of pr.checks.filter(c => !c.ok)) stat.append(el("span", { class: "bad" }, c.kind === "spec" ? c.label : `${c.label}: ${c.have} of ${c.n}${c.kind === "points" ? " points" : " chosen"}`));
   for (const n of pr.stamp.notes) stat.append(el("span", { class: "muted" }, `by hand: ${n.text}${n.points ? ` (${sgn(n.points)})` : ""}`));
   if (stat.childNodes.length) box.append(stat);
-  if (R.budget < pr.rec.points * 10) box.append(el("p", { class: "hint" }, `Dungeon Fantasy delvers start on ${pr.rec.points * 10} points; this sheet's budget is ${R.budget}.`));
+  if (R.budget < pr.rec.points * 10) box.append(el("p", { class: "hint" }, `${pr.rec.name} is a ${pr.rec.points}-point template (${pr.rec.points * 10} here); this sheet's budget is ${R.budget}.`));
   box.append(el("div", { class: "ed", style: "display:flex;gap:8px;margin-top:6px" }, el("button", { type: "button", onclick: () => openProf(pr.rec, ch.profession.picks) }, "edit choices"), remove));
 }
 
@@ -1103,8 +1103,12 @@ function rollerFoot() {
 // ---------- rules tab: library facts for the open skill, spell or attack. The GCS library carries no rule prose,
 // so this shows only recorded data (attribute, difficulty, defaults, prerequisites, spell stats, weapon modes) plus the page reference.
 let rtab = "roll";
-const BOOKS = { B: "Basic Set", M: "Magic", MA: "Martial Arts", P: "Powers", H: "Horror", PSI: "Psionic Powers", SU: "Supers", UT: "Ultra-Tech", HT: "High-Tech" };
-const refTxt = r => String(r || "").split(",").map(x => { const m = /^([A-Z]+)(\d+)$/.exec(x.trim()); return m && BOOKS[m[1]] ? `${BOOKS[m[1]]} p.${m[2]}` : x.trim(); }).join(", ");
+const BOOKS = { DF1: "Dungeon Fantasy 1", DF4: "Dungeon Fantasy 4", DF9: "Dungeon Fantasy 9", DF10: "Dungeon Fantasy 10", DF12: "Dungeon Fantasy 12", DF14: "Dungeon Fantasy 14", DF15: "Dungeon Fantasy 15",
+  F: "Fantasy", BAN: "Banestorm", ACT1: "Action 1", MH1: "Monster Hunters 1", MH4: "Monster Hunters 4", PSIS: "Psis", MY: "Mysteries", S: "Space", BT: "Bio-Tech", IW: "Infinite Worlds",
+  LOT: "Lands Out of Time", MOM: "Locations: Metro of Madness", TUM: "Thaumatology: Urban Magics", T: "Thaumatology", UA: "Underground Adventures", RSWL: "Reign of Steel: Will to Live", TSP: "Tales of the Solar Patrol",
+  B: "Basic Set", M: "Magic", MA: "Martial Arts", P: "Powers", H: "Horror", PSI: "Psionic Powers", SU: "Supers", UT: "Ultra-Tech", HT: "High-Tech" };
+// "B23", "MA54"; codes ending in a digit take a colon before the page ("DF1:4"), and "H:35" reads the same way
+const refTxt = r => String(r || "").split(",").map(x => { const m = /^([A-Z]+\d*):(\d+)$/.exec(x.trim()) || /^([A-Z]+)(\d+)$/.exec(x.trim()); return m && BOOKS[m[1]] ? `${BOOKS[m[1]]} p.${m[2]}` : x.trim(); }).join(", ");
 const DIFF_WORD = { E: "easy", A: "average", H: "hard", VH: "very hard", W: "wildcard" };
 const ATTR_OF = { st: "ST", dx: "DX", iq: "IQ", ht: "HT", will: "Will", per: "Per" };
 const titleCase = s => String(s).replace(/\b\w/g, c => c.toUpperCase());
