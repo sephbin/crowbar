@@ -1751,8 +1751,8 @@
       {
        "type": "trait",
        "name": "Honesty",
-       "notes": "12",
-       "cost": -100
+       "cost": -100,
+       "cr": 12
       },
       {
        "type": "trait",
@@ -3135,8 +3135,8 @@
       {
        "type": "trait",
        "name": "Honesty",
-       "notes": "12",
-       "cost": -100
+       "cost": -100,
+       "cr": 12
       },
       {
        "type": "trait",
@@ -6697,20 +6697,20 @@
       {
        "type": "trait",
        "name": "Greed",
-       "notes": "12",
-       "cost": -150
+       "cost": -150,
+       "cr": 12
       },
       {
        "type": "trait",
        "name": "Kleptomania",
-       "notes": "12",
-       "cost": -150
+       "cost": -150,
+       "cr": 12
       },
       {
        "type": "trait",
        "name": "Trickster",
-       "notes": "12",
-       "cost": -150
+       "cost": -150,
+       "cr": 12
       }
      ]
     },
@@ -6733,8 +6733,8 @@
       {
        "type": "trait",
        "name": "Curious",
-       "notes": "12",
-       "cost": -50
+       "cost": -50,
+       "cr": 12
       }
      ]
     },

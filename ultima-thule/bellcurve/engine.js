@@ -488,6 +488,93 @@ const spellEnergy = (cost, level) => {
   return Math.max(0, +cost - red);
 };
 
+// ---------------------------------------------------------------- professions (Dungeon Fantasy)
+// A profession (lib.professions, DF1 pp.4-13) is a 250-point template (x10 here): fixed parts and choices. A character
+// records its choices as "profession": { "name": "Thief", "picks": { "<group path>": [pick, ...] } }. A group's path is
+// where it sits: "g4" for a top-level group, "g9.0" for the pick-one at item 0 of fixed group g9, "g11.2.0" for the
+// group at item 0 of option 2 (a bundle) of g11. A pick is one of:
+//   { "o": 3 }                         option 3 of this group (with "levels", "spec", "notes" or "cost" as it needs)
+//   { "g": "g6", "o": 2 }              option 2 of an earlier group ("-20 points chosen from among the previous traits")
+//   { "spell": "Armor" }               a spell for a "choose 20 clerical spells" group
+//   { "text": "True Faith", "cost": 240 }   points spent on an open list ("25 points in Holy abilities")
+//   { "skill": "Stealth", "cost": 10 } points spent raising a skill ("7 points spent on any previous skill")
+// stamp() turns a profession and its picks into what goes on the sheet; check() reports each choice's state.
+function profOptCost(o, pick = {}) {
+  if (o.variable) return pick.cost ?? 0;
+  if (o.per != null && (o.min != null || o.type === "attr")) return o.per * (pick.levels ?? o.min ?? 1);
+  return o.cost ?? 0;
+}
+const profGroupOf = (prof, g, p) => p.g ? prof.groups.find(x => x.id === p.g) : g;
+// everything taken: fixed items and picked options, through bundles and nested groups. fn(option, pick, path)
+function profWalk(prof, picks, fn) {
+  const take = (o, pick, path) => {
+    if (o.type === "group") return choose(o, path);
+    if (o.type === "bundle") return o.items.forEach((it, i) => take(it, {}, `${path}.${i}`));
+    fn(o, pick, path);
+  };
+  const choose = (g, path) => {
+    for (const p of picks?.[path] || []) {
+      if (p.spell) fn({ type: "spell", name: p.spell, cost: g.cost ?? 10, power: g.spellList && g.spellList !== "wizardly" ? g.spellList : null }, p, path);
+      else if (p.text != null) fn({ type: "note", name: p.text, cost: p.cost ?? 0 }, p, path);
+      else if (p.skill) fn({ type: "skill", name: p.skill, spec: p.spec, cost: p.cost ?? 0, raise: true }, p, path);
+      else { const o = profGroupOf(prof, g, p)?.options?.[p.o]; if (o) take(o, p, `${path}.${p.o}`); }
+    }
+  };
+  for (const g of prof.groups) {
+    if (g.kind === "fixed") g.options.forEach((o, i) => take(o, {}, `${g.id}.${i}`));
+    else if (g.kind !== "note") choose(g, g.id);
+  }
+}
+// every choice that applies: the top-level ones, pick-ones inside fixed lists, and groups inside picked bundles
+function profChoices(prof, picks) {
+  const out = [];
+  const label = g => g.label || (g.section === "advantages" ? "Advantages" : g.section === "disadvantages" ? "Disadvantages" : g.section === "spells" ? "Spells" : "Skills");
+  const inside = (items, path, lab) => items.forEach((it, i) => {
+    if (it.type === "group") { out.push({ g: it, path: `${path}.${i}`, label: lab }); fromPicks(it, `${path}.${i}`, lab); }
+    else if (it.type === "bundle") inside(it.items, `${path}.${i}`, lab);
+  });
+  const fromPicks = (g, path, lab) => { for (const p of picks?.[path] || []) { const o = !p.g && p.o != null ? g.options?.[p.o] : null; if (o?.type === "bundle") inside(o.items, `${path}.${p.o}`, lab); if (o?.type === "group") { out.push({ g: o, path: `${path}.${p.o}`, label: lab }); fromPicks(o, `${path}.${p.o}`, lab); } } };
+  for (const g of prof.groups) {
+    if (g.kind === "fixed") inside(g.options, g.id, label(g));
+    else if (g.kind !== "note") { out.push({ g, path: g.id, label: label(g) }); fromPicks(g, g.id, label(g)); }
+  }
+  return out;
+}
+function profCheck(prof, picks) {
+  return profChoices(prof, picks).map(({ g, path, label }) => {
+    const ps = picks?.[path] || [];
+    if (g.kind === "points") {
+      const have = ps.reduce((a, p) => { const o = p.o != null ? profGroupOf(prof, g, p)?.options?.[p.o] : null; return a + (o ? profOptCost(o, p) : (p.cost ?? 0)); }, 0);
+      return { path, label, kind: "points", n: g.n, have, ok: have === g.n, g };
+    }
+    return { path, label, kind: "count", n: g.n, have: ps.length, ok: ps.length === g.n, g };
+  });
+}
+function profStamp(prof, picks) {
+  const st = { attributes: { ...prof.attributes }, traits: [], skills: [], spells: [], notes: [] };
+  profWalk(prof, picks, (o, p) => {
+    const cost = profOptCost(o, p);
+    if (o.type === "attr") st.attributes[o.key] = (st.attributes[o.key] || 0) + cost;
+    else if (o.type === "trait") {
+      const notes = p.notes ?? o.notes, lv = p.levels ?? o.levels ?? o.min ?? null;
+      // "Magery 4, 5, or 6 [10, 20, or 30]": raises the template's Magery 3 rather than adding a second Magery
+      const same = st.traits.find(t => t.name === o.name && (t.notes || "") === (notes || ""));
+      if (same && lv != null) { same.levels = Math.max(same.levels || 0, lv); return; }
+      const t = { name: o.name };
+      if (notes) t.notes = notes;
+      if (lv != null) t.levels = lv;
+      if (o.cr) t.cr = o.cr;
+      if (o.modifiers) t.modifiers = [...o.modifiers];
+      st.traits.push(t);
+    } else if (o.type === "skill") {
+      const spec = p.spec ?? o.spec, same = st.skills.find(s => s.name === o.name && (s.spec || "") === (spec || ""));
+      if (same) same.points += cost; else st.skills.push({ name: o.name, ...(spec ? { spec } : {}), points: cost });
+    } else if (o.type === "spell") st.spells.push({ name: o.name, points: cost, ...(o.power ? { power: o.power } : {}) });
+    else st.notes.push({ text: o.name, points: cost });
+  });
+  return st;
+}
+
 // ---------------------------------------------------------------- compute
 function compute(ch, lib, opts = {}) {
   const ix = indexLibrary(lib);
@@ -738,6 +825,15 @@ function compute(ch, lib, opts = {}) {
     row.ref = rec.ref; row.attr = rec.attr; row.diff = rec.diff;
     const r = row.points >= 10 ? relLevel(row.points, rec.diff) : null;
     row.bonus = spellBonus(rec);
+    // clerical and druidic spells (DF1 p.19): Power Investiture replaces Magery, and the only prerequisite is the
+    // minimum Power Investiture level on the god's list
+    if (inst.power === "clerical" || inst.power === "druidic") {
+      const need = lib.piSpells?.[inst.power]?.[rec.name];
+      const pi = traits.find(t => (inst.power === "druidic" ? /^power investiture \(druidic\)$/i : /^power investiture$/i).test(t.name));
+      row.power = inst.power; row.pi = pi ? (pi.levels || 0) : 0; row.piNeed = need ?? null; row.bonus = row.pi;
+      if (need == null) add("ERROR", `spell ${inst.name}: not on the ${inst.power} list`, "DF1:19", path);
+      else if (row.pi < need) add("ERROR", `spell ${inst.name}: needs Power Investiture${inst.power === "druidic" ? " (Druidic)" : ""} ${need}, has ${row.pi}`, "DF1:19", path);
+    }
     row.level = r == null ? null : baseOf(rec.attr) + r + row.bonus;
     row.energy = spellEnergy(rec.cost, row.level);
     // any point total from 10 up: levels interpolate between the steps, as for skills
@@ -756,10 +852,37 @@ function compute(ch, lib, opts = {}) {
     if (!r.ok) add("ERROR", `${fullName(s.name, s.spec)}: prerequisites missing: ${r.missing.join("; ")}`, s.ref, s.path);
   }
   for (const s of spellRows) if (s.rec) {
+    if (s.power) { s.prereqOk = s.piNeed != null && s.pi >= s.piNeed; s.missing = s.prereqOk ? [] : [`Power Investiture ${s.piNeed ?? "?"}`]; continue; }
     const r = checkPrereq(s.rec.prereqs, pstate);
     s.prereqOk = r.ok; s.missing = r.missing;
     if (!r.ok) add("ERROR", `spell ${s.name}: prerequisites missing: ${r.missing.join("; ")}`, s.ref, s.path);
     if (r.unchecked) add("WARN", `spell ${s.name}: ${r.unchecked}`, s.ref, s.path);
+  }
+
+  // ---- profession (Dungeon Fantasy): its choices, and whether what it gives is on the sheet. Template parts can be
+  // changed in play, so a missing part is a warning.
+  let profession = null;
+  if (ch.profession?.name) {
+    const prof = (lib.professions || []).find(p => lc(p.name) === lc(ch.profession.name));
+    if (!prof) add("ERROR", `profession "${ch.profession.name}" not in library`, "", "profession");
+    else {
+      const picks = ch.profession.picks || {}, checks = profCheck(prof, picks), stamp = profStamp(prof, picks);
+      for (const c of checks) if (!c.ok) add("WARN", `${prof.name}: ${c.label}: ${c.kind === "points" ? `${c.have / 10} of ${c.n / 10} points` : `${c.have} of ${c.n} chosen`}`, prof.ref, "profession");
+      for (const t of stamp.traits) if (!traits.some(x => lc(x.name) === lc(t.name) && (!t.notes || lc(x.notes || "") === lc(t.notes))))
+        add("WARN", `${prof.name}: ${fullName(t.name, t.notes)} is not on the sheet`, prof.ref, "profession");
+      for (const s of stamp.skills) { const have = skillRows.find(x => x.rec && lc(x.name) === lc(s.name) && (!s.spec || lc(x.spec || "") === lc(s.spec)));
+        if (!have || have.points < s.points) add("WARN", `${prof.name}: ${fullName(s.name, s.spec)} ${s.points} pts ${have ? `(sheet has ${have.points})` : "is not on the sheet"}`, prof.ref, "profession"); }
+      for (const s of stamp.spells) if (!spellRows.some(x => lc(x.name) === lc(s.name))) add("WARN", `${prof.name}: spell ${s.name} is not on the sheet`, prof.ref, "profession");
+      if (checks.every(c => c.ok)) add("ok", `${prof.name}: every choice made`, prof.ref, "profession");
+      // wizards in dungeon fantasy (DF1 p.20): Healing, Animal, Plant, Weather and Enchantment belong to others, and
+      // teleport and time spells don't exist; a spell in another college too, or the only route to one, is allowed
+      const W = lib.dfWizardly;
+      if (W) for (const s of spellRows) if (s.rec && !s.power) {
+        const off = !W.allowed.includes(s.rec.name) && s.college.length && s.college.every(c => W.colleges.includes(c));
+        if (off || W.spells.includes(s.rec.name)) add("WARN", `spell ${s.name}: ${off ? `${s.college.join("/")} spells` : "teleport and time spells"} are off-limits to dungeon fantasy wizards unless another college's spell needs it`, W.ref, s.path);
+      }
+      profession = { rec: prof, checks, stamp };
+    }
   }
 
   // ---- equipment, weapons, armour
@@ -899,7 +1022,7 @@ function compute(ch, lib, opts = {}) {
 
   return {
     name: ch.name, budget, spent, breakdown, attrs: A, layerPen, drVs, drPartial: partial, attrPoints: pts, attrBonus, extra, dodge, dodgeBase, db, dbFrom, enc, gear, money, energy, gearMods, thr, sw,
-    traits, templateRemoved: removed, skills: skillRows, spells: spellRows, weapons: weaponOf, dr, natDR, conditionals, reactions, allies, templates: tpl, issues,
+    traits, templateRemoved: removed, profession, skills: skillRows, spells: spellRows, weapons: weaponOf, dr, natDR, conditionals, reactions, allies, templates: tpl, issues,
     houseBackstab: traits.some(t => /^backstabber$/i.test(t.name)),
     sneakDice: traits.filter(t => /^sneak attack$/i.test(t.name)).reduce((a, t) => a + (t.levels || 1), 0),
   };
@@ -911,6 +1034,7 @@ G.BC = {
   LOCS, TYPE_NAME, locMult, typeKnown, GRADES, injuryDist, rollInjury,
   CR_MULT, FR_MULT, parseAdj, traitCost, selectMods, modLabel, generalLabel, modRules, strCmp, numCmp, splitSpec, fullName,
   ENC, TL_WEALTH, WEALTH_MULT, lbs, basicLift, itemClass, itemQuality, spellEnergy,
+  profOptCost, profWalk, profChoices, profCheck, profStamp,
   indexLibrary, findSkill, checkPrereq, compute,
 };
 })(typeof globalThis !== "undefined" ? globalThis : window);
