@@ -3,8 +3,8 @@ import { mountSidebar, setActiveFile } from './sidebar/fileSidebar.js';
 import { parsePage, serializePage } from './meta/pageMeta.js';
 import { openMetaPanel, closeMetaPanel } from './components/metaPanel.js';
 import { attachCardListeners } from './templates/characterTemplate.js';
-import { getTemplateForType } from './templates/templateRegistry.js';
-import { fetchAllPages, suggestFacetTags, uid } from './data/vaultApi.js';
+import { renderPageBlocks } from './templates/templateRegistry.js';
+import { fetchAllPages, suggestFacetTags, uid, loadSettings } from './data/vaultApi.js';
 import { apiFetch, getProjectId } from './data/project.js';
 import { mountProjectSwitcher } from './components/projectSwitcher.js';
 import { renderRelationshipsBlock } from './relationships/relationshipsBlock.js';
@@ -21,9 +21,7 @@ const editorContainer = document.getElementById('editor-container');
 const canvasPane      = document.getElementById('canvas-pane');
 
 function injectPageCard(meta) {
-  const tmpl = getTemplateForType(meta.type);
-  const blockHTML = tmpl?.blockHTML?.(meta) ?? null;
-  const card = editor.setCard(blockHTML);
+  const card = editor.setCard(renderPageBlocks(meta));
   if (card) {
     attachCardListeners(card, (key, value) => {
       currentMeta[key] = value;
@@ -85,7 +83,13 @@ async function openFile(path) {
 
   editor.setContent(content);
   injectPageCard(currentMeta);
-  openMetaPanel(currentMeta, onMetaChange, onSuggestTags);
+  // On a phone the panel is a bottom sheet that covers the page, so it stays closed until the ⚙ button asks for it.
+  if (isMobile()) {
+    closeMetaPanel();
+    backdrop.classList.remove('visible');
+  } else {
+    openMetaPanel(currentMeta, onMetaChange, onSuggestTags);
+  }
   injectRelationshipsBlock();
   injectConnectionsBlock();
 }
@@ -224,6 +228,7 @@ async function init() {
   });
 
   mountProjectSwitcher(document.getElementById('project-switcher'));
+  await loadSettings();
 
   await mountSidebar({ onFileOpen: openFile, onRefresh: !!urlPath });
 

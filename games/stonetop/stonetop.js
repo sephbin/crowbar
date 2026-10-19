@@ -47,6 +47,7 @@ const uid = () => Math.random().toString(36).slice(2, 8) + Date.now().toString(3
 // ---------- playbook text: blocks -> DOM ----------
 // html is only <b>, <i> and the tokens {box} {boxc} {circ} {pip} {dia}; anything else is text, never markup.
 function mark(kind, ctx, c, group) {
+  if (kind === 'bar') return h('span', { class: 'sep', 'aria-hidden': 'true', text: '|' });
   if (kind === 'pip') return h('span', { class: 'pip', 'aria-hidden': 'true', text: '✔' });
   if (/^n\d$/.test(kind)) return h('span', { class: 'nb', 'aria-hidden': 'true', text: kind.slice(1) });
   const key = ctx.prefix + '.' + ctx.n++;
@@ -58,21 +59,48 @@ function mark(kind, ctx, c, group) {
 }
 // "Choose 1" groups: ticking one box in a group clears the others. A group is opened by a "(Choose 1)" / "Pick 1" heading
 // or lead-in line and holds the boxes that follow it; "Choose 1 on each line" makes every line its own group.
-const ONE = /\b(?:choose|pick) 1\b(?! (?:or|per|on each))/i, ROW = /choose 1 on each line/i;
+// "(choose 1, maybe 2)" allows two: a group holds at most its "maybe" number, else its choose number when that is 1.
+const LIMIT = /\b(?:choose|pick) (\d)(?:, maybe (\d))?\b(?! (?:or|per|on each))/i, ROW = /choose 1 on each line/i;
+const limitOf = t => { const m = LIMIT.exec(t); return !m ? 0 : m[2] ? Number(m[2]) : m[1] === '1' ? 1 : 0; };
 const plainText = html => String(html).replace(/<[^>]+>|\{\w+\}/g, '');
-const newGroup = ctx => `${ctx.prefix}g${ctx.g = (ctx.g || 0) + 1}`;
+const newGroup = (ctx, lim = 1) => `${ctx.prefix}g${ctx.g = (ctx.g || 0) + 1}x${lim}`;   // the id ends with its limit
+// Diamonds are load: the space a thing takes up on an expedition. Diamonds side by side belong to one thing ("{dia} {dia} a
+// cauldron" is one cauldron of load 2); the name is the text after the last of them, up to the next comma or bracket.
+// Returns part index -> { name, size } for the first diamond of each set and part index -> that first index for the rest.
+function diaSets(parts) {
+  const first = new Map(), sets = []; let last = -1, cur = null;
+  parts.forEach((p, i) => {
+    if (p !== '{dia}') return;
+    if (cur && !parts.slice(last + 1, i).join('').trim()) { cur.size++; first.set(i, cur.at); }
+    else { cur = { at: i, size: 1 }; sets.push(cur); first.set(i, i); }
+    last = i;
+    cur.end = i;
+  });
+  for (const st of sets) {
+    const tail = plainText(parts.slice(st.end + 1).join('')).split(/[,;:(.]/)[0].trim().replace(/^(?:an?|the)\s+/i, '');
+    st.name = tail ? tail[0].toUpperCase() + tail.slice(1) : 'Item';
+  }
+  return { first, byAt: new Map(sets.map(st => [st.at, st])) };
+}
 // group: { id, all } puts the first marker (or every marker, when all) of this text in that group
 function markup(html, ctx, c, group) {
   const frag = document.createDocumentFragment();
   let cur = frag; const stack = []; let first = true;
-  for (const part of String(html).split(/(<\/?[bi]>|\{(?:box|boxc|circ|pip|dia|n\d)\})/)) {
+  const parts = String(html).split(/(<\/?[bi]>|\{(?:box|boxc|circ|pip|dia|n\d)\})/), dia = diaSets(parts), setKey = new Map();
+  for (const [at, part] of parts.entries()) {
     if (!part) continue;
     let m;
     if ((m = /^<([bi])>$/.exec(part))) { const n = document.createElement(m[1]); cur.appendChild(n); stack.push(cur); cur = n; }
     else if (/^<\/[bi]>$/.test(part)) { if (stack.length) cur = stack.pop(); }
     else if ((m = /^\{(\w+)\}$/.exec(part))) {
       const isBox = /^(box|boxc|circ|dia)$/.test(m[1]);
-      cur.appendChild(mark(m[1], ctx, c, group && isBox && (first || group.all) ? group.id : null));
+      const e = mark(m[1], ctx, c, group && isBox && (first || group.all) ? group.id : null);
+      if (m[1] === 'dia') {                      // every diamond of a set carries the set's name, size and first key
+        const st = dia.byAt.get(dia.first.get(at)), k = e.dataset.key;
+        if (!setKey.has(st)) setKey.set(st, k);
+        Object.assign(e.dataset, { set: setKey.get(st), name: st.name, load: st.size });
+      }
+      cur.appendChild(e);
       if (isBox) first = false;
     } else cur.appendChild(document.createTextNode(part));
   }
@@ -83,7 +111,8 @@ function blocks(list, ctx, c, opts = {}) {
   let grp = null;                       // the open "choose 1" group id, 'row' for one group per line, or null
   for (const b of list) {
     if (b.t === 'sec') {
-      grp = b.note && ONE.test(plainText(b.note)) ? newGroup(ctx) : null;
+      const lim = b.note ? limitOf(plainText(b.note)) : 0;
+      grp = lim ? newGroup(ctx, lim) : null;
       out.push(h('h3', { class: 'sec' }, b.title, b.note ? [' ', h('small', null, markup(b.note, ctx, c))] : null));
     } else if (b.t === 'step') { grp = null; out.push(h('div', { class: 'step' }, h('b', { class: 'n', text: b.n }), h('div', null, markup(b.html, ctx, c)))); }
     else if (b.t === 'item') {
@@ -97,11 +126,19 @@ function blocks(list, ctx, c, opts = {}) {
       const lead = /^\{(?:box|boxc)\}/.test(b.html);
       let g = null;
       if (lead && grp) g = grp === 'row' ? { id: newGroup(ctx), all: true } : { id: grp };
-      else if (!lead) { const t = plainText(b.html); grp = ROW.test(t) ? 'row' : ONE.test(t) ? newGroup(ctx) : null; }
-      out.push(h('p', null, markup(b.html, ctx, c, g)));
+      else if (!lead) { const t = plainText(b.html), lim = limitOf(t); grp = ROW.test(t) ? 'row' : lim ? newGroup(ctx, lim) : null; }
+      const p = h('p', null, markup(b.html, ctx, c, g)), fol = followerSpec(b.html);
+      if (fol && lead) p.dataset.fol = JSON.stringify(fol);
+      out.push(p);
     }
   }
   return out;
+}
+// A possession line that is itself followers ("Mastiffs, 2-3 followers (...); HP 6") adds them to the Followers list when ticked.
+function followerSpec(html) {
+  const text = plainText(html), name = /<b>([^<]+)<\/b>/.exec(html), hp = /\bHP (\d+)/.exec(text), n = /(\d+)(?:-\d+)? followers\b|, follower\b/.exec(text);
+  if (!name || !hp || !n) return null;
+  return { name: name[1].trim(), hp: Number(hp[1]), armor: Number((/(\d+) armor/.exec(text) || [])[1]) || 0, count: Number(n[1]) || 1 };
 }
 // opts.only picks columns by index (the keys keep the column's own number, so saved ticks do not move)
 function columns(cols, region, c, opts) {
@@ -286,7 +323,12 @@ function listEditor(c, path, fields, blank, addText) {
     wrap.replaceChildren(h('div', { class: 'list' }, rows.map((r, i) => h('div', { class: 'li' + (fields.length > 2 ? ' fol' : '') },
       fields.map(([k, ph, num]) => h('input', { class: 'in', type: num ? 'number' : 'text', placeholder: ph, 'aria-label': ph, value: r[k] ?? '',
         oninput: e => { r[k] = num ? Number(e.target.value) : e.target.value; touch(c); } })),
-      h('button', { type: 'button', class: 'x', 'aria-label': 'Remove', text: '×', onclick: () => { rows.splice(i, 1); touch(c); draw(); } }))),
+      h('button', { type: 'button', class: 'x', 'aria-label': 'Remove', text: '×', onclick: () => {
+        rows.splice(i, 1);
+        if (r.keys) r.keys.forEach(k => { c.checks[k] = false; });                                  // gear from diamonds
+        else if (r.src && !rows.some(o => o.src === r.src)) c.checks[r.src] = false;                // followers from a possession
+        touch(c); draw();
+      } }))),
     ), h('button', { type: 'button', class: 'btn small', text: addText, onclick: () => { rows.push({ ...blank }); touch(c); draw(); wrap.querySelector('.li:last-child input')?.focus(); } }));
   };
   draw();
@@ -426,13 +468,30 @@ app.addEventListener('input', e => {
   if (path.startsWith('stats.')) unassign(c, path.slice(6));       // a hand-typed score is no longer a card's
   if (path === 'hpMax' && c.mode !== 'play') { c.hp = c.hpMax; const i = app.querySelector('[data-bind="hp"]'); if (i) i.value = c.hp; }
 });
+const ticked = new Map(); let tick = 0;     // when each limited-group box was last ticked, this session
 app.addEventListener('change', e => {
   const t = e.target, c = chars[currentId()]; if (!c) return;
   if (t.dataset.bind && t.type === 'checkbox') { setPath(c, t.dataset.bind, t.checked); touch(c); refresh(c); }
   else if (t.classList.contains('mk') && t.dataset.key) {
     c.checks[t.dataset.key] = t.checked;
-    if (t.checked && t.dataset.group) {           // "choose 1": clear the rest of the group
-      app.querySelectorAll('.mk[data-group]').forEach(o => { if (o !== t && o.dataset.group === t.dataset.group && o.checked) { o.checked = false; c.checks[o.dataset.key] = false; } });
+    if (t.dataset.set) {                          // a diamond: the whole set goes together, and onto the gear list
+      const mates = [...app.querySelectorAll('.mk[data-set]')].filter(o => o.dataset.set === t.dataset.set);
+      mates.forEach(o => { o.checked = t.checked; c.checks[o.dataset.key] = t.checked; });
+      c.gear = c.gear.filter(g => g.src !== t.dataset.set);
+      if (t.checked) c.gear.push({ name: t.dataset.name, load: Number(t.dataset.load) || 1, src: t.dataset.set, keys: mates.map(o => o.dataset.key) });
+    }
+    const fol = t.closest('p[data-fol]');
+    if (fol && fol.querySelector('.mk') === t) {   // the line's own box: its followers join (or leave) the list
+      const f = JSON.parse(fol.dataset.fol), key = t.dataset.key;
+      c.followers = c.followers.filter(x => x.src !== key);
+      if (t.checked) for (let i = 1; i <= f.count; i++) c.followers.push({ name: f.count > 1 ? `${f.name} #${i}` : f.name, hp: f.hp, armor: f.armor, src: key });
+    }
+    if (t.checked && t.dataset.group) {           // "choose 1" (or "1, maybe 2"): past the limit, the longest-ticked go
+      const lim = Number(/x(\d+)$/.exec(t.dataset.group)[1]) || 1;
+      ticked.set(t.dataset.key, ++tick);
+      const others = [...app.querySelectorAll('.mk[data-group]')].filter(o => o !== t && o.dataset.group === t.dataset.group && o.checked)
+        .sort((a, b) => (ticked.get(a.dataset.key) || 0) - (ticked.get(b.dataset.key) || 0));
+      others.slice(0, Math.max(0, others.length + 1 - lim)).forEach(o => { o.checked = false; c.checks[o.dataset.key] = false; });
     }
     touch(c); applyTaken(app, c);
   }
@@ -506,14 +565,16 @@ function route() {
 addEventListener('hashchange', route);
 for (const c of Object.values(chars)) normalise(c);
 
-// A pack served next to this page (the GM's machine, or a private host) is picked up without a file dialog.
+// A pack served next to this page (the GM's machine, or a private host) is picked up without a file dialog, and replaces a
+// stored copy that differs (a rebuilt pack reaches browsers that loaded the old one).
 (async () => {
-  if (!pack) {
-    try {
-      const r = await fetch('pack/stonetop-pack.json', { cache: 'no-cache' });
-      if (r.ok) { const j = await r.json(); if (j.format === 'stonetop-pack') { pack = j; store.set(PACK_KEY, JSON.stringify(j)); } }
-    } catch { /* no pack here: the player loads one */ }
-  }
+  try {
+    const r = await fetch('pack/stonetop-pack.json', { cache: 'no-cache' });
+    if (r.ok) {
+      const j = await r.json();
+      if (j.format === 'stonetop-pack' && JSON.stringify(j) !== JSON.stringify(pack)) { pack = j; store.set(PACK_KEY, JSON.stringify(j)); }
+    }
+  } catch { /* no pack here: the player loads one */ }
   route();
 })();
 })();

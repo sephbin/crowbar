@@ -1,4 +1,4 @@
-import { characterCardHTML } from './characterTemplate.js';
+import { getSystem, getBlock, renderBlocks } from './blocks.js';
 
 // Each template defines:
 //   id          - unique key
@@ -7,14 +7,9 @@ import { characterCardHTML } from './characterTemplate.js';
 //   desc        - short description shown in modal
 //   defaultMeta - starting metadata values (type must be set)
 //   metaFields  - ordered list of editable fields in the meta panel
-//   blockHTML(meta)  - editable structured block injected at top of page (rendered from meta, not stored)
+//   blocks           - default block ids for the page header (see blocks.js); meta.blocks overrides
+//   systemBlocks     - per rules-system overrides of blocks, e.g. { stonetop: [...] }
 //   bodyHTML(meta)   - initial prose content below the block
-
-function props(fields, meta) {
-  return fields.map(([label, key]) => `<div class="pb-prop">
-      <dt>${label}</dt><dd contenteditable="true" data-meta-key="${key}">${meta[key] ?? ''}</dd>
-    </div>`).join('\n    ');
-}
 
 export const TEMPLATES = [
   {
@@ -45,7 +40,8 @@ export const TEMPLATES = [
       { key: 'role',       label: 'Role',         inputType: 'select', options: ['neutral', 'ally', 'antagonist', 'unknown'] },
       { key: 'status',     label: 'Status',       inputType: 'select', options: ['alive', 'dead', 'missing', 'insane', 'unknown'] },
     ],
-    blockHTML: (meta) => characterCardHTML(meta),
+    blocks: ['identity', 'coc-stats'],
+    systemBlocks: { stonetop: ['identity', 'st-combat', 'st-motive'], none: ['identity'] },
     bodyHTML(meta) {
       return `<h2>Description</h2>\n<p>Appearance, mannerisms, voice.</p>\n<h2>Background</h2>\n<p>History, motivations, secrets.</p>\n<h2>Notes</h2>\n<p></p>\n`;
     },
@@ -72,14 +68,7 @@ export const TEMPLATES = [
       { key: 'faction',        label: 'Controlled by', inputType: 'text', placeholder: 'Ruling faction or NPC' },
       { key: 'danger',         label: 'Danger',        inputType: 'select', options: ['safe', 'low', 'moderate', 'high', 'deadly'] },
     ],
-    blockHTML(meta) {
-      return `<div class="page-block" contenteditable="false">
-  <h1 class="pb-name" contenteditable="true" data-meta-key="name">${meta.name || 'New Location'}</h1>
-  <dl class="pb-props">
-    ${props([['Type', 'locationType'], ['Within', 'parentLocation'], ['Controlled by', 'faction'], ['Danger', 'danger']], meta)}
-  </dl>
-</div>`;
-    },
+    blocks: ['title', 'props-location'],
     bodyHTML(meta) {
       return `<h2>Overview</h2>\n<p>What this place looks, smells, and feels like.</p>\n<h2>Key Features</h2>\n<ul><li>…</li></ul>\n<h2>Notable NPCs</h2>\n<p></p>\n<h2>Secrets</h2>\n<p></p>\n<h2>Notes</h2>\n<p></p>\n`;
     },
@@ -106,14 +95,7 @@ export const TEMPLATES = [
       { key: 'headquarters', label: 'HQ',          inputType: 'text', placeholder: 'Location name' },
       { key: 'disposition',  label: 'Disposition', inputType: 'select', options: ['friendly', 'neutral', 'hostile', 'unknown'] },
     ],
-    blockHTML(meta) {
-      return `<div class="page-block" contenteditable="false">
-  <h1 class="pb-name" contenteditable="true" data-meta-key="name">${meta.name || 'New Faction'}</h1>
-  <dl class="pb-props">
-    ${props([['Type', 'factionType'], ['Leader', 'leader'], ['HQ', 'headquarters'], ['Disposition', 'disposition']], meta)}
-  </dl>
-</div>`;
-    },
+    blocks: ['title', 'props-faction'],
     bodyHTML(meta) {
       return `<h2>Overview</h2>\n<p>Goals, methods, and public face.</p>\n<h2>Key Members</h2>\n<p></p>\n<h2>Relationships</h2>\n<p>Allies and enemies.</p>\n<h2>Resources</h2>\n<p>Wealth, territory, influence.</p>\n<h2>Notes</h2>\n<p></p>\n`;
     },
@@ -140,15 +122,7 @@ export const TEMPLATES = [
       { key: 'location',   label: 'Location',   inputType: 'text', placeholder: 'Where it is kept' },
       { key: 'attunement', label: 'Attunement', inputType: 'checkbox' },
     ],
-    blockHTML(meta) {
-      return `<div class="page-block" contenteditable="false">
-  <h1 class="pb-name" contenteditable="true" data-meta-key="name">${meta.name || 'New Item'}</h1>
-  <dl class="pb-props">
-    ${props([['Rarity', 'rarity'], ['Owner', 'owner'], ['Location', 'location']], meta)}
-    <div class="pb-prop"><dt>Attunement</dt><dd contenteditable="true" data-meta-key="attunement">${meta.attunement ? 'Yes' : 'No'}</dd></div>
-  </dl>
-</div>`;
-    },
+    blocks: ['title', 'props-artifact'],
     bodyHTML(meta) {
       return `<h2>Description</h2>\n<p>Appearance and feel.</p>\n<h2>Properties</h2>\n<p>Abilities, charges, curses.</p>\n<h2>History</h2>\n<p>Origin and past owners.</p>\n<h2>Notes</h2>\n<p></p>\n`;
     },
@@ -175,14 +149,7 @@ export const TEMPLATES = [
       { key: 'status',   label: 'Status',     inputType: 'select', options: ['active', 'complete', 'failed', 'planned'] },
       { key: 'reward',   label: 'Reward',     inputType: 'text', placeholder: 'Gold, items, reputation…' },
     ],
-    blockHTML(meta) {
-      return `<div class="page-block" contenteditable="false">
-  <h1 class="pb-name" contenteditable="true" data-meta-key="name">${meta.name || 'New Quest'}</h1>
-  <dl class="pb-props">
-    ${props([['Giver', 'giver'], ['Location', 'location'], ['Status', 'status'], ['Reward', 'reward']], meta)}
-  </dl>
-</div>`;
-    },
+    blocks: ['title', 'props-quest'],
     bodyHTML(meta) {
       return `<h2>Hook</h2>\n<p>How the party got involved.</p>\n<h2>Objectives</h2>\n<ul><li>…</li></ul>\n<h2>Complications</h2>\n<p></p>\n<h2>Resolution</h2>\n<p></p>\n<h2>Notes</h2>\n<p></p>\n`;
     },
@@ -209,14 +176,7 @@ export const TEMPLATES = [
       { key: 'players',     label: 'Players',  inputType: 'text', placeholder: 'Comma separated' },
       { key: 'status',      label: 'Status',   inputType: 'select', options: ['planned', 'played', 'cancelled'] },
     ],
-    blockHTML(meta) {
-      return `<div class="page-block" contenteditable="false">
-  <h1 class="pb-name" contenteditable="true" data-meta-key="name">${meta.name || 'Session Notes'}</h1>
-  <dl class="pb-props">
-    ${props([['Date', 'sessionDate'], ['Location', 'location'], ['Players', 'players'], ['Status', 'status']], meta)}
-  </dl>
-</div>`;
-    },
+    blocks: ['title', 'props-session'],
     bodyHTML(meta) {
       return `<h2>Summary</h2>\n<p>What happened.</p>\n<h2>Key Events</h2>\n<ul><li>…</li></ul>\n<h2>Decisions &amp; Consequences</h2>\n<p></p>\n<h2>Next Steps</h2>\n<p></p>\n`;
     },
@@ -231,7 +191,7 @@ export const TEMPLATES = [
     metaFields: [
       { key: 'name', label: 'Name', inputType: 'text' },
     ],
-    blockHTML: null,
+    blocks: [],
     bodyHTML(meta) {
       return `<h1>${meta.name || 'New Page'}</h1>\n<p></p>\n`;
     },
@@ -253,7 +213,7 @@ export const TEMPLATES = [
     metaFields: [
       { key: 'name', label: 'Name', inputType: 'text' },
     ],
-    blockHTML: null,
+    blocks: [],
     bodyHTML() { return ''; },
   },
 ];
@@ -269,3 +229,27 @@ export function getTemplateForType(type) {
 export const TYPE_ICONS = Object.fromEntries(
   TEMPLATES.map(t => [t.defaultMeta.type, t.icon])
 );
+
+// The block ids for a page: its own list if it has one, else the template default for the vault's system.
+export function resolveBlockIds(meta) {
+  if (Array.isArray(meta.blocks)) return meta.blocks;
+  const tmpl = getTemplateForType(meta.type);
+  return tmpl.systemBlocks?.[getSystem()] ?? tmpl.blocks ?? [];
+}
+
+export function renderPageBlocks(meta) {
+  const tmpl = getTemplateForType(meta.type);
+  return renderBlocks(resolveBlockIds(meta), meta, { fallbackName: `New ${tmpl.label}` });
+}
+
+// Template fields plus the fields of any block on the page, without duplicates.
+export function resolveMetaFields(meta) {
+  const tmpl = getTemplateForType(meta.type);
+  const fields = [...(tmpl.metaFields ?? [])];
+  for (const id of resolveBlockIds(meta)) {
+    for (const f of getBlock(id)?.fields ?? []) {
+      if (!fields.some(x => x.key === f.key)) fields.push(f);
+    }
+  }
+  return fields;
+}

@@ -12,6 +12,7 @@ const BUTTONS = [
   { label: '1.', title: 'Numbered list', cmd: 'insertOrderedList' },
   { label: '─', title: 'Horizontal rule', cmd: 'insertHorizontalRule' },
   { label: '❝', title: 'Blockquote', cmd: 'formatBlock', val: 'blockquote' },
+  { label: '✦', title: 'Mark or unmark as a proposal', action: 'propose' },
   { type: 'sep' },
   { label: '↺', title: 'Undo (Ctrl+Z)', cmd: 'undo' },
   { label: '↻', title: 'Redo (Ctrl+Y)', cmd: 'redo' },
@@ -21,7 +22,7 @@ function execFormat(cmd, val) {
   document.execCommand(cmd, false, val ?? null);
 }
 
-export function mountToolbar(toolbarEl, editorEl) {
+export function mountToolbar(toolbarEl, editorEl, actions = {}) {
   BUTTONS.forEach((btn) => {
     if (btn.type === 'sep') {
       const sep = document.createElement('span');
@@ -39,7 +40,8 @@ export function mountToolbar(toolbarEl, editorEl) {
 
     el.addEventListener('mousedown', (e) => {
       e.preventDefault();
-      execFormat(btn.cmd, btn.val);
+      if (btn.action) actions[btn.action]?.();
+      else execFormat(btn.cmd, btn.val);
     });
 
     toolbarEl.appendChild(el);

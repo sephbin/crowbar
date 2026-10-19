@@ -1,0 +1,59 @@
+/* Proposals: suggestions awaiting a decision; the content stays editable in place */
+#html-editor .proposal {
+  border-left: 3px solid #d9a441;
+  background: rgba(217, 164, 65, 0.08);
+  padding: 4px 8px;
+  border-radius: 0 4px 4px 0;
+}
+#html-editor .proposal[data-status="approved"] {
+  border-left-color: #5aa469;
+  background: rgba(90, 164, 105, 0.07);
+}
+#html-editor .proposal-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 400;
+  user-select: none;
+}
+#html-editor .proposal-badge {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: #d9a441;
+}
+#html-editor .proposal[data-status="approved"] .proposal-badge { color: #5aa469; }
+#html-editor .proposal-btn {
+  background: var(--bg3);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 1px 8px;
+  font-size: 11px;
+  cursor: pointer;
+}
+#html-editor .proposal-btn:hover { color: var(--text); }
+#html-editor .proposal-note {
+  flex-basis: 100%;
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  color: var(--text);
+  padding-left: 8px;
+  border-left: 2px solid var(--border);
+}
+#html-editor .proposal-note span { flex: 1; }
+#html-editor .proposal-form { flex-basis: 100%; display: flex; gap: 6px; }
+#html-editor .proposal-form input {
+  flex: 1;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 3px 6px;
+  font-size: 12px;
+}

@@ -1,15 +1,24 @@
 import { mountToolbar } from './toolbar.js';
 import { initClaudeWidget } from './claudeWidget.js';
 import { initPageLinks } from './pageLinks.js';
+import { initProposals, refreshProposals, stripProposalBars, toggleProposal } from './proposals.js';
 
 let editorEl = null;
 let onSaveCb = null;
 let saveTimer = null;
 
+// The page body without the blocks that are re-rendered from meta (and without proposal bars).
+function currentContent() {
+  const clone = editorEl.cloneNode(true);
+  stripProposalBars(clone);
+  clone.querySelectorAll('.block-stack, .char-card, .page-block, .rel-block, .connections-block').forEach(c => c.remove());
+  return clone.innerHTML;
+}
+
 function scheduleSave() {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
-    onSaveCb?.(editorEl.innerHTML);
+    onSaveCb?.(currentContent());
   }, 800);
 }
 
@@ -28,7 +37,8 @@ export function createEditor(container, { onSave, links }) {
   editorEl.spellcheck = true;
   container.appendChild(editorEl);
 
-  editorEl.addEventListener('input', scheduleSave);
+  editorEl.addEventListener('input', () => { refreshProposals(editorEl); scheduleSave(); });
+  initProposals(editorEl, () => editorEl.dispatchEvent(new Event('input', { bubbles: true })));
 
   // Prevent default tab behaviour — insert spaces instead
   editorEl.addEventListener('keydown', (e) => {
@@ -38,24 +48,23 @@ export function createEditor(container, { onSave, links }) {
     }
   });
 
-  mountToolbar(toolbarEl, editorEl);
+  mountToolbar(toolbarEl, editorEl, { propose: () => toggleProposal(editorEl) });
   initClaudeWidget(editorEl);
   if (links) initPageLinks(editorEl, links);
 
   return {
     setContent(html) {
       editorEl.innerHTML = html || '';
+      refreshProposals(editorEl);
       editorEl.scrollTop = 0;
     },
     // Strip template blocks before returning — always re-rendered from meta
     getContent() {
-      const clone = editorEl.cloneNode(true);
-      clone.querySelectorAll('.char-card, .page-block, .rel-block, .connections-block').forEach(c => c.remove());
-      return clone.innerHTML;
+      return currentContent();
     },
     // Insert a rendered card/block at the top of the editor; removes any existing one first
     setCard(cardHTML) {
-      editorEl.querySelectorAll('.char-card, .page-block').forEach(c => c.remove());
+      editorEl.querySelectorAll('.block-stack, .char-card, .page-block').forEach(c => c.remove());
       if (!cardHTML) return null;
       const tmp = document.createElement('div');
       tmp.innerHTML = cardHTML;
@@ -67,7 +76,7 @@ export function createEditor(container, { onSave, links }) {
     setRelationshipsBlock(el) {
       editorEl.querySelectorAll('.rel-block').forEach(b => b.remove());
       if (!el) return;
-      const anchor = editorEl.querySelector('.char-card, .page-block');
+      const anchor = editorEl.querySelector('.block-stack, .char-card, .page-block');
       if (anchor) anchor.insertAdjacentElement('afterend', el);
       else editorEl.insertBefore(el, editorEl.firstChild);
     },
@@ -75,7 +84,7 @@ export function createEditor(container, { onSave, links }) {
     setConnectionsBlock(el) {
       editorEl.querySelectorAll('.connections-block').forEach(b => b.remove());
       if (!el) return;
-      const anchor = editorEl.querySelector('.rel-block') ?? editorEl.querySelector('.char-card, .page-block');
+      const anchor = editorEl.querySelector('.rel-block') ?? editorEl.querySelector('.block-stack, .char-card, .page-block');
       if (anchor) anchor.insertAdjacentElement('afterend', el);
       else editorEl.insertBefore(el, editorEl.firstChild);
     },

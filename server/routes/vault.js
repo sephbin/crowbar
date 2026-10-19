@@ -1,11 +1,17 @@
 import { Router } from 'express';
-import { getTree, readFile, writeRaw, deleteFile } from '../lib/vaultManager.js';
+import { getTree, readFile, writeRaw, deleteFile, getSettings, saveSettings } from '../lib/vaultManager.js';
 
 // req.vaultRoot is set per request by the project middleware in server.js.
 const router = Router();
 
 router.get('/tree', async (req, res) => {
   try { res.json(await getTree(req.vaultRoot)); }
+  catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+router.get('/settings', (req, res) => res.json(getSettings(req.vaultRoot)));
+router.put('/settings', (req, res) => {
+  try { res.json(saveSettings(req.vaultRoot, { system: String(req.body?.system ?? 'coc') })); }
   catch (err) { res.status(500).json({ error: err.message }); }
 });
 

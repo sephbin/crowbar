@@ -179,6 +179,21 @@ export function getFacetRegistry(root) {
   try { return JSON.parse(readFileSync(full, 'utf8')); } catch { return DEFAULT_FACETS; }
 }
 
+// Per-vault settings (currently just the rules system that decides which character blocks pages use).
+const SETTINGS_FILE = '_settings.json';
+const DEFAULT_SETTINGS = { system: 'coc' };
+
+export function getSettings(root) {
+  try { return { ...DEFAULT_SETTINGS, ...JSON.parse(readFileSync(join(root, SETTINGS_FILE), 'utf8')) }; }
+  catch { return { ...DEFAULT_SETTINGS }; }
+}
+
+export function saveSettings(root, patch) {
+  const next = { ...getSettings(root), ...patch };
+  writeFileSync(join(root, SETTINGS_FILE), JSON.stringify(next, null, 2), 'utf8');
+  return next;
+}
+
 // One watcher per project, started lazily the first time a project is used.
 // Changes are tagged with the project id so clients can ignore other projects.
 const watchers = new Map();

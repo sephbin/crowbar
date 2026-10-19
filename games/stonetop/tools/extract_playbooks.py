@@ -73,7 +73,8 @@ def lines_of(page):
 def attach_markers(lines, mks):
     """Put each marker into the line whose middle is nearest to it, as a char at the right place. A tick (ZapfDingbats 4)
     under a box means the box comes ticked ("boxc"); under a circle it is a drawn pip ("pip") and is not clickable.
-    Markers left of a line's text (the indent is tabs, which have no width) match within 30pt; a write-in box far
+    Markers left of a line's text (the indent is tabs, which have no width) match within 30pt, never across a column edge (a heading's
+    right-hand circles at the foot of one column are not the first line of the next); a write-in box far
     from its label ("[ ] ____ (discuss with GM)") or marks at the right end of a heading (the Unstoppable circles) are
     matched in a second, looser pass that stays inside the column."""
     left_over = []
@@ -84,7 +85,7 @@ def attach_markers(lines, mks):
                 if not (ln["y0"] - 2.5 <= m["cy"] <= ln["y1"] + 2.5):
                     continue
                 right = max(c["x1"] for c in ln["chars"]) + (4 if reach == 30 else 200)
-                if m["x0"] < ln["x0"] - reach or m["x0"] > right or (reach > 30 and col_of(m["x0"]) != col_of(ln["x0"])):
+                if m["x0"] < ln["x0"] - reach or m["x0"] > right or col_of((m["x0"] + m["x1"]) / 2) != col_of(ln["x0"]):
                     continue
                 d = abs((ln["y0"] + ln["y1"]) / 2 - m["cy"])
                 if d < bd:
@@ -135,7 +136,7 @@ def html_of(chars):
     if b:
         out.append("</b>")
     s = "".join(out)
-    s = re.sub("­\\s*", "", s)         # soft hyphens the book leaves mid-word ("Stone- top")
+    s = re.sub(r"­\s*(?=\S)", "", s)   # soft hyphens the book leaves mid-word ("Stone- top"); one ending a line is join()'s to resolve
     s = re.sub(r"\s+", " ", s)
     s = re.sub(r"<(b|i)>\s*</\1>", "", s)
     s = re.sub(r"\s*(\{(?:box|boxc|circ|pip|dia|num)\})\s*", r" \1 ", s).strip()
@@ -169,11 +170,16 @@ def strip_tags(s):
 
 def join(a, b):
     bare = strip_tags(a)
+    if bare.endswith("­"):        # a word the book broke at the line end ("Chron- icle") goes back together
+        a = re.sub("­((?:</[bi]>)*)$", r"\1", a)
+        return a + b if re.match(r"(<[^>]+>)*[a-z]", b) else a + " " + b
     w = re.search(r"(\w{4,})$", bare)
     if w and re.match(r"(<[^>]+>)*" + re.escape(w.group(1)) + r"[.,;:]", b):      # the book prints "honest / honest." once
         return re.sub(re.escape(w.group(1)) + r"((?:</[bi]>)*)$", lambda m: m.group(1), a).rstrip() + " " + b
-    if re.search(r"[A-Za-z]-$", bare) and re.match(r"(<[^>]+>)*[a-z]", b) and not re.search(r"(hand|to)-$", bare):
+    if re.search(r"[A-Za-z]-$", bare) and re.match(r"(<[^>]+>)*[a-z]", b) and not re.search(r"(hand|to|self|well|ne’er|do|half|ill)-$", bare):
         return re.sub(r"-((</[bi]>)*)$", r"\1", a) + b
+    if re.search(r"(self|well|ne’er|do|half|ill)-$", bare) and re.match(r"(<[^>]+>)*[a-z]", b):      # a compound split at its hyphen
+        return a + b
     return a + " " + b
 
 
@@ -218,6 +224,24 @@ def blocks_of(lines):
                 owner = blocks[-1] if blocks and blocks[-1]["t"] == "item" else None
                 (owner["body"] if owner else blocks).append(cur)
         prev = ln
+    for b in blocks:
+        for x in (b["body"] if b["t"] == "item" else []) + [b]:
+            if "html" in x:
+                x["html"] = x["html"].replace("­", "")
+    for k, b in enumerate(blocks):
+        if b["t"] != "item":
+            continue
+        # circles on their own line after a move's text belong at the end of a heading ("UP WITH PEOPLE OO|O"); the line
+        # sorts just above that heading, so one with a divider in it goes to the move that follows
+        keep = []
+        for x in b["body"]:
+            h = x.get("html", "")
+            if h and re.fullmatch(r"(\{circ\} *|\| *)+", h) and "{circ}" in h:
+                to = blocks[k + 1] if "|" in h and k + 1 < len(blocks) and blocks[k + 1]["t"] == "item" else b
+                to.setdefault("tail", []).extend("bar" if t == "|" else "circ" for t in re.findall(r"\{circ\}|\|", h))
+            else:
+                keep.append(x)
+        b["body"] = keep
     return blocks
 
 

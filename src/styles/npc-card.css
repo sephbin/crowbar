@@ -226,3 +226,23 @@
   text-align: center;
   min-width: 2em;
 }
+
+/* Modular blocks */
+.block-stack { margin: 0 0 12px; }
+.block-stack .char-card { margin: 0 0 12px; }
+.char-stat-wide { flex: 2; }
+.char-stat-wide .stat-value { text-align: center; }
+[data-meta-key][data-placeholder]:empty::before {
+  content: attr(data-placeholder);
+  opacity: 0.4;
+  pointer-events: none;
+}
+.char-trait-list[data-meta-key] { min-height: 1.2em; }
+
+/* Block picker in the meta panel */
+.meta-blocks-section { margin-top: 14px; display: flex; flex-direction: column; gap: 4px; }
+.meta-block-row { display: flex; align-items: center; gap: 4px; font-size: 0.85em; }
+.meta-block-name { flex: 1; }
+.meta-block-btn { background: none; border: 1px solid var(--border); color: var(--text); border-radius: 3px; cursor: pointer; padding: 0 6px; }
+.meta-block-btn:disabled { opacity: 0.3; cursor: default; }
+.meta-system-select { margin-top: 8px; }

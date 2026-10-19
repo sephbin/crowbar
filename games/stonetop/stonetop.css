@@ -48,11 +48,11 @@ h2.lbl{font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin:24px 
 .in{background:transparent;border:0;border-bottom:1.5px solid var(--ink);padding:3px 2px;min-width:0;width:100%;border-radius:0}
 textarea.in{border:1.5px solid var(--rule);border-radius:6px;padding:8px;width:100%;resize:vertical;min-height:90px;line-height:1.35}
 input.in[type=number]{text-align:center;-moz-appearance:textfield}
-.cols{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0 22px}
+.cols{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px 22px}
 .col{min-width:0}
 .col+.col{border-left:1px solid var(--rule);padding-left:22px}
 /* playbook and story pages: two columns each, like one half-spread of the folded paper */
-.cols.two{grid-template-columns:repeat(2,minmax(0,1fr));gap:0 36px}
+.cols.two{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 36px}
 .cols.two .col:nth-child(odd){border-left:0;padding-left:0}
 .cols.two .col:nth-child(even){padding-left:36px}
 
@@ -84,7 +84,7 @@ h4.ih{margin:0;font-size:14px;letter-spacing:.05em;text-transform:uppercase;font
 @media (pointer:coarse){.mk{width:1.15em;height:1.15em;margin-right:.4em}}
 
 /* ---------- page 2: stats ---------- */
-.band{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 22px;margin-bottom:6px}
+.band{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px 22px;margin-bottom:6px}
 @media (max-width:900px){.band{grid-template-columns:minmax(0,1fr)}}
 .statgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 10px;margin:8px 0 6px}
 .stat{border:2px solid var(--ink);border-radius:12px;padding:3px 6px 6px;text-align:center;position:relative;background:var(--paper)}
@@ -110,7 +110,7 @@ h4.ih{margin:0;font-size:14px;letter-spacing:.05em;text-transform:uppercase;font
 .vit button.die{appearance:none;border:0;background:transparent;font-size:26px;font-weight:700;cursor:pointer;padding:0;width:100%}
 .vit button.die:hover{color:var(--accent)}
 .poss{columns:1}
-.poss .grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 18px}
+.poss .grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px 18px}
 @media (max-width:640px){.poss .grid2{grid-template-columns:minmax(0,1fr)}}
 .seg{display:inline-flex;border:1.5px solid var(--ink);border-radius:999px;overflow:hidden}
 .seg button{appearance:none;border:0;background:transparent;padding:3px 12px;cursor:pointer;font:700 13px "Alegreya Sans",sans-serif}
@@ -183,3 +183,4 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .stat input[readonly]{pointer-events:none}
 
 .mode-create .stat.has{cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+.tail .sep{margin:0 .35em;color:var(--muted)}

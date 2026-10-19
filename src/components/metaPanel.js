@@ -1,4 +1,6 @@
-import { getTemplateForType } from '../templates/templateRegistry.js';
+import { getTemplateForType, resolveBlockIds, resolveMetaFields } from '../templates/templateRegistry.js';
+import { BLOCKS, SYSTEMS, getBlock, getSystem } from '../templates/blocks.js';
+import { saveSystem } from '../data/vaultApi.js';
 
 let currentMeta = {};
 let onChangeCb = null;
@@ -41,7 +43,8 @@ function renderPanel() {
 
   // Fields
   fieldsContainer.innerHTML = '';
-  const fields = tmpl?.metaFields ?? [{ key: 'name', label: 'Name', inputType: 'text' }];
+  const fields = resolveMetaFields(currentMeta);
+  if (!fields.length) fields.push({ key: 'name', label: 'Name', inputType: 'text' });
 
   fields.forEach(field => {
     const row = document.createElement('div');
@@ -92,11 +95,72 @@ function renderPanel() {
     fieldsContainer.appendChild(row);
   });
 
+  renderBlockPicker();
+
   // Connects chips (shown when this page is used as an edge in the canvas)
   renderConnects();
 
   // Tags
   renderTags();
+}
+
+// Lets a page mix and match its header blocks. Until the list is edited the page follows
+// its template's default for the vault's rules system; "Reset" returns to that.
+function renderBlockPicker() {
+  const ids = resolveBlockIds(currentMeta);
+  const section = document.createElement('div');
+  section.className = 'meta-blocks-section';
+
+  const lbl = document.createElement('div');
+  lbl.className = 'meta-field-label';
+  lbl.textContent = 'Blocks';
+  section.appendChild(lbl);
+
+  const setIds = (next) => { currentMeta.blocks = next; save(); renderPanel(); };
+
+  ids.forEach((id, i) => {
+    const row = document.createElement('div');
+    row.className = 'meta-block-row';
+    const name = document.createElement('span');
+    name.className = 'meta-block-name';
+    name.textContent = getBlock(id)?.label ?? id;
+    row.appendChild(name);
+    const btn = (label, title, fn, disabled) => {
+      const b = document.createElement('button');
+      b.className = 'meta-block-btn';
+      b.textContent = label; b.title = title; b.disabled = !!disabled;
+      b.addEventListener('click', fn);
+      row.appendChild(b);
+    };
+    btn('↑', 'Move up', () => { const n = [...ids]; [n[i - 1], n[i]] = [n[i], n[i - 1]]; setIds(n); }, i === 0);
+    btn('↓', 'Move down', () => { const n = [...ids]; [n[i + 1], n[i]] = [n[i], n[i + 1]]; setIds(n); }, i === ids.length - 1);
+    btn('×', 'Remove block', () => setIds(ids.filter((_, j) => j !== i)));
+    section.appendChild(row);
+  });
+
+  const add = document.createElement('select');
+  add.className = 'meta-field-input';
+  add.innerHTML = '<option value="">+ Add block…</option>' +
+    BLOCKS.filter(b => !ids.includes(b.id)).map(b => `<option value="${b.id}">${b.label}</option>`).join('');
+  add.addEventListener('change', () => { if (add.value) setIds([...ids, add.value]); });
+  section.appendChild(add);
+
+  if (Array.isArray(currentMeta.blocks)) {
+    const reset = document.createElement('button');
+    reset.className = 'meta-connects-add';
+    reset.textContent = 'Reset to default blocks';
+    reset.addEventListener('click', () => { delete currentMeta.blocks; save(); renderPanel(); });
+    section.appendChild(reset);
+  }
+
+  const sys = document.createElement('select');
+  sys.className = 'meta-field-input meta-system-select';
+  sys.title = 'Rules system for this vault';
+  sys.innerHTML = SYSTEMS.map(s => `<option value="${s.id}"${s.id === getSystem() ? ' selected' : ''}>System: ${s.label}</option>`).join('');
+  sys.addEventListener('change', async () => { await saveSystem(sys.value); save(); renderPanel(); });
+  section.appendChild(sys);
+
+  fieldsContainer.appendChild(section);
 }
 
 function renderConnects() {

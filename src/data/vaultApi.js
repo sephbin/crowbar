@@ -1,6 +1,24 @@
 import { apiFetch } from './project.js';
 import { parsePage, serializePage } from '../meta/pageMeta.js';
 import { getTemplate } from '../templates/templateRegistry.js';
+import { getSystem, setSystem, COC_KEYS } from '../templates/blocks.js';
+
+// Loads the vault's rules system so blocks render for it. Falls back to the default on any error.
+export async function loadSettings() {
+  try {
+    const res = await apiFetch('/api/vault/settings');
+    if (res.ok) setSystem((await res.json()).system);
+  } catch {}
+}
+
+export async function saveSystem(id) {
+  setSystem(id);
+  await apiFetch('/api/vault/settings', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ system: getSystem() }),
+  });
+}
 
 export async function fetchTree() {
   const res = await apiFetch('/api/vault/tree');
@@ -53,6 +71,10 @@ export async function createPage(templateId, name, extraMeta = {}) {
   }
 
   const meta = { ...template.defaultMeta, name, ...extraMeta };
+  // The character template carries Call of Cthulhu stats; other systems don't want them.
+  if (template.id === 'character' && getSystem() !== 'coc') {
+    for (const k of COC_KEYS) delete meta[k];
+  }
   const content = template.bodyHTML(meta);
   await saveRaw(filename, serializePage(meta, content));
   return { path: filename, meta };

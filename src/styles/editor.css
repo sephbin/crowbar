@@ -80,7 +80,7 @@
 #html-editor {
   flex: 1;
   overflow-y: auto;
-  padding: 32px;
+  padding: 32px 32px 30vh;  /* generous bottom margin so the last lines can scroll up off the screen edge */
   font-family: 'Georgia', serif;
   font-size: 16px;
   line-height: 1.75;
@@ -257,7 +257,7 @@
   #editor-header { padding: 0 10px; gap: 8px; }
 
   #html-editor {
-    padding: 16px;
+    padding: 16px 16px calc(35vh + env(safe-area-inset-bottom));
     font-size: 15px;
   }
   #html-editor > * { max-width: 100%; }
@@ -304,3 +304,42 @@
 .link-picker-item { cursor: pointer; }
 .link-picker-item.selected, .link-picker-item:hover { background: rgba(201, 168, 76, 0.18); }
 .link-picker-empty { color: var(--text-muted); }
+
+/* Claude widget: mode switch */
+.claude-modes { display: flex; gap: 4px; margin-bottom: 8px; }
+.claude-modes button {
+  flex: 1;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  cursor: pointer;
+}
+.claude-modes button.active { color: #12111a; background: var(--accent); border-color: var(--accent); font-weight: 600; }
+
+/* Notes left for Claude */
+mark.claude-note {
+  background: rgba(120, 170, 230, 0.22);
+  color: inherit;
+  border-bottom: 2px solid rgba(120, 170, 230, 0.7);
+  border-radius: 2px;
+  cursor: pointer;
+}
+mark.claude-note[data-status="done"] { background: rgba(90, 164, 105, 0.18); border-bottom-color: rgba(90, 164, 105, 0.7); }
+.claude-note-popover {
+  position: fixed;
+  z-index: 1001;
+  background: var(--bg3);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 10px 12px;
+  box-shadow: 0 8px 32px #0009;
+  font-size: 13px;
+}
+.cnp-status { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 6px; }
+.cnp-text { width: 100%; box-sizing: border-box; background: var(--bg2); color: var(--text); border: 1px solid var(--border); border-radius: 5px; padding: 6px 8px; font: inherit; resize: vertical; }
+.cnp-reply { margin-top: 8px; padding-left: 8px; border-left: 2px solid #5aa469; color: var(--text); }
+.cnp-row { display: flex; gap: 6px; margin-top: 8px; }
+.cnp-row button { padding: 3px 10px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg2); color: var(--text); cursor: pointer; font-size: 12px; }
