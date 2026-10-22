@@ -27,6 +27,12 @@ def col_of(x):
     return len(COLS) - 1
 
 
+def straight(curve):
+    """True when a bezier item is really a straight line (control points collinear with the ends)."""
+    _, a, b, c, e = curve
+    return all(abs((q.x - a.x) * (e.y - a.y) - (q.y - a.y) * (e.x - a.x)) < 0.05 for q in (b, c))
+
+
 def markers(page):
     """Checkbox / circle / diamond drawings, by their path shape (they are all about 6pt across)."""
     out = []
@@ -39,7 +45,9 @@ def markers(page):
         if not (4.8 <= r.width <= 6.4 and 4.8 <= r.height <= 6.4) or d.get("color") is None:
             continue
         ops = "".join(i[0] for i in d["items"])
-        kind = {"llclllll": "box", "llllllll": "box", "cccc": "circ", "cccl": "dia", "cllc": "dia"}.get(ops)
+        kind = {"llclllll": "box", "llllllll": "box", "clclclcl": "box", "cccc": "circ", "cccl": "dia", "cllc": "dia"}.get(ops)
+        if ops == "cccc" and all(straight(i) for i in d["items"]):       # some diamonds are four "curves" whose control points lie on a line
+            kind = "dia"
         if kind:
             out.append({"k": kind, "x0": r.x0, "x1": r.x1, "cy": (r.y0 + r.y1) / 2})
     return out
@@ -152,6 +160,7 @@ def classify(ln):
     solid = [c for c in chars if c["c"].strip() and not c.get("mk")]
     lead = next((c for c in chars if c["c"].strip()), None)
     ln["lead_mk"] = bool(lead and lead.get("mk"))
+    ln["lead_inline"] = bool(lead and lead.get("mk") and lead["c"] in ("{dia}", "{circ}", "{pip}"))      # a diamond or circle inside a sentence, not a list marker
     txt = plain(chars)
     ln["text"] = txt
     sec = [c for c in solid if c["sec"]]
@@ -212,7 +221,8 @@ def blocks_of(lines):
             cur = None
         else:
             html = html_of(ln["chars"])
-            if cur is not None and gap <= PARA_GAP and not ln["lead_mk"]:
+            runs_on = ln["lead_inline"] and cur is not None and not re.search(r"[.?!:]\s*(</[bi]>)*$", cur["html"])
+            if cur is not None and gap <= PARA_GAP and (not ln["lead_mk"] or runs_on):
                 cur["html"] = join(cur["html"], html)
             else:
                 if html.startswith("{num}"):

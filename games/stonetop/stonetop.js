@@ -82,10 +82,23 @@ function diaSets(parts) {
   }
   return { first, byAt: new Map(sets.map(st => [st.at, st])) };
 }
+// Major arcana named in the text link to their page; ctx.arcanum (an arcanum's own page) skips links to itself.
+let arcRe = null, arcOf = {};
+function arcLinks(text, ctx, key) {
+  const list = (pack && pack.arcana) || [];
+  if (!list.length) return [document.createTextNode(text)];
+  if (!arcRe || arcRe.n !== list.length) {
+    arcOf = Object.fromEntries(list.map(a => [a.name, a.id]));
+    const esc = n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    arcRe = new RegExp(`(${list.map(a => a.name).sort((a, b) => b.length - a.length).map(esc).join('|')})`);
+    arcRe.n = list.length;
+  }
+  return text.split(arcRe).map((t, i) => i % 2 && arcOf[t] !== ctx.arcanum ? h('a', { class: 'arclink', href: `#/arcana/${arcOf[t]}`, text: t, data: key ? { key, arc: arcOf[t] } : {} }) : document.createTextNode(t));
+}
 // group: { id, all } puts the first marker (or every marker, when all) of this text in that group
 function markup(html, ctx, c, group) {
   const frag = document.createDocumentFragment();
-  let cur = frag; const stack = []; let first = true;
+  let cur = frag; const stack = []; let first = true, lineKey = null;
   const parts = String(html).split(/(<\/?[bi]>|\{(?:box|boxc|circ|pip|dia|n\d)\})/), dia = diaSets(parts), setKey = new Map();
   for (const [at, part] of parts.entries()) {
     if (!part) continue;
@@ -101,20 +114,20 @@ function markup(html, ctx, c, group) {
         Object.assign(e.dataset, { set: setKey.get(st), name: st.name, load: st.size });
       }
       cur.appendChild(e);
-      if (isBox) first = false;
-    } else cur.appendChild(document.createTextNode(part));
+      if (isBox) { first = false; lineKey ??= e.dataset.key; }
+    } else for (const n of arcLinks(part, ctx, lineKey)) cur.appendChild(n);
   }
   return frag;
 }
 function blocks(list, ctx, c, opts = {}) {
   const out = [];
-  let grp = null;                       // the open "choose 1" group id, 'row' for one group per line, or null
+  let grp = null, base = null;          // the open "choose 1" group id, 'row' for one group per line, or null; base is the section's own group
   for (const b of list) {
     if (b.t === 'sec') {
       const lim = b.note ? limitOf(plainText(b.note)) : 0;
-      grp = lim ? newGroup(ctx, lim) : null;
+      grp = base = lim ? newGroup(ctx, lim) : null;
       out.push(h('h3', { class: 'sec' }, b.title, b.note ? [' ', h('small', null, markup(b.note, ctx, c))] : null));
-    } else if (b.t === 'step') { grp = null; out.push(h('div', { class: 'step' }, h('b', { class: 'n', text: b.n }), h('div', null, markup(b.html, ctx, c)))); }
+    } else if (b.t === 'step') { grp = base = null; out.push(h('div', { class: 'step' }, h('b', { class: 'n', text: b.n }), h('div', null, markup(b.html, ctx, c)))); }
     else if (b.t === 'item') {
       const head = h('h4', { class: 'ih' });
       b.mk.forEach((k, i) => head.append(mark(k, ctx, c, grp && grp !== 'row' && i === 0 ? grp : null)));
@@ -125,7 +138,8 @@ function blocks(list, ctx, c, opts = {}) {
     } else {
       const lead = /^\{(?:box|boxc)\}/.test(b.html);
       let g = null;
-      if (lead && grp) g = grp === 'row' ? { id: newGroup(ctx), all: true } : { id: grp };
+      if (/^\{boxc\}/.test(b.html)) { const lim = limitOf(plainText(b.html)); grp = lim ? newGroup(ctx, lim) : base; }   // an item you always have is in no group; its own "(pick 1):" opens one for the lines below, else the section's group resumes
+      else if (lead && grp) g = grp === 'row' ? { id: newGroup(ctx), all: true } : { id: grp };
       else if (!lead) { const t = plainText(b.html), lim = limitOf(t); grp = ROW.test(t) ? 'row' : lim ? newGroup(ctx, lim) : null; }
       const p = h('p', null, markup(b.html, ctx, c, g)), fol = followerSpec(b.html);
       if (fol && lead) p.dataset.fol = JSON.stringify(fol);
@@ -414,7 +428,7 @@ function home() {
     if (!ids.length) w.append(h('p', { class: 'note', text: 'None yet.' }));
     for (const id of ids) {
       const c = chars[id], pb = pbOf(c);
-      w.append(h('div', { class: 'card' },
+      w.append(h('div', { class: 'chcard' },
         h('a', { href: `#/c/${id}`, style: 'text-decoration:none;color:inherit;display:block' }, h('b', { text: c.name || '(unnamed)' }),
           h('span', { text: `${pb ? pb.name : c.playbook} · level ${c.level} · HP ${c.hp}/${c.hpMax}` })),
         h('div', { class: 'row', style: 'margin-top:8px' },
@@ -427,21 +441,61 @@ function home() {
   app.replaceChildren(w);
 }
 
+// The major arcana (Book II, appendix D): a card for each, front and back side by side. The marks on a card are not anyone's to tick.
+function arcanumCard(a) {
+  const ctx = { prefix: 'arc-' + a.id, n: 0, arcanum: a.id }, ref = { checks: {} };
+  const body = h('div', { class: 'cols two' }, h('div', { class: 'col' }, blocks(a.front, ctx, ref)), h('div', { class: 'col' }, blocks(a.back, ctx, ref)));
+  body.querySelectorAll('input').forEach(i => { i.disabled = true; });
+  return h('section', { class: 'page arc', id: 'arc-' + a.id },
+    h('h2', { class: 'hd', text: a.name }),
+    h('p', { class: 'sub' }, a.load ? h('span', { class: 'load', title: `${a.load} load`, text: '◆'.repeat(a.load) + ' ' }) : null, a.tags),
+    body);
+}
+// One arcanum, reached from a link in the sheet; Back returns to the sheet it came from.
+function arcanaPage(id) {
+  const a = ((pack && pack.arcana) || []).find(x => x.id === id);
+  if (!a) { location.hash = lastSheet || '#/'; return; }
+  document.title = `${a.name} · Stonetop`;
+  roll.hidden = true;
+  app.replaceChildren(
+    bar(h('a', { class: 'btn', href: lastSheet || '#/', text: '← Back' })),
+    arcanumCard(a));
+  window.scrollTo(0, 0);
+}
+// A character holds the arcana whose line is ticked in the playbook. Only the links on the page being shown can say, so
+// the others keep what they had.
+function syncArcana(c) {
+  const links = [...app.querySelectorAll('a.arclink[data-key]')];
+  if (!links.length) return false;
+  const shown = new Set(links.map(l => l.dataset.arc)), had = c.arcana || [];
+  const held = new Set(links.filter(l => c.checks[l.dataset.key]).map(l => l.dataset.arc));
+  const next = ((pack && pack.arcana) || []).map(a => a.id).filter(i => shown.has(i) ? held.has(i) : had.includes(i));
+  c.arcana = next;
+  const tab = app.querySelector('a.tab[data-tab="arcana"]'); if (tab) tab.hidden = !next.length;
+  return next.join() !== had.join();
+}
+function arcanaTab(c, pb) {
+  const page = h('div', { class: 'page' }, header(c, pb));
+  const held = ((pack && pack.arcana) || []).filter(a => (c.arcana || []).includes(a.id));
+  if (!held.length) page.append(h('p', { class: 'note', text: 'No major arcana yet. Tick one on the Playbook tab and it appears here.' }));
+  return h('div', null, page, ...held.map(arcanumCard));
+}
+
 function sheet(id, tab) {
   const c = chars[id];
   if (!c) { message = 'That character is not in this browser.'; location.hash = '#/'; return; }
   const pb = pbOf(c);
   if (!pack || !pb) { message = 'Load the playbook pack to open this character.'; location.hash = '#/'; return; }
   if (tab === 'create') tab = 'start';
-  tab = ['start', 'play', 'story', 'gear'].includes(tab) ? tab : 'play';
+  tab = ['start', 'play', 'story', 'gear', 'arcana'].includes(tab) ? tab : 'play';
   document.title = `${c.name || pb.name} · Stonetop`;
-  const tabs = [['start', 'Playbook'], ['play', 'Sheet'], ['story', 'Story'], ['gear', 'Gear & notes']].map(([t, n]) =>
-    h('a', { class: 'tab', href: `#/c/${id}/${t}`, 'aria-current': t === tab ? 'page' : null, text: n }));
-  const page = { start: startPage, play: playPage, story: storyPage, gear: gearPage }[tab](c, pb);
+  const tabs = [['start', 'Playbook'], ['play', 'Sheet'], ['story', 'Story'], ['gear', 'Gear & notes'], ['arcana', 'Arcana']].map(([t, n]) =>
+    h('a', { class: 'tab', href: `#/c/${id}/${t}`, 'aria-current': t === tab ? 'page' : null, hidden: t === 'arcana' && !(c.arcana || []).length && tab !== 'arcana', data: { tab: t }, text: n }));
+  const page = { start: startPage, play: playPage, story: storyPage, gear: gearPage, arcana: arcanaTab }[tab](c, pb);
   // turn the page: the tabs in order, with a button at the foot of the page like the corner of a physical sheet
-  const order = ['start', 'play', 'story', 'gear'], at = order.indexOf(tab);
-  const label = Object.fromEntries([['start', 'Playbook'], ['play', 'Sheet'], ['story', 'Story'], ['gear', 'Gear & notes']]);
-  page.append(h('div', { class: 'turn noprint' },
+  const order = ['start', 'play', 'story', 'gear', ...((c.arcana || []).length ? ['arcana'] : [])], at = order.indexOf(tab);
+  const label = Object.fromEntries([['start', 'Playbook'], ['play', 'Sheet'], ['story', 'Story'], ['gear', 'Gear & notes'], ['arcana', 'Arcana']]);
+  (page.firstChild && page.classList.contains('page') ? page : page.firstChild).append(h('div', { class: 'turn noprint' },
     at > 0 ? h('a', { class: 'btn', href: `#/c/${id}/${order[at - 1]}`, text: `← ${label[order[at - 1]]}` }) : h('span'),
     at < order.length - 1 ? h('a', { class: 'btn primary', href: `#/c/${id}/${order[at + 1]}`, text: `${label[order[at + 1]]} →` }) : null));
   app.replaceChildren(
@@ -450,7 +504,7 @@ function sheet(id, tab) {
       ...tabs, h('button', { type: 'button', class: 'btn', text: 'Print', onclick: () => print() }),
       h('button', { type: 'button', class: 'btn', text: 'Export', onclick: () => download(`stonetop-${slug(c.name)}.json`, c) })),
     page);
-  refresh(c);
+  refresh(c); syncArcana(c);
   if (c.mode === 'play') buildRollBar(); else { roll.hidden = true; roll.replaceChildren(); }
 }
 function refresh(c) {
@@ -554,11 +608,18 @@ function endDrag(e, drop) {
 addEventListener('pointerup', e => endDrag(e, true));
 addEventListener('pointercancel', e => endDrag(e, false));
 
+app.addEventListener('change', e => {
+  const c = chars[currentId()];
+  if (c && e.target.classList && e.target.classList.contains('mk') && syncArcana(c)) touch(c);
+});
+
 // ---------- routing ----------
+let lastSheet = null;          // where the arcana pages' Back button goes
 function currentId() { const m = /^#\/c\/([^/]+)/.exec(location.hash); return m ? m[1] : null; }
 function route() {
-  const m = /^#\/c\/([^/]+)(?:\/(\w+))?/.exec(location.hash);
-  if (m) sheet(m[1], m[2]); else home();
+  const m = /^#\/c\/([^/]+)(?:\/(\w+))?/.exec(location.hash), a = /^#\/arcana(?:\/([\w-]+))?/.exec(location.hash);
+  if (a && pack && a[1]) { arcanaPage(a[1]); return; }
+  if (m) { lastSheet = location.hash; sheet(m[1], m[2]); } else home();
   if (!m) message = '';
   window.scrollTo(0, 0);
 }
