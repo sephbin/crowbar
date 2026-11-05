@@ -152,7 +152,70 @@ function blocks(list, ctx, c, opts = {}) {
 function followerSpec(html) {
   const text = plainText(html), name = /<b>([^<]+)<\/b>/.exec(html), hp = /\bHP (\d+)/.exec(text), n = /(\d+)(?:-\d+)? followers\b|, follower\b/.exec(text);
   if (!name || !hp || !n) return null;
-  return { name: name[1].trim(), hp: Number(hp[1]), armor: Number((/(\d+) armor/.exec(text) || [])[1]) || 0, count: Number(n[1]) || 1 };
+  const field = re => ((re.exec(text) || [])[1] || '').trim();
+  return { name: name[1].trim(), hp: Number(hp[1]), armor: Number((/(\d+) armor/.exec(text) || [])[1]) || 0, count: Number(n[1]) || 1,
+    tags: field(/followers?\s*\(\s*([^)]*)\)/).replace(/\s+/g, ' ').replace(/\s+,/g, ','), damage: field(/\bDamage:? ([^;]+)/),
+    instinct: field(/\bInstinct:? ([^;]+)/), cost: field(/\bCost:? ([^;.]+)/) };
+}
+// The stat lines of a playbook's follower possessions, by the key of the line's box (rendered off-page, so it matches the sheet).
+function followerSpecs(c, pb) {
+  const out = {};
+  pb.possessions.forEach((col, i) => blocks(col, { prefix: 'ps' + i, n: 0 }, { checks: {} }).forEach(p => {
+    const k = p.dataset && p.dataset.fol && p.querySelector('.mk');
+    if (k) out[k.dataset.key] = JSON.parse(p.dataset.fol);
+  }));
+  return out;
+}
+// Followers taken before their stat lines were kept get them now (name, HP and armor stay as the player left them).
+function backfillFollowers(c, pb) {
+  const specs = followerSpecs(c, pb);
+  for (const f of c.followers) {
+    const s = f.src && specs[f.src];
+    if (s) for (const k of ['tags', 'damage', 'instinct', 'cost']) f[k] ??= s[k];
+    f.hpMax ??= s ? s.hp : f.hp;
+    f.loyalty ??= 0;
+  }
+}
+const FOL_FIELDS = [['tags', 'Tags'], ['damage', 'Damage'], ['instinct', 'Instinct'], ['cost', 'Cost']];
+// One card per follower: name, HP (current / max), armor, loyalty, then the stat line. Play has HP and loyalty steppers and
+// rolls the damage die; the other modes edit every field.
+function followerCards(c, pb) {
+  const wrap = h('div', { class: 'folgrid' });
+  const draw = () => {
+    const play = c.mode === 'play';
+    wrap.replaceChildren(...c.followers.map((f, i) => {
+      const set = (k, num) => e => { f[k] = num ? Number(e.target.value) : e.target.value; touch(c); };
+      const numIn = (k, label, ro) => h('input', { class: 'in', type: 'number', inputmode: 'numeric', 'aria-label': `${f.name} ${label}`, value: f[k] ?? 0, readonly: ro, oninput: set(k, true) });
+      const stepper = (k, label, lo, hi) => h('span', { class: 'fstep' },
+        h('button', { type: 'button', class: 'step2', 'aria-label': `${f.name} ${label} down`, text: '−', onclick: () => { f[k] = Math.max(lo, (Number(f[k]) || 0) - 1); touch(c); draw(); } }),
+        numIn(k, label),
+        h('button', { type: 'button', class: 'step2', 'aria-label': `${f.name} ${label} up`, text: '+', onclick: () => { f[k] = Math.min(hi, (Number(f[k]) || 0) + 1); touch(c); draw(); } }));
+      const die = /d(\d+)/.exec(f.damage || '');
+      return h('div', { class: 'fol card2' + (play && Number(f.hp) <= 0 ? ' down' : '') },
+        h('div', { class: 'fhead' },
+          h('input', { class: 'in fname', 'aria-label': 'Follower name', value: f.name, oninput: set('name') }),
+          h('button', { type: 'button', class: 'x', 'aria-label': `Remove ${f.name}`, text: '×', onclick: () => {
+            c.followers.splice(i, 1);
+            if (f.src && !c.followers.some(o => o.src === f.src)) {
+              c.checks[f.src] = false;
+              const box = app.querySelector(`.mk[data-key="${f.src}"]`); if (box) box.checked = false;
+            }
+            touch(c); draw(); applyTaken(app, c);
+          } })),
+        h('div', { class: 'fnums' },
+          h('label', null, h('span', null, 'HP'), play ? stepper('hp', 'HP', 0, Number(f.hpMax) || 99) : numIn('hp', 'HP'), h('span', { class: 'sl' }, '/'), numIn('hpMax', 'max HP', play)),
+          h('label', null, h('span', null, 'Armor'), numIn('armor', 'armor', play)),
+          h('label', null, h('span', null, 'Loyalty'), play ? stepper('loyalty', 'loyalty', 0, 9) : numIn('loyalty', 'loyalty'))),
+        h('dl', null, FOL_FIELDS.flatMap(([k, label]) => play && !f[k] ? [] : [h('dt', null, label),
+          h('dd', null, play
+            ? (k === 'damage' && die ? h('button', { type: 'button', class: 'fdie', title: `Roll ${die[0]}`, text: f[k], onclick: () => rollDie(`${f.name} ${die[0]}`, Number(die[1])) }) : f[k])
+            : h('input', { class: 'in', 'aria-label': `${f.name} ${label}`, value: f[k] || '', oninput: set(k) }))])));
+    }), h('button', { type: 'button', class: 'btn small', text: '+ follower', onclick: () => {
+      c.followers.push({ name: 'Follower', hp: 3, hpMax: 3, armor: 0, loyalty: 0, tags: '', damage: '', instinct: '', cost: '' }); touch(c); draw();
+    } }));
+  };
+  draw();
+  return wrap;
 }
 // opts.only picks columns by index (the keys keep the column's own number, so saved ticks do not move)
 function columns(cols, region, c, opts) {
@@ -177,8 +240,10 @@ function applyTaken(root, c) {
     const mks = p.querySelectorAll('.mk');
     if (mks.length) p.classList.toggle('hide', play && ![...mks].some(m => m.checked));
   });
-  const grid = root.querySelector('.movegrid');
-  if (grid) root.querySelector('.empty-moves').hidden = !!grid.querySelector('.item:not(.hide)');
+  root.querySelectorAll('.movegrid').forEach(grid => {
+    const empty = grid.nextElementSibling;
+    if (empty && empty.classList.contains('empty-moves')) empty.hidden = !!grid.querySelector('.item:not(.hide)');
+  });
 }
 
 // ---------- dice ----------
@@ -211,6 +276,12 @@ function rollDamage(c, pb) {
   let drop = -1;
   if (net) drop = (dice[0] <= dice[1]) === (net > 0) ? 0 : 1;
   show({ label: `damage ${pb.die}`, why: net > 0 ? 'advantage' : net < 0 ? 'disadvantage' : '', dice, drop, total: dice.reduce((s, v, i) => s + (i === drop ? 0 : v), 0), tier: null, die: sides });
+}
+function rollDie(label, sides) {     // a follower's damage: one die, the roll bar's advantage applies
+  const net = Math.sign(mode === 'adv' ? 1 : mode === 'dis' ? -1 : 0);
+  const dice = Array.from({ length: net ? 2 : 1 }, () => d(sides));
+  const drop = net ? ((dice[0] <= dice[1]) === (net > 0) ? 0 : 1) : -1;
+  show({ label, why: net > 0 ? 'advantage' : net < 0 ? 'disadvantage' : '', dice, drop, total: dice.reduce((s, v, i) => s + (i === drop ? 0 : v), 0), tier: null });
 }
 function show(r) {
   history.unshift(`${r.label}: ${r.total}`); history = history.slice(0, 6);
@@ -314,7 +385,25 @@ function playPage(c, pb) {
     page.append(h('div', { class: 'movegrid' }, cards),
       h('p', { class: 'note empty-moves', hidden: true }, 'No moves taken yet. Switch to Create or Progress to choose some.'));
   } else page.append(columns(pb.moves, 'mv', c));
+  for (const ins of insertsOf(pb)) page.append(insertSection(c, ins));
+  if (M === 'play' && c.followers.length) page.append(h('div', { class: 'moves-head' }, h('h3', { class: 'sec' }, 'Followers')), followerCards(c, pb));
   return page;
+}
+// Playbook inserts (the Lightbearer's Invocations): entries with a box each, ticked for the ones the character knows.
+// Play shows the known ones as cards, like the moves.
+const insertsOf = pb => ((pack && pack.inserts) || []).filter(i => i.playbook === pb.id);
+function insertSection(c, ins) {
+  const play = c.mode === 'play', prefix = 'in-' + ins.id;
+  const wrap = h('div', { class: 'insert' }, h('div', { class: 'moves-head' }, h('h3', { class: 'sec' }, ins.title + ' ', h('small', null, play ? '' : markup(ins.note, { prefix: prefix + 'n', n: 0 }, c)))));
+  if (!play) {
+    wrap.append(h('div', { class: 'ins-intro' }, blocks(ins.intro, { prefix: prefix + 'i', n: 0 }, c)), columns(ins.cols, prefix, c));
+    return wrap;
+  }
+  const cards = ins.cols.flatMap((col, i) => blocks(col, { prefix: prefix + i, n: 0 }, c).filter(e => e.classList.contains('item')));
+  wrap.append(h('div', { class: 'movegrid' }, cards),
+    h('p', { class: 'note empty-moves', hidden: true }, `No ${ins.title} known yet. Switch to Create or Progress to choose some.`),
+    h('details', { class: 'ins-rules' }, h('summary', null, 'Rules'), blocks(ins.intro, { prefix: prefix + 'i', n: 0 }, c)));
+  return wrap;
 }
 // The paper is printed and folded like a book: the right half of page 1 comes first (the playbook itself), then page 2,
 // then the left half of page 1 last (the story prompts and the introductions).
@@ -353,7 +442,7 @@ function gearPage(c, pb) {
   const load = () => (c.gear || []).reduce((s, g) => s + (Number(g.load) || 0), 0);
   page.append(h('div', { class: 'cols', style: 'grid-template-columns:repeat(auto-fit,minmax(280px,1fr))' },
     h('div', { class: 'col' }, h('h3', { class: 'sec' }, 'Gear ', h('small', null, 'name, load')), listEditor(c, 'gear', [['name', 'item'], ['load', 'load', true]], { name: '', load: 1 }, '+ item')),
-    h('div', { class: 'col' }, h('h3', { class: 'sec' }, 'Followers ', h('small', null, 'name, HP, armor')), listEditor(c, 'followers', [['name', 'name'], ['hp', 'HP', true], ['armor', 'arm', true]], { name: '', hp: 3, armor: 0 }, '+ follower')),
+    h('div', { class: 'col' }, h('h3', { class: 'sec' }, 'Followers'), followerCards(c, pb)),
     h('div', { class: 'col' }, h('h3', { class: 'sec' }, 'Notes'), h('textarea', { class: 'in', style: 'min-height:220px', data: { bind: 'notes' } }, c.notes || ''))));
   return page;
 }
@@ -474,6 +563,29 @@ function syncArcana(c) {
   const tab = app.querySelector('a.tab[data-tab="arcana"]'); if (tab) tab.hidden = !next.length;
   return next.join() !== had.join();
 }
+// The moves every PC has (Book I pp. 70-85), grouped as in the book. In play, "+STR" and the like roll that stat.
+function movesTab(c, pb) {
+  const page = h('div', { class: 'page' }, header(c, pb));
+  const groups = (pack && pack.moves) || [];
+  if (!groups.length) { page.append(h('p', { class: 'note', text: 'This pack has no general moves. Rebuild it with tools/extract_moves.py.' })); return page; }
+  page.append(h('nav', { class: 'mvnav noprint' }, groups.map((g, i) => h('a', { class: 'btn small', href: '#', text: g.group, onclick: e => { e.preventDefault(); document.getElementById('gm' + i).scrollIntoView({ behavior: 'smooth' }); } }))));
+  groups.forEach((g, i) => {
+    const grid = h('div', { class: 'movegrid general' }, blocks(g.items, { prefix: 'gm' + i, n: 0 }, { checks: {} }));
+    grid.querySelectorAll('input').forEach(x => { x.disabled = true; });
+    if (c.mode === 'play') rollLinks(grid);
+    page.append(h('div', { class: 'moves-head', id: 'gm' + i }, h('h3', { class: 'sec', text: g.group })), grid);
+  });
+  return page;
+}
+function rollLinks(root) {
+  const ab = Object.fromEntries(STATS.map(([k, , a]) => [a, k]));
+  const walk = document.createTreeWalker(root, NodeFilter.SHOW_TEXT), nodes = [];
+  while (walk.nextNode()) if (/\+(STR|DEX|INT|WIS|CON|CHA)\b/.test(walk.currentNode.nodeValue)) nodes.push(walk.currentNode);
+  for (const n of nodes) {
+    const parts = n.nodeValue.split(/(\+(?:STR|DEX|INT|WIS|CON|CHA)\b)/);
+    n.replaceWith(...parts.map((t, i) => i % 2 ? h('button', { type: 'button', class: 'rolllink', title: `Roll ${t}`, data: { roll: ab[t.slice(1)] }, text: t }) : t));
+  }
+}
 function arcanaTab(c, pb) {
   const page = h('div', { class: 'page' }, header(c, pb));
   const held = ((pack && pack.arcana) || []).filter(a => (c.arcana || []).includes(a.id));
@@ -486,15 +598,16 @@ function sheet(id, tab) {
   if (!c) { message = 'That character is not in this browser.'; location.hash = '#/'; return; }
   const pb = pbOf(c);
   if (!pack || !pb) { message = 'Load the playbook pack to open this character.'; location.hash = '#/'; return; }
+  backfillFollowers(c, pb);
   if (tab === 'create') tab = 'start';
-  tab = ['start', 'play', 'story', 'gear', 'arcana'].includes(tab) ? tab : 'play';
+  tab = ['start', 'play', 'moves', 'story', 'gear', 'arcana'].includes(tab) ? tab : 'play';
   document.title = `${c.name || pb.name} · Stonetop`;
-  const tabs = [['start', 'Playbook'], ['play', 'Sheet'], ['story', 'Story'], ['gear', 'Gear & notes'], ['arcana', 'Arcana']].map(([t, n]) =>
+  const tabs = [['start', 'Playbook'], ['play', 'Sheet'], ['moves', 'Moves'], ['story', 'Story'], ['gear', 'Gear & notes'], ['arcana', 'Arcana']].map(([t, n]) =>
     h('a', { class: 'tab', href: `#/c/${id}/${t}`, 'aria-current': t === tab ? 'page' : null, hidden: t === 'arcana' && !(c.arcana || []).length && tab !== 'arcana', data: { tab: t }, text: n }));
-  const page = { start: startPage, play: playPage, story: storyPage, gear: gearPage, arcana: arcanaTab }[tab](c, pb);
+  const page = { start: startPage, play: playPage, moves: movesTab, story: storyPage, gear: gearPage, arcana: arcanaTab }[tab](c, pb);
   // turn the page: the tabs in order, with a button at the foot of the page like the corner of a physical sheet
-  const order = ['start', 'play', 'story', 'gear', ...((c.arcana || []).length ? ['arcana'] : [])], at = order.indexOf(tab);
-  const label = Object.fromEntries([['start', 'Playbook'], ['play', 'Sheet'], ['story', 'Story'], ['gear', 'Gear & notes'], ['arcana', 'Arcana']]);
+  const order = ['start', 'play', 'moves', 'story', 'gear', ...((c.arcana || []).length ? ['arcana'] : [])], at = order.indexOf(tab);
+  const label = Object.fromEntries([['start', 'Playbook'], ['play', 'Sheet'], ['moves', 'Moves'], ['story', 'Story'], ['gear', 'Gear & notes'], ['arcana', 'Arcana']]);
   (page.firstChild && page.classList.contains('page') ? page : page.firstChild).append(h('div', { class: 'turn noprint' },
     at > 0 ? h('a', { class: 'btn', href: `#/c/${id}/${order[at - 1]}`, text: `← ${label[order[at - 1]]}` }) : h('span'),
     at < order.length - 1 ? h('a', { class: 'btn primary', href: `#/c/${id}/${order[at + 1]}`, text: `${label[order[at + 1]]} →` }) : null));
@@ -538,7 +651,8 @@ app.addEventListener('change', e => {
     if (fol && fol.querySelector('.mk') === t) {   // the line's own box: its followers join (or leave) the list
       const f = JSON.parse(fol.dataset.fol), key = t.dataset.key;
       c.followers = c.followers.filter(x => x.src !== key);
-      if (t.checked) for (let i = 1; i <= f.count; i++) c.followers.push({ name: f.count > 1 ? `${f.name} #${i}` : f.name, hp: f.hp, armor: f.armor, src: key });
+      if (t.checked) for (let i = 1; i <= f.count; i++) c.followers.push({ name: f.count > 1 ? `${f.name} #${i}` : f.name, hp: f.hp, hpMax: f.hp, armor: f.armor, loyalty: 0,
+        tags: f.tags, damage: f.damage, instinct: f.instinct, cost: f.cost, src: key });
     }
     if (t.checked && t.dataset.group) {           // "choose 1" (or "1, maybe 2"): past the limit, the longest-ticked go
       const lim = Number(/x(\d+)$/.exec(t.dataset.group)[1]) || 1;
