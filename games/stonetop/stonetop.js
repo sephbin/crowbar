@@ -385,13 +385,13 @@ function playPage(c, pb) {
     page.append(h('div', { class: 'movegrid' }, cards),
       h('p', { class: 'note empty-moves', hidden: true }, 'No moves taken yet. Switch to Create or Progress to choose some.'));
   } else page.append(columns(pb.moves, 'mv', c));
-  for (const ins of insertsOf(pb)) page.append(insertSection(c, ins));
   if (M === 'play' && c.followers.length) page.append(h('div', { class: 'moves-head' }, h('h3', { class: 'sec' }, 'Followers')), followerCards(c, pb));
   return page;
 }
-// Playbook inserts (the Lightbearer's Invocations): entries with a box each, ticked for the ones the character knows.
-// Play shows the known ones as cards, like the moves.
+// Playbook inserts (the Lightbearer's Invocations), each on a tab of its own (the tab id is the insert's id): entries with
+// a box each, ticked for the ones the character knows. Play shows the known ones as cards, like the moves.
 const insertsOf = pb => ((pack && pack.inserts) || []).filter(i => i.playbook === pb.id);
+function insertTab(c, pb, ins) { return h('div', { class: 'page' }, header(c, pb), insertSection(c, ins)); }
 function insertSection(c, ins) {
   const play = c.mode === 'play', prefix = 'in-' + ins.id;
   const wrap = h('div', { class: 'insert' }, h('div', { class: 'moves-head' }, h('h3', { class: 'sec' }, ins.title + ' ', h('small', null, play ? '' : markup(ins.note, { prefix: prefix + 'n', n: 0 }, c)))));
@@ -600,14 +600,16 @@ function sheet(id, tab) {
   if (!pack || !pb) { message = 'Load the playbook pack to open this character.'; location.hash = '#/'; return; }
   backfillFollowers(c, pb);
   if (tab === 'create') tab = 'start';
-  tab = ['start', 'play', 'moves', 'story', 'gear', 'arcana'].includes(tab) ? tab : 'play';
+  const ins = insertsOf(pb), insTabs = ins.map(i => [i.id, i.title]);
+  tab = ['start', 'play', ...ins.map(i => i.id), 'moves', 'story', 'gear', 'arcana'].includes(tab) ? tab : 'play';
   document.title = `${c.name || pb.name} · Stonetop`;
-  const tabs = [['start', 'Playbook'], ['play', 'Sheet'], ['moves', 'Moves'], ['story', 'Story'], ['gear', 'Gear & notes'], ['arcana', 'Arcana']].map(([t, n]) =>
+  const tabs = [['start', 'Playbook'], ['play', 'Sheet'], ...insTabs, ['moves', 'Moves'], ['story', 'Story'], ['gear', 'Gear & notes'], ['arcana', 'Arcana']].map(([t, n]) =>
     h('a', { class: 'tab', href: `#/c/${id}/${t}`, 'aria-current': t === tab ? 'page' : null, hidden: t === 'arcana' && !(c.arcana || []).length && tab !== 'arcana', data: { tab: t }, text: n }));
-  const page = { start: startPage, play: playPage, moves: movesTab, story: storyPage, gear: gearPage, arcana: arcanaTab }[tab](c, pb);
+  const insAt = ins.find(i => i.id === tab);
+  const page = insAt ? insertTab(c, pb, insAt) : { start: startPage, play: playPage, moves: movesTab, story: storyPage, gear: gearPage, arcana: arcanaTab }[tab](c, pb);
   // turn the page: the tabs in order, with a button at the foot of the page like the corner of a physical sheet
-  const order = ['start', 'play', 'moves', 'story', 'gear', ...((c.arcana || []).length ? ['arcana'] : [])], at = order.indexOf(tab);
-  const label = Object.fromEntries([['start', 'Playbook'], ['play', 'Sheet'], ['moves', 'Moves'], ['story', 'Story'], ['gear', 'Gear & notes'], ['arcana', 'Arcana']]);
+  const order = ['start', 'play', ...ins.map(i => i.id), 'moves', 'story', 'gear', ...((c.arcana || []).length ? ['arcana'] : [])], at = order.indexOf(tab);
+  const label = Object.fromEntries([['start', 'Playbook'], ['play', 'Sheet'], ...insTabs, ['moves', 'Moves'], ['story', 'Story'], ['gear', 'Gear & notes'], ['arcana', 'Arcana']]);
   (page.firstChild && page.classList.contains('page') ? page : page.firstChild).append(h('div', { class: 'turn noprint' },
     at > 0 ? h('a', { class: 'btn', href: `#/c/${id}/${order[at - 1]}`, text: `← ${label[order[at - 1]]}` }) : h('span'),
     at < order.length - 1 ? h('a', { class: 'btn primary', href: `#/c/${id}/${order[at + 1]}`, text: `${label[order[at + 1]]} →` }) : null));
