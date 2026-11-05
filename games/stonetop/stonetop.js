@@ -395,11 +395,12 @@ function insertTab(c, pb, ins) { return h('div', { class: 'page' }, header(c, pb
 function insertSection(c, ins) {
   const play = c.mode === 'play', prefix = 'in-' + ins.id;
   const wrap = h('div', { class: 'insert' }, h('div', { class: 'moves-head' }, h('h3', { class: 'sec' }, ins.title + ' ', h('small', null, play ? '' : markup(ins.note, { prefix: prefix + 'n', n: 0 }, c)))));
+  // every mode lays the entries out as cards (4 across on a desktop); the keys match columns(), so saved ticks hold
+  const cards = ins.cols.flatMap((col, i) => blocks(col, { prefix: prefix + i, n: 0 }, c).filter(e => e.classList.contains('item')));
   if (!play) {
-    wrap.append(h('div', { class: 'ins-intro' }, blocks(ins.intro, { prefix: prefix + 'i', n: 0 }, c)), columns(ins.cols, prefix, c));
+    wrap.append(h('div', { class: 'ins-intro' }, blocks(ins.intro, { prefix: prefix + 'i', n: 0 }, c)), h('div', { class: 'movegrid' }, cards));
     return wrap;
   }
-  const cards = ins.cols.flatMap((col, i) => blocks(col, { prefix: prefix + i, n: 0 }, c).filter(e => e.classList.contains('item')));
   wrap.append(h('div', { class: 'movegrid' }, cards),
     h('p', { class: 'note empty-moves', hidden: true }, `No ${ins.title} known yet. Switch to Create or Progress to choose some.`),
     h('details', { class: 'ins-rules' }, h('summary', null, 'Rules'), blocks(ins.intro, { prefix: prefix + 'i', n: 0 }, c)));

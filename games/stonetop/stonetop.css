@@ -221,3 +221,4 @@ a.arclink{text-decoration:underline dotted;text-underline-offset:2px}
 button.rolllink{appearance:none;border:1px solid var(--rule);border-radius:5px;background:transparent;font:inherit;font-weight:700;cursor:pointer;padding:0 3px;color:inherit}
 button.rolllink:hover{color:var(--accent);border-color:var(--accent)}
 [hidden]{display:none !important}
+.insert .movegrid{columns:4 240px}
